@@ -1,0 +1,49 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Video Courses — Manjunath Academy{% endblock %}
+{% block meta_description %}HD recorded video lectures with a clear chapter-wise breakdown for all major government exams.{% endblock %}
+
+{% block extra_style %}
+.browse-page-hero{padding:56px 0 40px;background:var(--peach)}
+.browse-page-hero h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px}
+.browse-page-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.browse-page-section{padding:56px 0 90px}
+{% endblock %}
+
+{% block content %}
+<section class="browse-page-hero">
+  <div class="wrap">
+    <h1>Video Courses</h1>
+    <p>HD recorded lectures with a clear chapter-wise breakdown — pause, rewind and rewatch as many times as you need, on any device.</p>
+  </div>
+</section>
+
+<section class="browse-page-section">
+  <div class="wrap">
+    <div class="pc-grid">
+      {% for course in video_courses %}
+      <article class="pc-card">
+        {% if course.thumbnail %}
+          <img class="pc-thumb" src="{{ course.thumbnail.url }}" alt="">
+        {% else %}
+          <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span></div>
+        {% endif %}
+        <h3>{{ course.name }}</h3>
+        {% if course.about %}<p>{{ course.about|truncatechars:110 }}</p>{% endif %}
+        <div class="pc-tags">
+          {% if course.category %}<span>{{ course.category.icon }} {{ course.category.name }}</span>{% endif %}
+          {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
+        </div>
+        <div class="pc-meta">
+          <span>₹{{ course.current_price }}</span>
+          {% if course.original_price and course.original_price != course.current_price %}<span><s>₹{{ course.original_price }}</s></span>{% endif %}
+        </div>
+        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' course.pk %}">View Course →</a>
+      </article>
+      {% empty %}
+      <p class="panel-empty">No video courses added yet — check back soon.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

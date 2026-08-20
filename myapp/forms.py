@@ -4,12 +4,14 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import (
     AdmissionRegistration,
     BannerSlide,
+    Brand,
     Bundle,
     Category,
     Certificate,
     ChatbotQuestion,
     ChatbotSettings,
     Classroom,
+    ContactMessage,
     Coupon,
     Course,
     CustomUser,
@@ -26,6 +28,7 @@ from .models import (
     JobApplication,
     JobPosting,
     Notification,
+    NotificationImage,
     NotificationProviderSettings,
     Product,
     PWASettings,
@@ -180,16 +183,49 @@ class BannerSlideForm(forms.ModelForm):
 class NotificationForm(forms.ModelForm):
     class Meta:
         model = Notification
-        fields = ('text', 'detail', 'link', 'order', 'is_active')
+        fields = ('text', 'detail', 'link', 'title', 'cover_image', 'video_url', 'body', 'order', 'is_active')
         widgets = {
             'text': forms.TextInput(attrs={'placeholder': 'e.g. 📢 SSC CGL 2026 notification released — 4,500+ vacancies'}),
             'detail': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Longer text shown when a student taps this notification'}),
             'link': forms.URLInput(attrs={'placeholder': 'https://ssc.nic.in/...'}),
+            'title': forms.TextInput(attrs={'placeholder': 'Full headline for the details page'}),
+            'cover_image': forms.FileInput(),
+            'video_url': forms.URLInput(attrs={'placeholder': 'https://youtube.com/watch?v=...'}),
+            'body': forms.Textarea(attrs={'rows': 10, 'placeholder': 'Full article content. You can use basic HTML tags like <p>, <b>, <ul>, <table>.'}),
             'order': forms.NumberInput(attrs={'min': 0}),
         }
         help_texts = {
             'text': 'Shown in the scrolling ticker at the top of the site.',
-            'link': 'Optional. Opens as the "Official notification link" button in the popup.',
+            'link': 'Optional. Opens as the "Official notification link" button in the popup and on the details page.',
+            'order': 'Lower numbers show first.',
+            'title': 'Optional — defaults to the ticker text above if left blank.',
+            'cover_image': 'Shown at the top of the full details page. JPG or PNG, under 2MB.',
+            'body': 'Optional. Leave blank to show only the popup detail text on the details page.',
+        }
+
+
+class NotificationImageForm(forms.ModelForm):
+    class Meta:
+        model = NotificationImage
+        fields = ('image', 'caption', 'order')
+        widgets = {
+            'image': forms.FileInput(),
+            'caption': forms.TextInput(attrs={'placeholder': 'A short caption for this photo (optional)'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+
+
+class BrandForm(forms.ModelForm):
+    class Meta:
+        model = Brand
+        fields = ('name', 'logo', 'link', 'order', 'is_active')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'e.g. NCERT'}),
+            'logo': forms.FileInput(),
+            'link': forms.URLInput(attrs={'placeholder': 'https://example.com'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
             'order': 'Lower numbers show first.',
         }
 
@@ -268,6 +304,21 @@ class AdmissionRegistrationForm(forms.ModelForm):
     class Meta:
         model = AdmissionRegistration
         fields = ('name', 'phone', 'course', 'preferred_batch')
+        widgets = {
+            'course': forms.TextInput(attrs={'placeholder': 'e.g. SSC GD, Banking & Insurance', 'list': 'admissionCourseOptions'}),
+        }
+
+
+class ContactMessageForm(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
+        fields = ('name', 'email', 'phone', 'message')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Your name'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'you@example.com'}),
+            'phone': forms.TextInput(attrs={'placeholder': 'Phone number'}),
+            'message': forms.Textarea(attrs={'rows': 5, 'placeholder': 'How can we help?'}),
+        }
 
 
 class PWASettingsForm(forms.ModelForm):

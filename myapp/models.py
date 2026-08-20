@@ -31,6 +31,16 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ('female', 'Female'),
         ('other', 'Other'),
     ]
+    DEVICE_ANDROID = 'android'
+    DEVICE_IOS = 'ios'
+    DEVICE_DESKTOP = 'desktop'
+    DEVICE_OTHER = 'other'
+    DEVICE_CHOICES = [
+        (DEVICE_ANDROID, 'Android'),
+        (DEVICE_IOS, 'iPhone/iPad'),
+        (DEVICE_DESKTOP, 'Desktop'),
+        (DEVICE_OTHER, 'Other'),
+    ]
 
     name = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
@@ -40,6 +50,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     state = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    device_type = models.CharField(max_length=10, choices=DEVICE_CHOICES, blank=True, help_text='Detected from the signup device')
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -119,7 +130,7 @@ class BannerSlide(models.Model):
 
     @property
     def display_image_url(self):
-        if self.image:
+        if self.image and self.image.storage.exists(self.image.name):
             return self.image.url
         return self.image_url
 
@@ -132,14 +143,68 @@ class Notification(models.Model):
     text = models.CharField(max_length=200, help_text='Short scrolling line, e.g. "SSC CGL 2026 notification released — 4,500+ vacancies"')
     detail = models.TextField(blank=True, help_text='Longer text shown in the popup when a student taps this notification')
     link = models.URLField(blank=True, help_text='Official link (apply page, PDF, etc). Shown as a button in the popup.')
+    title = models.CharField(max_length=250, blank=True, help_text='Full headline for the details page. Leave blank to reuse the ticker text above.')
+    cover_image = models.ImageField(upload_to='notifications/', blank=True, null=True, help_text='Featured image shown at the top of the full details page.')
+    video_url = models.URLField(blank=True, help_text='Optional YouTube/Vimeo link embedded in the details page.')
+    body = models.TextField(blank=True, help_text='Full article content shown on the details page. Basic HTML (e.g. <p>, <b>, <ul>, <table>) is allowed.')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['order', '-created_at']
 
+    @property
+    def display_title(self):
+        return self.title or self.text
+
+    @property
+    def cover_image_display_url(self):
+        if self.cover_image and self.cover_image.storage.exists(self.cover_image.name):
+            return self.cover_image.url
+        return ''
+
+    @property
+    def video_embed_url(self):
+        url = self.video_url
+        if not url:
+            return ''
+        youtube_match = re.search(r'(?:youtu\.be/|youtube\.com/(?:watch\?v=|embed/|shorts/))([\w-]{6,})', url)
+        if youtube_match:
+            return f'https://www.youtube.com/embed/{youtube_match.group(1)}'
+        vimeo_match = re.search(r'vimeo\.com/(\d+)', url)
+        if vimeo_match:
+            return f'https://player.vimeo.com/video/{vimeo_match.group(1)}'
+        return url
+
     def __str__(self):
         return self.text
+
+
+class NotificationImage(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE, related_name='gallery_images')
+    image = models.ImageField(upload_to='notifications/gallery/')
+    caption = models.CharField(max_length=200, blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.caption or f'Notification image {self.pk}'
+
+
+class Brand(models.Model):
+    name = models.CharField(max_length=150)
+    logo = models.ImageField(upload_to='brands/', help_text='Recommended: transparent PNG, roughly 200×100px.')
+    link = models.URLField(blank=True, help_text="Optional — opens when the logo is clicked. Leave blank if it shouldn't link anywhere.")
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.name
 
 
 class ExamCalendarEvent(models.Model):
@@ -360,10 +425,10 @@ class DailyUpdatePost(models.Model):
 
 
 class AdmissionRegistration(models.Model):
-    COURSE_CHOICES = [
-        ('SSC & Railways', 'SSC & Railways'),
-        ('Banking & Insurance', 'Banking & Insurance'),
-        ('NEET & JEE foundation', 'NEET & JEE foundation'),
+    COURSE_SUGGESTIONS = [
+        'SSC & Railways',
+        'Banking & Insurance',
+        'NEET & JEE foundation',
     ]
     BATCH_CHOICES = [
         ('Morning', 'Morning'),
@@ -373,7 +438,7 @@ class AdmissionRegistration(models.Model):
 
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=15)
-    course = models.CharField(max_length=50, choices=COURSE_CHOICES)
+    course = models.CharField(max_length=150, help_text='Course/batch the student is interested in')
     preferred_batch = models.CharField(max_length=20, choices=BATCH_CHOICES, default='Morning')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -462,6 +527,7 @@ class Course(models.Model):
         ('sectional_test', 'Sectional Test'),
         ('sample_papers', 'Sample Papers'),
         ('previous_year_paper', 'Previous Year Paper'),
+        ('daily_quiz', 'Daily Quiz'),
     ]
 
     VALIDITY_DAYS = 'days'
@@ -1272,6 +1338,21 @@ class ExtraPage(models.Model):
     @property
     def display_title(self):
         return self.title.strip() if self.title.strip() else self.get_page_display()
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=150)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=15, blank=True)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.name} — {self.created_at:%d %b %Y}'
 
 
 class FAQItem(models.Model):

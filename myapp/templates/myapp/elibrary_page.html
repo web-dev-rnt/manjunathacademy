@@ -1,0 +1,50 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}E-Library — Manjunath Academy{% endblock %}
+{% block meta_description %}E-books, previous year papers and revision notes — read online or download the PDF.{% endblock %}
+
+{% block extra_style %}
+.browse-page-hero{padding:56px 0 40px;background:var(--peach)}
+.browse-page-hero h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px}
+.browse-page-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.browse-page-section{padding:56px 0 90px}
+{% endblock %}
+
+{% block content %}
+<section class="browse-page-hero">
+  <div class="wrap">
+    <h1>E-Library</h1>
+    <p>E-books, previous year papers and revision notes — read online in the built-in viewer or download the PDF, on any device.</p>
+  </div>
+</section>
+
+<section class="browse-page-section">
+  <div class="wrap">
+    <div class="pc-grid">
+      {% for item in elibrary_items %}
+      <article class="pc-card">
+        {% if item.thumbnail %}
+          <img class="pc-thumb" src="{{ item.thumbnail.url }}" alt="">
+        {% else %}
+          <div class="pc-top"><span class="pc-icon pc-icon-grey">📖</span></div>
+        {% endif %}
+        <h3>{{ item.name }}</h3>
+        {% if item.author %}<p style="margin-bottom:4px;font-weight:600;color:#374151">by {{ item.author }}</p>{% endif %}
+        {% if item.about %}<p>{{ item.about|truncatechars:110 }}</p>{% endif %}
+        <div class="pc-tags">
+          {% if item.category %}<span>{{ item.category.icon }} {{ item.category.name }}</span>{% endif %}
+          {% if item.pages %}<span>📄 {{ item.pages }} pages</span>{% endif %}
+        </div>
+        <div class="pc-meta">
+          <span>₹{{ item.current_price }}</span>
+          {% if item.original_price and item.original_price != item.current_price %}<span><s>₹{{ item.original_price }}</s></span>{% endif %}
+        </div>
+        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' item.pk %}">View Book →</a>
+      </article>
+      {% empty %}
+      <p class="panel-empty">No e-library items added yet — check back soon.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

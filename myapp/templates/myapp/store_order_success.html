@@ -19,7 +19,7 @@
       <span class="auth-icon">✓</span>
       <h1>Order placed!</h1>
       <p class="auth-sub">Order #{{ order.pk }} for {{ order.product.name }} × {{ order.quantity }} has been confirmed. We'll ship it to {{ order.shipping_name }} shortly.</p>
-      <a class="btn btn-primary btn-lg" href="{% url 'index' %}#e-store">Continue Shopping</a>
+      <a class="btn btn-primary btn-lg" href="{% url 'store_page' %}">Continue Shopping</a>
     </div>
   </div>
 </section>

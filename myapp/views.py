@@ -10,7 +10,7 @@ from django.contrib.auth.views import LoginView, PasswordChangeView
 from decimal import Decimal
 
 from django.contrib import messages
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Q, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -20,6 +20,7 @@ from .forms import (
     AccountUpdateForm,
     AdmissionRegistrationForm,
     BannerSlideForm,
+    BrandForm,
     BundleForm,
     CareerApplicationForm,
     CategoryForm,
@@ -28,6 +29,7 @@ from .forms import (
     ChatbotSettingsForm,
     ClassroomAddStudentsForm,
     ClassroomForm,
+    ContactMessageForm,
     CouponForm,
     CourseForm,
     DailyUpdateCardForm,
@@ -46,6 +48,7 @@ from .forms import (
     JobPostingForm,
     NavbarCustomizationForm,
     NotificationForm,
+    NotificationImageForm,
     NotificationProviderSettingsForm,
     ProductForm,
     SSOCompleteSignupForm,
@@ -64,6 +67,7 @@ from .forms import (
 from .models import (
     AdmissionRegistration,
     BannerSlide,
+    Brand,
     Bundle,
     BundlePurchase,
     Category,
@@ -72,6 +76,7 @@ from .models import (
     ChatbotSettings,
     Classroom,
     ClassroomMember,
+    ContactMessage,
     Coupon,
     CouponRedemption,
     Course,
@@ -93,6 +98,7 @@ from .models import (
     JobApplication,
     JobPosting,
     Notification,
+    NotificationImage,
     NotificationProviderSettings,
     OTPRequest,
     Product,
@@ -122,32 +128,61 @@ from . import backup_utils
 from .dropbox_utils import DropboxError
 
 
+def detect_device(request):
+    ua = request.META.get('HTTP_USER_AGENT', '').lower()
+    if 'android' in ua:
+        return CustomUser.DEVICE_ANDROID
+    if 'iphone' in ua or 'ipad' in ua or 'ipod' in ua:
+        return CustomUser.DEVICE_IOS
+    if any(tag in ua for tag in ('windows', 'macintosh', 'linux', 'x11')) and 'mobile' not in ua:
+        return CustomUser.DEVICE_DESKTOP
+    return CustomUser.DEVICE_OTHER
+
+
 def index(request):
     banner_slides = BannerSlide.objects.filter(is_active=True)
 
     test_series_courses = Course.objects.filter(course_type=Course.TEST_SERIES, is_active=True)
-    video_courses = Course.objects.filter(course_type=Course.VIDEO_COURSE, is_active=True)
-    elibrary_items = Course.objects.filter(course_type=Course.ELIBRARY, is_active=True)
     test_series_categories = Category.objects.filter(courses__in=test_series_courses).distinct()
-    store_products = Product.objects.filter(is_active=True)[:8]
-    jobs = JobPosting.objects.filter(is_active=True)
     bundles = Bundle.objects.filter(is_active=True).prefetch_related('courses')
     homepage_content = HomepageContent.load()
     result_highlights = ResultHighlight.objects.filter(is_active=True)
     gallery_preview = GalleryImage.objects.filter(is_active=True)[:5]
+    brands = Brand.objects.filter(is_active=True)
 
     return render(request, 'myapp/index.html', {
         'banner_slides': banner_slides,
         'test_series_courses': test_series_courses,
-        'video_courses': video_courses,
-        'elibrary_items': elibrary_items,
         'test_series_categories': test_series_categories,
-        'store_products': store_products,
-        'jobs': jobs,
         'bundles': bundles,
         'homepage_content': homepage_content,
         'result_highlights': result_highlights,
         'gallery_preview': gallery_preview,
+        'brands': brands,
+    })
+
+
+def video_courses_page(request):
+    video_courses = Course.objects.filter(course_type=Course.VIDEO_COURSE, is_active=True)
+    return render(request, 'myapp/video_courses_page.html', {'video_courses': video_courses})
+
+
+def elibrary_page(request):
+    elibrary_items = Course.objects.filter(course_type=Course.ELIBRARY, is_active=True)
+    return render(request, 'myapp/elibrary_page.html', {'elibrary_items': elibrary_items})
+
+
+def careers_page(request):
+    jobs = JobPosting.objects.filter(is_active=True)
+    return render(request, 'myapp/careers_page.html', {'jobs': jobs})
+
+
+def notification_detail(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, is_active=True)
+    other_notifications = Notification.objects.filter(is_active=True).exclude(pk=pk)[:5]
+    return render(request, 'myapp/notification_detail.html', {
+        'notification': notification,
+        'other_notifications': other_notifications,
     })
 
 
@@ -206,7 +241,16 @@ def extra_page_view(request, page_key):
 
 def contact_us_page(request):
     page_obj, _ = ExtraPage.objects.get_or_create(page=ExtraPage.CONTACT_US)
-    return render(request, 'myapp/contact_us.html', {'page_obj': page_obj})
+    sent = False
+    if request.method == 'POST':
+        form = ContactMessageForm(request.POST)
+        if form.is_valid():
+            form.save()
+            sent = True
+            form = ContactMessageForm()
+    else:
+        form = ContactMessageForm()
+    return render(request, 'myapp/contact_us.html', {'page_obj': page_obj, 'form': form, 'sent': sent})
 
 
 def faq_page(request):
@@ -240,6 +284,8 @@ def signup(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
+            user.device_type = detect_device(request)
+            user.save(update_fields=['device_type'])
             referral_code_str = form.cleaned_data.get('referral_code')
             if referral_code_str:
                 referral_code = ReferralCode.objects.filter(code=referral_code_str).first()
@@ -348,6 +394,8 @@ def sso_complete_signup(request):
                 number=form.cleaned_data['number'],
                 password=None,
             )
+            user.device_type = detect_device(request)
+            user.save(update_fields=['device_type'])
             del request.session['pending_sso_profile']
             auth_login(request, user)
             return _sso_post_login_redirect(user)
@@ -556,9 +604,63 @@ def test_series_detail(request, pk):
 
     daily_quiz_questions = random.sample(all_questions, min(5, len(all_questions))) if all_questions else []
 
+    # "QUIZZES Free" carousel — short dated practice quizzes (test_type='daily_quiz'), site-wide.
+    daily_quizzes = (
+        Course.objects.filter(course_type=Course.TEST_SERIES, test_type='daily_quiz', is_active=True)
+        .annotate(q_count=Count('questions', distinct=True), total_marks=Sum('questions__marks'))
+        .order_by('-created_at')[:12]
+    )
+
+    # Sibling tests grouped into a Mock Tests / Topic wise / Previous Year Papers sidebar.
+    sibling_tests = (
+        Course.objects.filter(course_type=Course.TEST_SERIES, is_active=True)
+        .exclude(test_type='daily_quiz')
+        .select_related('category')
+        .annotate(q_count=Count('questions', distinct=True), total_marks=Sum('questions__marks'))
+    )
+    paid_course_ids = set(
+        CourseEnrollment.objects.filter(user=request.user, is_paid=True).values_list('course_id', flat=True)
+    )
+
+    test_type_order = ['mock_test', 'sectional_test', 'previous_year_paper', 'practice_test', 'sample_papers']
+    test_type_labels = {
+        'mock_test': 'Mock Tests',
+        'sectional_test': 'Topic Wise',
+        'previous_year_paper': 'Previous Year Papers',
+        'practice_test': 'Practice Tests',
+        'sample_papers': 'Sample Papers',
+    }
+    sections = []
+    for tt in test_type_order:
+        tests = [c for c in sibling_tests if c.test_type == tt]
+        if not tests:
+            continue
+        groups = {}
+        for c in tests:
+            key = c.category.name if c.category else 'General'
+            groups.setdefault(key, []).append(c)
+        sections.append({
+            'key': tt,
+            'label': test_type_labels[tt],
+            'groups': [{'name': name, 'tests': group_tests} for name, group_tests in groups.items()],
+            'count': len(tests),
+            'free_count': sum(1 for c in tests if c.is_free),
+        })
+    untyped = [c for c in sibling_tests if not c.test_type]
+    if untyped:
+        sections.append({
+            'key': 'other', 'label': 'Other Tests',
+            'groups': [{'name': 'General', 'tests': untyped}],
+            'count': len(untyped),
+            'free_count': sum(1 for c in untyped if c.is_free),
+        })
+
     return render(request, 'myapp/test_series_detail.html', {
         'course': course, 'enrollment': enrollment,
         'daily_quiz_questions': daily_quiz_questions, 'quiz_result': quiz_result,
+        'daily_quizzes': daily_quizzes,
+        'sections': sections,
+        'paid_course_ids': paid_course_ids,
     })
 
 
@@ -614,7 +716,7 @@ def test_attempt_take(request, pk):
         attempt.save()
         return redirect('test_attempt_result', pk=attempt.pk)
 
-    return render(request, 'myapp/test_attempt_take.html', {'attempt': attempt, 'questions': questions})
+    return render(request, 'myapp/test_attempt_take.html', {'attempt': attempt, 'questions': questions, 'hide_site_chrome': True})
 
 
 @login_required(login_url='login')
@@ -997,6 +1099,11 @@ def eligibility_check(request):
 
 
 @login_required(login_url='login')
+def quiz_game_page(request):
+    return render(request, 'myapp/quiz_game_page.html', {})
+
+
+@login_required(login_url='login')
 def quiz_reset(request):
     if request.method != 'POST':
         raise Http404
@@ -1141,8 +1248,65 @@ def panel_signups(request):
         'students': students.count(),
         'this_week': students.filter(date_joined__gte=week_ago).count(),
     }
-    users = students.order_by('-date_joined')
-    return render(request, 'myapp/panel/signups_list.html', {'users': users, 'stats': stats})
+
+    date_from = request.GET.get('from', '').strip()
+    date_to = request.GET.get('to', '').strip()
+    device_filter = request.GET.get('device', '').strip()
+
+    filtered = students
+    if date_from:
+        filtered = filtered.filter(date_joined__date__gte=date_from)
+    if date_to:
+        filtered = filtered.filter(date_joined__date__lte=date_to)
+    if device_filter in dict(CustomUser.DEVICE_CHOICES):
+        filtered = filtered.filter(device_type=device_filter)
+
+    users = filtered.order_by('-date_joined')
+
+    device_labels = dict(CustomUser.DEVICE_CHOICES)
+    device_labels[''] = 'Not recorded'
+    device_counts = {key: 0 for key in device_labels}
+    for row in filtered.values('device_type').annotate(count=Count('id')):
+        key = row['device_type'] or ''
+        device_counts[key] = device_counts.get(key, 0) + row['count']
+    device_breakdown = [
+        {'key': key or 'unknown', 'label': device_labels[key], 'count': count}
+        for key, count in device_counts.items()
+    ]
+    device_max = max((d['count'] for d in device_breakdown), default=0) or 1
+
+    # Signups-per-month trend for the last 6 months (independent of the date filter, follows the device filter).
+    trend_source = students
+    if device_filter in dict(CustomUser.DEVICE_CHOICES):
+        trend_source = trend_source.filter(device_type=device_filter)
+
+    months = []
+    month_cursor = timezone.localdate().replace(day=1)
+    for _ in range(6):
+        months.append(month_cursor)
+        month_cursor = (month_cursor - timezone.timedelta(days=1)).replace(day=1)
+    months.reverse()
+
+    monthly_counts = []
+    for month_start in months:
+        if month_start.month == 12:
+            next_month = month_start.replace(year=month_start.year + 1, month=1)
+        else:
+            next_month = month_start.replace(month=month_start.month + 1)
+        count = trend_source.filter(date_joined__date__gte=month_start, date_joined__date__lt=next_month).count()
+        monthly_counts.append({'label': month_start.strftime('%b %Y'), 'count': count})
+    monthly_max = max((m['count'] for m in monthly_counts), default=0) or 1
+
+    return render(request, 'myapp/panel/signups_list.html', {
+        'users': users,
+        'stats': stats,
+        'filters': {'from': date_from, 'to': date_to, 'device': device_filter},
+        'device_choices': CustomUser.DEVICE_CHOICES,
+        'device_breakdown': device_breakdown,
+        'device_max': device_max,
+        'monthly_counts': monthly_counts,
+        'monthly_max': monthly_max,
+    })
 
 
 @login_required(login_url='login')
@@ -1292,7 +1456,7 @@ def panel_notification_list(request):
 @user_passes_test(_is_staff, login_url='login')
 def panel_notification_add(request):
     if request.method == 'POST':
-        form = NotificationForm(request.POST)
+        form = NotificationForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Notification added.')
@@ -1309,15 +1473,21 @@ def panel_notification_edit(request, pk):
     notification = get_object_or_404(Notification, pk=pk)
 
     if request.method == 'POST':
-        form = NotificationForm(request.POST, instance=notification)
+        form = NotificationForm(request.POST, request.FILES, instance=notification)
         if form.is_valid():
             form.save()
             messages.success(request, 'Notification updated.')
-            return redirect('panel_notification_list')
+            return redirect('panel_notification_edit', pk=notification.pk)
     else:
         form = NotificationForm(instance=notification)
 
-    return render(request, 'myapp/panel/notification_form.html', {'form': form, 'is_new': False, 'notification': notification})
+    image_form = NotificationImageForm()
+    return render(request, 'myapp/panel/notification_form.html', {
+        'form': form,
+        'is_new': False,
+        'notification': notification,
+        'image_form': image_form,
+    })
 
 
 @login_required(login_url='login')
@@ -1328,6 +1498,33 @@ def panel_notification_delete(request, pk):
         notification.delete()
         messages.success(request, 'Notification deleted.')
     return redirect('panel_notification_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_notification_image_add(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    if request.method == 'POST':
+        image_form = NotificationImageForm(request.POST, request.FILES)
+        if image_form.is_valid():
+            image = image_form.save(commit=False)
+            image.notification = notification
+            image.save()
+            messages.success(request, 'Photo added to the gallery.')
+        else:
+            messages.error(request, 'Could not add that photo — please choose an image file.')
+    return redirect('panel_notification_edit', pk=notification.pk)
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_notification_image_delete(request, pk, image_pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    image = get_object_or_404(NotificationImage, pk=image_pk, notification=notification)
+    if request.method == 'POST':
+        image.delete()
+        messages.success(request, 'Photo removed.')
+    return redirect('panel_notification_edit', pk=notification.pk)
 
 
 @login_required(login_url='login')
@@ -1503,6 +1700,32 @@ def panel_admission_delete(request, pk):
 
 @login_required(login_url='login')
 @user_passes_test(_is_staff, login_url='login')
+def panel_contact_messages(request):
+    messages_qs = ContactMessage.objects.all()
+    if request.method == 'POST' and request.POST.get('action') == 'mark_read':
+        ContactMessage.objects.filter(pk=request.POST.get('pk')).update(is_read=True)
+        return redirect('panel_contact_messages')
+    week_ago = timezone.now() - timezone.timedelta(days=7)
+    stats = {
+        'total': messages_qs.count(),
+        'unread': messages_qs.filter(is_read=False).count(),
+        'this_week': messages_qs.filter(created_at__gte=week_ago).count(),
+    }
+    return render(request, 'myapp/panel/contact_messages_list.html', {'contact_messages': messages_qs, 'stats': stats})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_contact_message_delete(request, pk):
+    message_obj = get_object_or_404(ContactMessage, pk=pk)
+    if request.method == 'POST':
+        message_obj.delete()
+        messages.success(request, 'Message deleted.')
+    return redirect('panel_contact_messages')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
 def panel_pwa_settings(request):
     pwa = PWASettings.load()
     if request.method == 'POST':
@@ -1564,6 +1787,55 @@ def panel_gallery_delete(request, pk):
         image.delete()
         messages.success(request, 'Image deleted.')
     return redirect('panel_gallery_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_brand_list(request):
+    brands = Brand.objects.all()
+    return render(request, 'myapp/panel/brand_list.html', {'brands': brands})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_brand_add(request):
+    if request.method == 'POST':
+        form = BrandForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Brand added.')
+            return redirect('panel_brand_list')
+    else:
+        form = BrandForm(initial={'order': Brand.objects.count()})
+
+    return render(request, 'myapp/panel/brand_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_brand_edit(request, pk):
+    brand = get_object_or_404(Brand, pk=pk)
+
+    if request.method == 'POST':
+        form = BrandForm(request.POST, request.FILES, instance=brand)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Brand updated.')
+            return redirect('panel_brand_list')
+    else:
+        form = BrandForm(instance=brand)
+
+    return render(request, 'myapp/panel/brand_form.html', {'form': form, 'is_new': False, 'brand': brand})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_brand_delete(request, pk):
+    brand = get_object_or_404(Brand, pk=pk)
+    if request.method == 'POST':
+        brand.delete()
+        messages.success(request, 'Brand deleted.')
+    return redirect('panel_brand_list')
 
 
 @login_required(login_url='login')

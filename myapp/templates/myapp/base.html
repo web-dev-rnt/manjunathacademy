@@ -59,6 +59,26 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .wrap{width:100%;max-width:var(--wrap);margin-inline:auto;padding-inline:24px}
 
 /* ============================================================
+   SITE-WIDE SCROLL-REVEAL ANIMATIONS
+   Applied automatically via JS (section 5) to headings, cards and
+   images across every page — no per-template markup needed.
+   ============================================================ */
+.reveal-io{
+  opacity:0;transform:translateY(26px);
+  transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1);
+  will-change:opacity,transform;
+}
+.reveal-io.is-visible{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  .reveal-io{opacity:1;transform:none;transition:none}
+}
+a.btn,button.btn,.chip,.social-row a,.pc-card,.ts-card{
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease,color .2s ease,border-color .2s ease;
+}
+a.btn:hover,button.btn:hover{transform:translateY(-2px)}
+a.btn:active,button.btn:active{transform:translateY(0)}
+
+/* ============================================================
    PRELOADER — logo animation instead of a spinner
    ============================================================ */
 .preloader{
@@ -171,13 +191,21 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
    ============================================================ */
 .site-header{
   position:sticky;top:0;z-index:60;
-  background:rgba(255,255,255,.94);
-  backdrop-filter:saturate(140%) blur(10px);
+  background:#fff;
   border-bottom:1px solid var(--line);
-  transition:box-shadow .2s ease;
+  transition:box-shadow .2s ease, background .2s ease, border-bottom .2s ease, border-radius .2s ease, max-width .2s ease, margin .2s ease;
 }
-.site-header.is-stuck{box-shadow:0 6px 24px rgba(16,16,18,.08)}
-.site-header .wrap{max-width:1440px}
+.site-header.is-stuck{
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  box-shadow:0 10px 30px rgba(16,16,18,.15);
+  border-bottom:none;
+  border-radius:999px;
+  max-width:1360px;
+  margin:12px auto 0;
+}
+.site-header .wrap{max-width:1440px; padding-inline:32px;}
 .header-inner{display:flex;align-items:center;gap:16px;min-height:72px}
 
 .brand{display:flex;align-items:center;gap:11px;flex-shrink:0}
@@ -251,6 +279,8 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .chip:hover{transform:translateY(-1px)}
 .chip-yt{background:#FDECEC;color:#1a1a1a}
 .chip-wa{background:#E9F9EF;color:#1a1a1a}
+.chip-fb{background:#E8F0FE;color:#1a1a1a}
+.chip-insta{background:#FDECF6;color:#1a1a1a}
 .nav-user-menu{position:relative;flex:0 0 auto}
 .nav-user-trigger{
   display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
@@ -325,6 +355,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   background-size:cover;background-position:center;
 }
 .ad-slide.is-active{opacity:1;visibility:visible;transform:none}
+.ad-slide.ad-slide-noimg{background-image:linear-gradient(135deg,var(--peach) 0%,#FDE6D2 50%,var(--orange-soft) 100%)}
 .ad-slide::before{
   content:"";position:absolute;inset:0;z-index:0;
   background:radial-gradient(ellipse at center,rgba(255,255,255,.93) 0%,rgba(255,255,255,.78) 45%,rgba(255,255,255,.4) 100%);
@@ -346,6 +377,27 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   position:absolute;right:26px;bottom:22px;
   display:flex;align-items:center;gap:10px;
 }
+/* ============================================================
+   SLIDING BRANDS / PARTNERS STRIP
+   ============================================================ */
+.brand-band{padding:38px 0;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}
+.brand-eyebrow{text-align:center;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 24px}
+.brand-slider{
+  overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+}
+.brand-track{display:flex;align-items:center;gap:56px;width:max-content;animation:brand-scroll 30s linear infinite}
+.brand-slider:hover .brand-track{animation-play-state:paused}
+.brand-slide-item{flex:0 0 auto;display:flex;align-items:center;justify-content:center;height:56px}
+.brand-slide-item img{
+  max-height:44px;max-width:140px;object-fit:contain;filter:grayscale(1);opacity:.55;
+  transition:filter .25s ease,opacity .25s ease,transform .25s ease;
+}
+.brand-slide-item:hover img{filter:grayscale(0);opacity:1;transform:scale(1.08)}
+@keyframes brand-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){.brand-track{animation:none}}
+
 .ad-arrow{
   width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
   background:#fff;color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0;
@@ -440,11 +492,14 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   box-shadow:var(--shadow-md);
   padding:26px 26px 60px;
   display:flex;flex-direction:column;justify-content:space-between;
+  transition:transform .3s ease,box-shadow .3s ease;
 }
+.daily-card:hover{transform:translateY(-6px) scale(1.015);box-shadow:var(--shadow-lg)}
 .daily-current{background:linear-gradient(160deg,#F97316 0%,#EA580C 55%,#2A1B12 100%)}
 .daily-kbc{background:linear-gradient(160deg,#14B8A6 0%,#0E9488 55%,#14302E 100%)}
 .daily-card-top{position:absolute;right:-6px;bottom:0;width:62%;opacity:.95}
-.daily-illus{width:100%;height:auto}
+.daily-illus{width:100%;height:auto;transition:transform .35s ease}
+.daily-card:hover .daily-illus{transform:scale(1.05) translateY(-4px)}
 .daily-card-body{position:relative;z-index:1;max-width:62%}
 .daily-card-body h3{
   color:#fff;font-family:"Anton",Impact,sans-serif;font-weight:400;
@@ -456,10 +511,15 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   position:absolute;left:22px;bottom:18px;
   display:inline-flex;align-items:center;justify-content:center;
   padding:7px 15px;border-radius:var(--r-pill);font-weight:700;font-size:12px;
-  color:#fff;
+  color:#fff;transition:transform .2s ease,background .2s ease;
 }
+.daily-card:hover .btn-daily{transform:translateX(4px)}
 .btn-daily-red{background:#E23F3F}
 .daily-caption{text-align:center;margin:0;font-size:13.5px;color:var(--muted)}
+
+.daily-quiz-ad-top{display:flex;align-items:center;justify-content:center;width:auto;right:16px;bottom:10px;opacity:1}
+.daily-quiz-ad-emoji{font-size:92px;line-height:1;filter:drop-shadow(0 10px 18px rgba(0,0,0,.3));transition:transform .35s ease;display:inline-block}
+.daily-quiz-ad:hover .daily-quiz-ad-emoji{transform:scale(1.12) rotate(-8deg)}
 
 /* ============================================================
    GENERIC SECTIONS
@@ -490,22 +550,28 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .pc-card{
   background:#fff;border:1px solid var(--line);border-radius:20px;
   padding:24px 24px 26px;box-shadow:var(--shadow-sm);
-  transition:transform .2s ease,box-shadow .2s ease;
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
+  position:relative;overflow:hidden;
 }
-.pc-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.pc-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-md);border-color:rgba(249,115,22,.35)}
+.pc-card:hover h3{color:var(--orange-deep)}
+.pc-card:hover .pc-icon{transform:scale(1.08) rotate(-4deg)}
+.pc-card:hover .pc-thumb{transform:scale(1.04)}
+.pc-card:hover .btn-pc-orange{background:var(--orange-deep)}
+.pc-card:hover .btn-pc svg,.pc-card:hover .btn-pc{letter-spacing:.01em}
 .pc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .pc-icon{
   width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
-  font-size:20px;
+  font-size:20px;transition:transform .25s ease;
 }
 .pc-icon-grey{background:#F3F4F6}
 .pc-icon-gold{background:#FDF3D8}
-.pc-thumb{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:14px;margin-bottom:16px;display:block;background:#F3F4F6}
+.pc-thumb{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:14px;margin-bottom:16px;display:block;background:#F3F4F6;transition:transform .35s ease}
 .pc-rating{
   display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;
   background:#FFF7E0;color:#B7791F;padding:5px 10px;border-radius:var(--r-pill);
 }
-.pc-card h3{font-size:19px;margin:0 0 8px}
+.pc-card h3{font-size:19px;margin:0 0 8px;transition:color .2s ease}
 .pc-card p{color:var(--muted);font-size:14.5px;margin:0 0 16px;line-height:1.5}
 .pc-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
 .pc-tags span{
@@ -516,6 +582,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .btn-pc{
   display:flex;align-items:center;justify-content:center;gap:6px;
   width:100%;padding:12px;border-radius:12px;font-weight:700;font-size:14.5px;color:#fff;
+  transition:background .2s ease,gap .2s ease;
 }
 .btn-pc-orange{background:var(--orange)}
 .btn-pc-navy{background:#1E3A5F}
@@ -621,8 +688,10 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .ae-card{
   position:absolute;top:0;left:50%;width:150px;height:290px;margin:0;
   border-radius:16px;overflow:hidden;box-shadow:var(--shadow-md);
-  border:4px solid #fff;background:#ddd;
+  border:4px solid #fff;background:#ddd;cursor:pointer;
+  transition:transform .35s cubic-bezier(.22,.61,.36,1),box-shadow .35s ease;
 }
+.ae-card:hover{box-shadow:var(--shadow-lg);z-index:6!important}
 .ae-card img{width:100%;height:100%;object-fit:cover}
 .ae-card figcaption{
   position:absolute;left:50%;bottom:10px;transform:translateX(-50%);
@@ -640,6 +709,14 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   transform:translateX(-75px) rotate(0deg);width:170px;height:320px;top:-10px;z-index:5;
   box-shadow:var(--shadow-lg);
 }
+.ae-c1:hover{transform:translateX(-466px) rotate(-14deg)}
+.ae-c2:hover{transform:translateX(-346px) rotate(-9deg)}
+.ae-c3:hover{transform:translateX(-216px) rotate(-5deg)}
+.ae-c4:hover{transform:translateX(-106px) rotate(-2deg)}
+.ae-c6:hover{transform:translateX(-46px) rotate(2deg)}
+.ae-c7:hover{transform:translateX(124px) rotate(6deg)}
+.ae-c8:hover{transform:translateX(254px) rotate(10deg)}
+.ae-c5.ae-featured:hover{transform:translateX(-101px) rotate(0deg)}
 
 /* ============================================================
    ABOUT US
@@ -1100,13 +1177,14 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 </div>
 {% endblock %}
 
+{% if not hide_site_chrome %}
 <!-- ================= NOTIFICATION BAR / LATEST JOBS ================= -->
 <div class="notif-bar" id="notifBar">
   <div class="wrap notif-inner">
     <span class="notif-label">Latest Updates</span>
     <div class="notif-track" id="notifTrack">
       {% for notification in top_notifications %}
-      <a class="notif-item" href="#" data-detail="{{ notification.detail }}" data-link="{{ notification.link }}">{{ notification.text }}</a>
+      <a class="notif-item" href="{% url 'notification_detail' notification.pk %}" data-detail="{{ notification.detail }}" data-link="{{ notification.link }}" data-page="{% url 'notification_detail' notification.pk %}">{{ notification.text }}</a>
       {% endfor %}
     </div>
     <button class="notif-viewall" id="notifViewAll">View all</button>
@@ -1119,7 +1197,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
         <h3 id="notifModalTitle">—</h3>
         <p id="notifModalBody">—</p>
         <div class="notif-modal-actions">
-          <a class="btn btn-primary" href="#contact-us">Apply / Register</a>
+          <a class="btn btn-primary" href="#" id="notifDetailPageLink">View full details →</a>
           <a class="btn btn-ghost" href="#" id="notifOfficialLink">Official notification link</a>
         </div>
       </div>
@@ -1182,15 +1260,17 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
         <li><a href="{% url 'store_page' %}" data-i18n="nav_estore">E-Store</a></li>
         <li><a href="{% url 'index' %}#results" data-i18n="nav_results">Results</a></li>
         <li><a href="{% url 'index' %}#about" data-i18n="nav_about">About</a></li>
-        <li><a href="{% url 'contact_us_page' %}" data-i18n="nav_contact">Contact</a></li>
         <li class="nav-more" id="navMore">
           <button type="button" class="nav-more-toggle" id="navMoreToggle" aria-haspopup="true" aria-expanded="false">
             <span data-i18n="nav_more">More</span>
             <svg class="nav-more-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <div class="nav-more-dropdown" id="navMoreDropdown">
-            <a href="{% url 'index' %}#video-courses" data-i18n="nav_video_courses">Video Courses</a>
-            <a href="{% url 'index' %}#e-library" data-i18n="nav_elibrary">E-Library</a>
+            <a href="{% url 'video_courses_page' %}" data-i18n="nav_video_courses">Video Courses</a>
+            <a href="{% url 'elibrary_page' %}" data-i18n="nav_elibrary">E-Library</a>
+            <a href="{% url 'store_page' %}" data-i18n="nav_estore">E-Store</a>
+            <a href="{% url 'eligibility_check' %}" data-i18n="nav_eligibility">Eligibility Check</a>
+            <a href="{% url 'careers_page' %}" data-i18n="nav_careers">Careers</a>
             <a href="{% url 'contact_us_page' %}" data-i18n="nav_contact_us">Contact Us</a>
             <a href="{% url 'gallery_page' %}" data-i18n="nav_gallery">Gallery</a>
           </div>
@@ -1203,20 +1283,22 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
           <div class="nav-lang-dropdown" id="navLangDropdown">
             <button type="button" data-lang="en">English</button>
             <button type="button" data-lang="hi">हिन्दी</button>
-            <button type="button" data-lang="hinglish">Hinglish</button>
-            <button type="button" data-lang="ta">தமிழ்</button>
-            <button type="button" data-lang="mr">मराठी</button>
+            <button type="button" data-lang="kn">ಕನ್ನಡ</button>
           </div>
         </li>
       </ul>
       <div class="header-actions">
+        <a class="chip chip-fb" href="{{ site_settings.facebook_url|default:'#' }}" {% if site_settings.facebook_url %}target="_blank" rel="noopener"{% endif %} aria-label="Facebook">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12.07C24 5.4 18.6 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07"/></svg>
+          <span class="chip-label">Facebook</span>
+        </a>
+        <a class="chip chip-insta" href="{{ site_settings.instagram_url|default:'#' }}" {% if site_settings.instagram_url %}target="_blank" rel="noopener"{% endif %} aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="igGradNav" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FDF497"/><stop offset=".45" stop-color="#FD5949"/><stop offset=".6" stop-color="#D6249F"/><stop offset="1" stop-color="#285AEB"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#igGradNav)"/><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="17" cy="7" r="1.1" fill="#fff"/></svg>
+          <span class="chip-label">Instagram</span>
+        </a>
         <a class="chip chip-yt" href="{{ site_settings.youtube_url|default:'#' }}" {% if site_settings.youtube_url %}target="_blank" rel="noopener"{% endif %}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF0000" d="M23 12s0-3.4-.4-5a2.7 2.7 0 0 0-1.9-1.9C19 4.7 12 4.7 12 4.7s-7 0-8.7.4A2.7 2.7 0 0 0 1.4 7C1 8.6 1 12 1 12s0 3.4.4 5a2.7 2.7 0 0 0 1.9 1.9c1.7.4 8.7.4 8.7.4s7 0 8.7-.4A2.7 2.7 0 0 0 22.6 17c.4-1.6.4-5 .4-5Z"/><path fill="#fff" d="M9.8 15.3 15.5 12 9.8 8.7v6.6Z"/></svg>
           <span class="chip-label">YouTube</span>
-        </a>
-        <a class="chip chip-wa" href="{{ site_settings.whatsapp_link|default:'#' }}" {% if site_settings.whatsapp_link %}target="_blank" rel="noopener"{% endif %}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#25D366" d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Z"/><path fill="#fff" d="M8.5 7.3c.2-.5.4-.5.6-.5h.5c.2 0 .4 0 .6.5l.8 1.9c.1.3 0 .5-.1.6l-.5.6c-.2.2-.3.4-.1.7a7.5 7.5 0 0 0 3.5 3c.4.2.6.1.8-.1l.6-.7c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.3.4.5 0 .9-.7 1.7-1.5 1.9-1.6.3-3.8-.6-5.6-2.2-1.8-1.7-2.8-3.7-2.7-5.2 0-.7.2-1.3.3-1.7Z"/></svg>
-          <span class="chip-label">WhatsApp</span>
         </a>
         {% if not user.is_authenticated %}
           <a class="btn btn-ghost btn-sm" href="{% url 'login' %}" data-i18n="nav_login">Login</a>
@@ -1266,9 +1348,11 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
 {% endif %}
+{% endif %}
 
 {% block content %}{% endblock %}
 
+{% if not hide_site_chrome %}
 <!-- ================= FOOTER ================= -->
 <footer class="site-footer" id="contact">
   <div class="wrap footer-grid">
@@ -1317,6 +1401,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
     <p data-i18n="footer_demo">Demo site build</p>
   </div>
 </footer>
+{% endif %}
 
 <script>
 /* ============================================================
@@ -1332,7 +1417,8 @@ var SITE_I18N = {
   hi: {
     nav_home: 'होम', nav_courses: 'कोर्स', nav_test_series: 'टेस्ट सीरीज़', nav_quiz_game: 'क्विज़ गेम',
     nav_estore: 'ई-स्टोर', nav_results: 'परिणाम', nav_about: 'हमारे बारे में', nav_contact: 'संपर्क करें',
-    nav_more: 'और', nav_video_courses: 'वीडियो कोर्स', nav_elibrary: 'ई-लाइब्रेरी', nav_contact_us: 'संपर्क करें',
+    nav_more: 'और', nav_video_courses: 'वीडियो कोर्स', nav_elibrary: 'ई-लाइब्रेरी',
+    nav_eligibility: 'पात्रता जाँच', nav_careers: 'करियर', nav_contact_us: 'संपर्क करें',
     nav_gallery: 'गैलरी', nav_login: 'लॉग इन', nav_join_free: 'मुफ़्त में जुड़ें', nav_join_now: 'अभी जुड़ें',
     drop_admin_panel: 'एडमिन पैनल', drop_update_account: 'खाता विवरण अपडेट करें', drop_edit_password: 'पासवर्ड बदलें',
     drop_purchases: 'मेरी खरीदारी', drop_results: 'परिणाम', drop_coupons: 'मेरे कूपन', drop_certificates: 'मेरे प्रमाणपत्र',
@@ -1357,89 +1443,34 @@ var SITE_I18N = {
     btn_enroll_now: 'नामांकन करें →', btn_view_course: 'कोर्स देखें →', btn_view_book: 'किताब देखें →',
     btn_buy_now: 'अभी खरीदें', btn_out_of_stock: 'स्टॉक ख़त्म',
   },
-  hinglish: {
-    nav_home: 'Home', nav_courses: 'Courses', nav_test_series: 'Test Series', nav_quiz_game: 'Quiz Game',
-    nav_estore: 'E-Store', nav_results: 'Results', nav_about: 'Hamare Baare Mein', nav_contact: 'Contact Karein',
-    nav_more: 'Aur', nav_video_courses: 'Video Courses', nav_elibrary: 'E-Library', nav_contact_us: 'Contact Karein',
-    nav_gallery: 'Gallery', nav_login: 'Login Karein', nav_join_free: 'Free Mein Judiye', nav_join_now: 'Abhi Judiye',
-    drop_admin_panel: 'Admin Panel', drop_update_account: 'Account Details Update Karein', drop_edit_password: 'Password Badlein',
-    drop_purchases: 'Meri Purchases', drop_results: 'Results', drop_coupons: 'Mere Coupons', drop_certificates: 'Mere Certificates',
-    drop_refer_earn: 'Refer Karein & Kamayein', drop_classrooms: 'Meri Classrooms', drop_logout: 'Logout',
-    footer_courses: 'Courses', footer_ssc_railways: 'SSC & Railways', footer_banking: 'Banking', footer_neet_jee: 'NEET & JEE',
-    footer_test_series: 'Test Series', footer_resources: 'Resources', footer_pyq: 'PYQ Library',
-    footer_current_affairs: 'Current Affairs', footer_exam_calendar: 'Exam Calendar', footer_eligibility: 'Eligibility Check',
-    footer_reach_us: 'Humse Judein', footer_hours: 'Mon–Sat, 8 am – 8 pm', footer_privacy: 'Privacy Policy',
-    footer_terms: 'Terms & Conditions', footer_refund: 'Refund & Cancellation', footer_shipping: 'Shipping & Delivery',
-    footer_disclaimer: 'Disclaimer', footer_faq: 'FAQ', footer_contact_us: 'Contact Us', footer_demo: 'Demo Site Build',
-    idx_eyebrow_courses: '&lt;/&gt; Exam Categories', idx_title_courses: 'Hamare Popular <span class="text-orange">Courses</span>',
-    idx_title_test_series: 'Saare <span class="text-orange">Test Series</span> Dekhein',
-    idx_eyebrow_video: '🎬 Explore Video Courses', idx_title_video: 'Expert Faculty Se Seekhein, <span class="text-orange">Video Par</span>',
-    idx_eyebrow_elibrary: '📚 Digital E-Library', idx_title_elibrary: 'Aapki Complete <span class="text-orange">Digital Library</span>',
-    idx_eyebrow_quiz: '🎮 Play & Learn', idx_title_quiz: 'Quiz Zone',
-    idx_eyebrow_gallery: '📸 Gallery', idx_eyebrow_about: 'Hamare Baare Mein',
-    idx_eyebrow_eligibility: '🎯 Eligibility Check', idx_title_eligibility: 'Aap Kaunse Exams Ke Liye <span class="text-orange">Eligible Hain?</span>',
-    idx_eyebrow_estore: '🛒 E-Store', idx_title_estore: 'Notes, Books & <span class="text-orange">Merchandise</span>',
-    idx_eyebrow_careers: '💼 Careers', idx_title_careers: 'Hamare Saath <span class="text-orange">Kaam Karein</span>',
-    idx_eyebrow_admission: '🏫 Offline Admission', idx_title_admission: 'Offline Batch Ke Liye <span class="text-orange">Register Karein</span>',
-    idx_eyebrow_contact: '📞 Contact Us', idx_title_contact: 'Ek Counsellor Se <span class="text-orange">Baat Karein</span>',
-    btn_enroll_now: 'Enroll Now →', btn_view_course: 'Course Dekhein →', btn_view_book: 'Book Dekhein →',
-    btn_buy_now: 'Abhi Kharidein', btn_out_of_stock: 'Stock Khatam',
-  },
-  ta: {
-    nav_home: 'முகப்பு', nav_courses: 'படிப்புகள்', nav_test_series: 'தேர்வு தொடர்', nav_quiz_game: 'வினாடி வினா',
-    nav_estore: 'இ-கடை', nav_results: 'முடிவுகள்', nav_about: 'எங்களைப் பற்றி', nav_contact: 'தொடர்பு கொள்ள',
-    nav_more: 'மேலும்', nav_video_courses: 'வீடியோ படிப்புகள்', nav_elibrary: 'இ-நூலகம்', nav_contact_us: 'தொடர்பு கொள்ள',
-    nav_gallery: 'படத்தொகுப்பு', nav_login: 'உள்நுழைய', nav_join_free: 'இலவசமாக சேரவும்', nav_join_now: 'இப்போது சேரவும்',
-    drop_admin_panel: 'நிர்வாக பலகம்', drop_update_account: 'கணக்கு விவரங்களை புதுப்பிக்க', drop_edit_password: 'கடவுச்சொல்லை மாற்ற',
-    drop_purchases: 'எனது கொள்முதல்கள்', drop_results: 'முடிவுகள்', drop_coupons: 'எனது கூப்பன்கள்', drop_certificates: 'எனது சான்றிதழ்கள்',
-    drop_refer_earn: 'பரிந்துரைத்து சம்பாதிக்க', drop_classrooms: 'எனது வகுப்பறைகள்', drop_logout: 'வெளியேறு',
-    footer_courses: 'படிப்புகள்', footer_ssc_railways: 'SSC & ரயில்வே', footer_banking: 'வங்கி', footer_neet_jee: 'NEET & JEE',
-    footer_test_series: 'தேர்வு தொடர்', footer_resources: 'வளங்கள்', footer_pyq: 'முந்தைய வினாத்தாள்கள்',
-    footer_current_affairs: 'நடப்பு நிகழ்வுகள்', footer_exam_calendar: 'தேர்வு நாட்காட்டி', footer_eligibility: 'தகுதி சரிபார்ப்பு',
-    footer_reach_us: 'எங்களை தொடர்பு கொள்ள', footer_hours: 'திங்கள்–சனி, காலை 8 – இரவு 8', footer_privacy: 'தனியுரிமைக் கொள்கை',
-    footer_terms: 'விதிமுறைகள்', footer_refund: 'திரும்பப்பணம் & ரத்து', footer_shipping: 'அனுப்புதல் & விநியோகம்',
-    footer_disclaimer: 'மறுப்பு', footer_faq: 'அடிக்கடி கேட்கப்படும் கேள்விகள்', footer_contact_us: 'தொடர்பு கொள்ள', footer_demo: 'டெமோ தளம்',
-    idx_eyebrow_courses: '&lt;/&gt; தேர்வு பிரிவுகள்', idx_title_courses: 'எங்கள் பிரபலமான <span class="text-orange">படிப்புகள்</span>',
-    idx_title_test_series: 'அனைத்து <span class="text-orange">தேர்வு தொடர்களையும்</span> பார்க்க',
-    idx_eyebrow_video: '🎬 வீடியோ படிப்புகளை ஆராயுங்கள்', idx_title_video: 'சிறந்த ஆசிரியர்களிடம் கற்க, <span class="text-orange">வீடியோவில்</span>',
-    idx_eyebrow_elibrary: '📚 டிஜிட்டல் இ-நூலகம்', idx_title_elibrary: 'உங்கள் முழுமையான <span class="text-orange">டிஜிட்டல் நூலகம்</span>',
-    idx_eyebrow_quiz: '🎮 விளையாடி கற்க', idx_title_quiz: 'வினாடி வினா மண்டலம்',
-    idx_eyebrow_gallery: '📸 படத்தொகுப்பு', idx_eyebrow_about: 'எங்களைப் பற்றி',
-    idx_eyebrow_eligibility: '🎯 தகுதி சரிபார்ப்பு', idx_title_eligibility: 'எந்த தேர்வுகளுக்கு நீங்கள் <span class="text-orange">தகுதியானவர்?</span>',
-    idx_eyebrow_estore: '🛒 இ-கடை', idx_title_estore: 'நோட்ஸ், புத்தகங்கள் & <span class="text-orange">பொருட்கள்</span>',
-    idx_eyebrow_careers: '💼 வேலைவாய்ப்பு', idx_title_careers: 'எங்களுடன் <span class="text-orange">பணியாற்றுங்கள்</span>',
-    idx_eyebrow_admission: '🏫 நேரடி சேர்க்கை', idx_title_admission: 'நேரடி வகுப்புக்கு <span class="text-orange">பதிவு செய்ய</span>',
-    idx_eyebrow_contact: '📞 தொடர்பு கொள்ள', idx_title_contact: 'ஆலோசகருடன் <span class="text-orange">பேசுங்கள்</span>',
-    btn_enroll_now: 'சேரவும் →', btn_view_course: 'படிப்பைப் பார்க்க →', btn_view_book: 'புத்தகத்தைப் பார்க்க →',
-    btn_buy_now: 'இப்போது வாங்க', btn_out_of_stock: 'கையிருப்பு இல்லை',
-  },
-  mr: {
-    nav_home: 'मुख्यपृष्ठ', nav_courses: 'कोर्सेस', nav_test_series: 'टेस्ट सिरीज', nav_quiz_game: 'क्विझ गेम',
-    nav_estore: 'ई-स्टोअर', nav_results: 'निकाल', nav_about: 'आमच्याबद्दल', nav_contact: 'संपर्क करा',
-    nav_more: 'अधिक', nav_video_courses: 'व्हिडिओ कोर्सेस', nav_elibrary: 'ई-लायब्ररी', nav_contact_us: 'संपर्क करा',
-    nav_gallery: 'गॅलरी', nav_login: 'लॉगिन', nav_join_free: 'मोफत सामील व्हा', nav_join_now: 'आता सामील व्हा',
-    drop_admin_panel: 'ॲडमिन पॅनेल', drop_update_account: 'खाते तपशील अपडेट करा', drop_edit_password: 'पासवर्ड बदला',
-    drop_purchases: 'माझ्या खरेदी', drop_results: 'निकाल', drop_coupons: 'माझे कूपन्स', drop_certificates: 'माझी प्रमाणपत्रे',
-    drop_refer_earn: 'रेफर करा आणि कमवा', drop_classrooms: 'माझे वर्ग', drop_logout: 'लॉगआउट',
-    footer_courses: 'कोर्सेस', footer_ssc_railways: 'एसएससी आणि रेल्वे', footer_banking: 'बँकिंग', footer_neet_jee: 'नीट आणि जेईई',
-    footer_test_series: 'टेस्ट सिरीज', footer_resources: 'संसाधने', footer_pyq: 'मागील प्रश्नपत्रिका',
-    footer_current_affairs: 'चालू घडामोडी', footer_exam_calendar: 'परीक्षा दिनदर्शिका', footer_eligibility: 'पात्रता तपासा',
-    footer_reach_us: 'आमच्याशी संपर्क साधा', footer_hours: 'सोम–शनि, सकाळी 8 – रात्री 8', footer_privacy: 'गोपनीयता धोरण',
-    footer_terms: 'नियम व अटी', footer_refund: 'परतावा आणि रद्दीकरण', footer_shipping: 'शिपिंग आणि डिलिव्हरी',
-    footer_disclaimer: 'अस्वीकरण', footer_faq: 'वारंवार विचारले जाणारे प्रश्न', footer_contact_us: 'संपर्क करा', footer_demo: 'डेमो साइट',
-    idx_eyebrow_courses: '&lt;/&gt; परीक्षा श्रेणी', idx_title_courses: 'आमचे लोकप्रिय <span class="text-orange">कोर्सेस</span>',
-    idx_title_test_series: 'सर्व <span class="text-orange">टेस्ट सिरीज</span> पाहा',
-    idx_eyebrow_video: '🎬 व्हिडिओ कोर्सेस एक्सप्लोर करा', idx_title_video: 'तज्ज्ञ शिक्षकांकडून शिका, <span class="text-orange">व्हिडिओवर</span>',
-    idx_eyebrow_elibrary: '📚 डिजिटल ई-लायब्ररी', idx_title_elibrary: 'तुमची संपूर्ण <span class="text-orange">डिजिटल लायब्ररी</span>',
-    idx_eyebrow_quiz: '🎮 खेळा आणि शिका', idx_title_quiz: 'क्विझ झोन',
-    idx_eyebrow_gallery: '📸 गॅलरी', idx_eyebrow_about: 'आमच्याबद्दल',
-    idx_eyebrow_eligibility: '🎯 पात्रता तपासा', idx_title_eligibility: 'तुम्ही कोणत्या परीक्षांसाठी <span class="text-orange">पात्र आहात?</span>',
-    idx_eyebrow_estore: '🛒 ई-स्टोअर', idx_title_estore: 'नोट्स, पुस्तके आणि <span class="text-orange">मर्चेंडाइज</span>',
-    idx_eyebrow_careers: '💼 करिअर', idx_title_careers: 'आमच्यासोबत <span class="text-orange">काम करा</span>',
-    idx_eyebrow_admission: '🏫 ऑफलाइन प्रवेश', idx_title_admission: 'ऑफलाइन बॅचसाठी <span class="text-orange">नोंदणी करा</span>',
-    idx_eyebrow_contact: '📞 संपर्क करा', idx_title_contact: 'समुपदेशकाशी <span class="text-orange">बोला</span>',
-    btn_enroll_now: 'नावनोंदणी करा →', btn_view_course: 'कोर्स पाहा →', btn_view_book: 'पुस्तक पाहा →',
-    btn_buy_now: 'आता खरेदी करा', btn_out_of_stock: 'स्टॉक संपला',
+  kn: {
+    nav_home: 'ಮುಖಪುಟ', nav_courses: 'ಕೋರ್ಸ್‌ಗಳು', nav_test_series: 'ಟೆಸ್ಟ್ ಸೀರೀಸ್', nav_quiz_game: 'ಕ್ವಿಜ್ ಗೇಮ್',
+    nav_estore: 'ಇ-ಸ್ಟೋರ್', nav_results: 'ಫಲಿತಾಂಶಗಳು', nav_about: 'ನಮ್ಮ ಬಗ್ಗೆ', nav_contact: 'ಸಂಪರ್ಕಿಸಿ',
+    nav_more: 'ಇನ್ನಷ್ಟು', nav_video_courses: 'ವೀಡಿಯೊ ಕೋರ್ಸ್‌ಗಳು', nav_elibrary: 'ಇ-ಲೈಬ್ರರಿ',
+    nav_eligibility: 'ಅರ್ಹತಾ ಪರಿಶೀಲನೆ', nav_careers: 'ವೃತ್ತಿಜೀವನ', nav_contact_us: 'ಸಂಪರ್ಕಿಸಿ',
+    nav_gallery: 'ಗ್ಯಾಲರಿ', nav_login: 'ಲಾಗಿನ್', nav_join_free: 'ಉಚಿತವಾಗಿ ಸೇರಿ', nav_join_now: 'ಈಗ ಸೇರಿ',
+    drop_admin_panel: 'ಅಡ್ಮಿನ್ ಪ್ಯಾನಲ್', drop_update_account: 'ಖಾತೆ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಿ', drop_edit_password: 'ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ',
+    drop_purchases: 'ನನ್ನ ಖರೀದಿಗಳು', drop_results: 'ಫಲಿತಾಂಶಗಳು', drop_coupons: 'ನನ್ನ ಕೂಪನ್‌ಗಳು', drop_certificates: 'ನನ್ನ ಪ್ರಮಾಣಪತ್ರಗಳು',
+    drop_refer_earn: 'ರೆಫರ್ ಮಾಡಿ ಗಳಿಸಿ', drop_classrooms: 'ನನ್ನ ತರಗತಿಗಳು', drop_logout: 'ಲಾಗ್ ಔಟ್',
+    footer_courses: 'ಕೋರ್ಸ್‌ಗಳು', footer_ssc_railways: 'ಎಸ್‌ಎಸ್‌ಸಿ ಮತ್ತು ರೈಲ್ವೆ', footer_banking: 'ಬ್ಯಾಂಕಿಂಗ್', footer_neet_jee: 'ನೀಟ್ ಮತ್ತು ಜೆಇಇ',
+    footer_test_series: 'ಟೆಸ್ಟ್ ಸೀರೀಸ್', footer_resources: 'ಸಂಪನ್ಮೂಲಗಳು', footer_pyq: 'ಹಿಂದಿನ ವರ್ಷದ ಪ್ರಶ್ನೆ ಪತ್ರಿಕೆಗಳು',
+    footer_current_affairs: 'ಪ್ರಚಲಿತ ವಿದ್ಯಮಾನಗಳು', footer_exam_calendar: 'ಪರೀಕ್ಷಾ ಕ್ಯಾಲೆಂಡರ್', footer_eligibility: 'ಅರ್ಹತಾ ಪರಿಶೀಲನೆ',
+    footer_reach_us: 'ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ', footer_hours: 'ಸೋಮ–ಶನಿ, ಬೆಳಿಗ್ಗೆ 8 – ರಾತ್ರಿ 8', footer_privacy: 'ಗೌಪ್ಯತಾ ನೀತಿ',
+    footer_terms: 'ನಿಯಮಗಳು ಮತ್ತು ಷರತ್ತುಗಳು', footer_refund: 'ಮರುಪಾವತಿ ಮತ್ತು ರದ್ದತಿ', footer_shipping: 'ಶಿಪ್ಪಿಂಗ್ ಮತ್ತು ಡೆಲಿವರಿ',
+    footer_disclaimer: 'ಹಕ್ಕು ನಿರಾಕರಣೆ', footer_faq: 'ಪದೇ ಪದೇ ಕೇಳುವ ಪ್ರಶ್ನೆಗಳು', footer_contact_us: 'ಸಂಪರ್ಕಿಸಿ', footer_demo: 'ಡೆಮೊ ಸೈಟ್',
+    idx_eyebrow_courses: '&lt;/&gt; ಪರೀಕ್ಷಾ ವಿಭಾಗಗಳು', idx_title_courses: 'ನಮ್ಮ ಜನಪ್ರಿಯ <span class="text-orange">ಕೋರ್ಸ್‌ಗಳು</span>',
+    idx_title_test_series: 'ಎಲ್ಲಾ <span class="text-orange">ಟೆಸ್ಟ್ ಸೀರೀಸ್</span> ನೋಡಿ',
+    idx_eyebrow_video: '🎬 ವೀಡಿಯೊ ಕೋರ್ಸ್‌ಗಳನ್ನು ಅನ್ವೇಷಿಸಿ', idx_title_video: 'ತಜ್ಞ ಶಿಕ್ಷಕರಿಂದ ಕಲಿಯಿರಿ, <span class="text-orange">ವೀಡಿಯೊದಲ್ಲಿ</span>',
+    idx_eyebrow_elibrary: '📚 ಡಿಜಿಟಲ್ ಇ-ಲೈಬ್ರರಿ', idx_title_elibrary: 'ನಿಮ್ಮ ಸಂಪೂರ್ಣ <span class="text-orange">ಡಿಜಿಟಲ್ ಲೈಬ್ರರಿ</span>',
+    idx_eyebrow_quiz: '🎮 ಆಡಿ ಮತ್ತು ಕಲಿಯಿರಿ', idx_title_quiz: 'ಕ್ವಿಜ್ ಝೋನ್',
+    idx_eyebrow_gallery: '📸 ಗ್ಯಾಲರಿ', idx_eyebrow_about: 'ನಮ್ಮ ಬಗ್ಗೆ',
+    idx_eyebrow_eligibility: '🎯 ಅರ್ಹತಾ ಪರಿಶೀಲನೆ', idx_title_eligibility: 'ನೀವು ಯಾವ ಪರೀಕ್ಷೆಗಳಿಗೆ <span class="text-orange">ಅರ್ಹರು?</span>',
+    idx_eyebrow_estore: '🛒 ಇ-ಸ್ಟೋರ್', idx_title_estore: 'ನೋಟ್ಸ್, ಪುಸ್ತಕಗಳು ಮತ್ತು <span class="text-orange">ಮರ್ಚೆಂಡೈಸ್</span>',
+    idx_eyebrow_careers: '💼 ವೃತ್ತಿಜೀವನ', idx_title_careers: 'ನಮ್ಮೊಂದಿಗೆ <span class="text-orange">ಕೆಲಸ ಮಾಡಿ</span>',
+    idx_eyebrow_admission: '🏫 ಆಫ್‌ಲೈನ್ ಪ್ರವೇಶ', idx_title_admission: 'ಆಫ್‌ಲೈನ್ ಬ್ಯಾಚ್‌ಗೆ <span class="text-orange">ನೋಂದಣಿ ಮಾಡಿ</span>',
+    idx_eyebrow_contact: '📞 ಸಂಪರ್ಕಿಸಿ', idx_title_contact: 'ಕೌನ್ಸೆಲರ್ ಜೊತೆ <span class="text-orange">ಮಾತನಾಡಿ</span>',
+    btn_enroll_now: 'ನೋಂದಣಿ ಮಾಡಿ →', btn_view_course: 'ಕೋರ್ಸ್ ನೋಡಿ →', btn_view_book: 'ಪುಸ್ತಕ ನೋಡಿ →',
+    btn_buy_now: 'ಈಗ ಖರೀದಿಸಿ', btn_out_of_stock: 'ಸ್ಟಾಕ್ ಮುಗಿದಿದೆ',
   },
 };
 
@@ -1457,7 +1488,7 @@ function applySiteLanguage(lang) {
   });
   var currentLabel = document.getElementById('navLangCurrent');
   if (currentLabel) {
-    var labels = { en: 'EN', hi: 'हिन्दी', hinglish: 'Hinglish', ta: 'தமிழ்', mr: 'मराठी' };
+    var labels = { en: 'EN', hi: 'हिन्दी', kn: 'ಕನ್ನಡ' };
     currentLabel.textContent = labels[lang] || 'EN';
   }
   document.querySelectorAll('.nav-lang-dropdown [data-lang]').forEach(function (btn) {
@@ -1521,9 +1552,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const notifClose = document.getElementById('notifClose');
   const notifViewAll = document.getElementById('notifViewAll');
   const notifOfficialLink = document.getElementById('notifOfficialLink');
+  const notifDetailPageLink = document.getElementById('notifDetailPageLink');
   const notifModalList = document.getElementById('notifModalList');
 
-  function openNotif(title, detail, link) {
+  function openNotif(title, detail, link, page) {
     if (!notifModal) return;
     notifTitle.textContent = title;
     notifBody.textContent = detail;
@@ -1534,6 +1566,15 @@ document.addEventListener('DOMContentLoaded', function () {
       } else {
         notifOfficialLink.href = '#';
         notifOfficialLink.style.display = 'none';
+      }
+    }
+    if (notifDetailPageLink) {
+      if (page) {
+        notifDetailPageLink.href = page;
+        notifDetailPageLink.style.display = '';
+      } else {
+        notifDetailPageLink.href = '#';
+        notifDetailPageLink.style.display = 'none';
       }
     }
     notifModal.classList.remove('list-mode');
@@ -1553,7 +1594,7 @@ document.addEventListener('DOMContentLoaded', function () {
         row.type = 'button';
         row.className = 'notif-modal-list-item';
         row.textContent = item.textContent.trim();
-        row.addEventListener('click', () => openNotif(item.textContent.trim(), item.dataset.detail || '', item.dataset.link || ''));
+        row.addEventListener('click', () => openNotif(item.textContent.trim(), item.dataset.detail || '', item.dataset.link || '', item.dataset.page || ''));
         notifModalList.appendChild(row);
       });
     }
@@ -1563,7 +1604,7 @@ document.addEventListener('DOMContentLoaded', function () {
   notifItems.forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
-      openNotif(item.textContent.trim(), item.dataset.detail || '', item.dataset.link || '');
+      openNotif(item.textContent.trim(), item.dataset.detail || '', item.dataset.link || '', item.dataset.page || '');
     });
   });
   if (notifViewAll) {
@@ -1745,7 +1786,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const header = document.querySelector('.site-header');
   const navLinks = Array.from(document.querySelectorAll('.primary-nav > ul a'));
   const sections = navLinks
-    .map(a => document.querySelector(a.getAttribute('href')))
+    .map(a => {
+      const href = a.getAttribute('href') || '';
+      const hashIdx = href.indexOf('#');
+      return hashIdx === -1 ? null : document.querySelector(href.slice(hashIdx));
+    })
     .filter(Boolean);
 
   function onScroll() {
@@ -1755,11 +1800,41 @@ document.addEventListener('DOMContentLoaded', function () {
     sections.forEach(sec => {
       if (sec.getBoundingClientRect().top <= 140) current = sec;
     });
-    navLinks.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + current.id));
+    if (current) {
+      navLinks.forEach(a => a.classList.toggle('is-active', a.getAttribute('href').endsWith('#' + current.id)));
+    }
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+
+  /* ---------- 5. Scroll-reveal animations (site-wide) ---------- */
+  const revealSelector = [
+    '.section-title', '.eyebrow', '.section-sub',
+    '.pc-card', '.ts-card', '.gallery-card', '.daily-post-card', '.quiz-card',
+    '.career-card', '.store-card', '.cal-card', '.coupon-card', '.cert-card',
+    '.classroom-card', '.result-card', '.ae-card', '.elig-card',
+    '.brand-band', '.notif-side-card',
+  ].join(',');
+  const revealEls = Array.from(document.querySelectorAll(revealSelector))
+    .filter(el => !el.closest('.panel-main'));
+
+  if (window.IntersectionObserver && revealEls.length) {
+    const revealIo = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealIo.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+    revealEls.forEach((el, i) => {
+      el.classList.add('reveal-io');
+      el.style.transitionDelay = (i % 6) * 60 + 'ms';
+      revealIo.observe(el);
+    });
+  }
 
   /* ---------- footer year ---------- */
   const year = document.getElementById('year');
@@ -1781,6 +1856,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ---------- Admission form (saved to the database) ---------- */
   const admissionForm = document.getElementById('admissionForm');
+  const admissionCourseParam = new URLSearchParams(window.location.search).get('course');
+  if (admissionCourseParam) {
+    const courseInput = document.getElementById('admissionCourseInput');
+    if (courseInput) courseInput.value = admissionCourseParam;
+    const admissionSection = document.getElementById('admission');
+    if (admissionSection) {
+      window.addEventListener('load', () => admissionSection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
+  }
   if (admissionForm) {
     admissionForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -1841,16 +1925,6 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         })
         .catch(() => { careerError.hidden = false; });
-    });
-  }
-
-  /* ---------- Contact form (demo — no backend) ---------- */
-  const contactForm = document.getElementById('contactForm');
-  if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      document.getElementById('contactSuccess').hidden = false;
-      contactForm.reset();
     });
   }
 

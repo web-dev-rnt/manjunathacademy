@@ -1,0 +1,86 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Brands{% endblock %}
+{% block page_title %}Brands{% endblock %}
+{% block page_sub %}Edit the sliding brands/partners strip on the homepage — add, edit or remove logos{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_brands_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.brand-thumb{
+  width:64px;height:40px;border-radius:8px;object-fit:contain;background:#F3F4F6;flex:0 0 auto;padding:4px;
+}
+.brand-thumb-empty{
+  width:64px;height:40px;border-radius:8px;background:#F3F4F6;display:grid;place-items:center;
+  color:var(--muted);font-size:11px;flex:0 0 auto;
+}
+.brand-cell{display:flex;align-items:center;gap:12px}
+.brand-name-text{font-weight:700;color:var(--ink)}
+.brand-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Brand logos</h2>
+      <p>{{ brands|length }} brand{{ brands|length|pluralize }} — shown in order in the sliding strip on the homepage</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_brand_add' %}">+ Add brand</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if brands %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Brand</th>
+            <th>Link</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for brand in brands %}
+          <tr>
+            <td>{{ brand.order }}</td>
+            <td>
+              <div class="brand-cell">
+                {% if brand.logo %}
+                  <img class="brand-thumb" src="{{ brand.logo.url }}" alt="">
+                {% else %}
+                  <span class="brand-thumb-empty">No logo</span>
+                {% endif %}
+                <div class="brand-name-text">{{ brand.name }}</div>
+              </div>
+            </td>
+            <td>{{ brand.link|default:"—" }}</td>
+            <td>{% if brand.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="brand-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_brand_edit' brand.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_brand_delete' brand.pk %}" onsubmit="return confirm('Delete this brand?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🏷️</span>No brands yet — the homepage strip is hidden until you add one.</p>
+  {% endif %}
+</div>
+{% endblock %}

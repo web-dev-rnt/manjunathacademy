@@ -52,6 +52,7 @@
             <td>{% if notification.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
             <td>
               <div class="notif-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'notification_detail' notification.pk %}" target="_blank" rel="noopener">View</a>
                 <a class="btn btn-ghost btn-sm" href="{% url 'panel_notification_edit' notification.pk %}">Edit</a>
                 <form method="post" action="{% url 'panel_notification_delete' notification.pk %}" onsubmit="return confirm('Delete this notification?');">
                   {% csrf_token %}

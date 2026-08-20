@@ -24,6 +24,74 @@
 .full-test-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .full-test-info p{margin:2px 0;font-size:13.5px;color:var(--muted)}
 .about-text{color:#374151;font-size:14.5px;line-height:1.8;white-space:pre-line}
+
+/* Daily quiz carousel */
+.quiz-carousel-section{padding:10px 0 44px}
+.quiz-carousel-head{text-align:center;margin-bottom:26px}
+.quiz-carousel-title{display:inline-flex;align-items:center;gap:10px;font-family:"Archivo",sans-serif;font-weight:800;font-size:26px;color:#DC2626;margin:0}
+.quiz-carousel-title .free-tag{background:#16A34A;color:#fff;font-size:12px;font-weight:800;padding:4px 12px;border-radius:8px}
+.quiz-carousel-sub{color:var(--muted);font-size:13.5px;margin:8px 0 0;letter-spacing:.03em;text-transform:uppercase;font-weight:700}
+.quiz-carousel-wrap{position:relative;max-width:1100px;margin:0 auto}
+.quiz-carousel-track{display:flex;gap:16px;overflow-x:auto;scroll-behavior:smooth;padding:6px 4px 10px;scrollbar-width:none}
+.quiz-carousel-track::-webkit-scrollbar{display:none}
+.quiz-carousel-card{
+  flex:0 0 auto;width:250px;background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:20px;box-shadow:var(--shadow-sm);
+}
+.quiz-carousel-card h4{font-size:14.5px;margin:0 0 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;line-height:1.4}
+.quiz-carousel-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:7px 0;border-top:1px solid var(--line)}
+.quiz-carousel-row strong{color:var(--ink);font-weight:700}
+.btn-quiz-start{
+  display:block;text-align:center;margin-top:14px;background:#16A34A;color:#fff;font-weight:700;font-size:13.5px;
+  padding:10px;border-radius:10px;transition:background .15s ease;
+}
+.btn-quiz-start:hover{background:#15803D}
+.quiz-carousel-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);display:grid;place-items:center;
+  cursor:pointer;color:#DC2626;z-index:2;
+}
+.quiz-carousel-arrow.prev{left:-18px}
+.quiz-carousel-arrow.next{right:-18px}
+.quiz-carousel-empty{text-align:center;color:var(--muted);font-size:14px}
+@media (max-width:640px){.quiz-carousel-arrow{display:none}}
+
+/* Test series hub (sidebar + list) */
+.hub-section{padding:10px 0 70px}
+.hub-title{text-align:center;font-family:"Archivo",sans-serif;font-weight:800;font-size:26px;color:#DC2626;margin:0 0 6px}
+.hub-sub{text-align:center;color:var(--muted);font-size:13.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin:0 0 26px}
+.ts-sidebar li{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ts-sidebar li span.count{font-size:11.5px;opacity:.8}
+.hub-panel-body{padding:22px}
+.hub-group{margin-bottom:26px}
+.hub-group:last-child{margin-bottom:0}
+.hub-group-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hub-group-head h3{font-size:15px;margin:0;color:var(--ink)}
+.hub-group-head span{font-size:12px;color:var(--muted);font-weight:600}
+.hub-free-tag{display:inline-block;background:#FEE2E2;color:#B91C1C;font-size:11px;font-weight:800;padding:3px 10px;border-radius:6px;margin-bottom:10px}
+.hub-row{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;margin-bottom:10px;
+  border-left:4px solid #93C5FD;background:#EFF6FF;
+}
+.hub-row:nth-child(even){border-left-color:#FBCFE8;background:#FDF2F8}
+.hub-row-badge{
+  width:34px;height:34px;border-radius:50%;background:#16A34A;color:#fff;font-weight:800;font-size:14px;
+  display:grid;place-items:center;flex:0 0 auto;
+}
+.hub-row-info{flex:1;min-width:0}
+.hub-row-info h4{font-size:14.5px;margin:0 0 4px;color:var(--ink)}
+.hub-row-meta{font-size:12.5px;color:var(--muted)}
+.hub-row-action{flex:0 0 auto}
+.btn-hub-start{
+  display:inline-flex;align-items:center;gap:6px;border:1.5px solid #16A34A;color:#16A34A;background:#fff;
+  font-weight:700;font-size:12.5px;padding:8px 16px;border-radius:var(--r-pill);transition:.15s ease;
+}
+.btn-hub-start:hover{background:#16A34A;color:#fff}
+.btn-hub-unlock{
+  display:inline-flex;align-items:center;gap:6px;background:#F3F4F6;color:var(--muted);
+  font-weight:700;font-size:12.5px;padding:8px 16px;border-radius:var(--r-pill);
+}
+.hub-empty{text-align:center;color:var(--muted);padding:40px 0}
 {% endblock %}
 
 {% block content %}
@@ -36,6 +104,35 @@
       <span>📝 {{ course.questions.count }} question{{ course.questions.count|pluralize }}</span>
       {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
     </div>
+  </div>
+</section>
+
+<section class="quiz-carousel-section">
+  <div class="wrap">
+    <div class="quiz-carousel-head">
+      <h2 class="quiz-carousel-title">QUIZZES <span class="free-tag">Free</span></h2>
+      <p class="quiz-carousel-sub">Daily updated free quizzes for practice</p>
+    </div>
+
+    {% if daily_quizzes %}
+      <div class="quiz-carousel-wrap">
+        <button type="button" class="quiz-carousel-arrow prev" id="quizCarouselPrev" aria-label="Scroll left">‹</button>
+        <div class="quiz-carousel-track" id="quizCarouselTrack">
+          {% for quiz in daily_quizzes %}
+          <article class="quiz-carousel-card">
+            <h4><span>{{ quiz.name }}</span><span>🕐</span></h4>
+            <div class="quiz-carousel-row"><span>Question</span><strong>{{ quiz.q_count }}</strong></div>
+            <div class="quiz-carousel-row"><span>Marks</span><strong>{{ quiz.total_marks|default:quiz.q_count }}</strong></div>
+            <div class="quiz-carousel-row"><span>Minute</span><strong>{{ quiz.duration_minutes|default:"—" }} Min</strong></div>
+            <a class="btn-quiz-start" href="{% url 'test_attempt_start' quiz.pk %}">Start Quiz</a>
+          </article>
+          {% endfor %}
+        </div>
+        <button type="button" class="quiz-carousel-arrow next" id="quizCarouselNext" aria-label="Scroll right">›</button>
+      </div>
+    {% else %}
+      <p class="quiz-carousel-empty">No daily quizzes added yet — check back soon.</p>
+    {% endif %}
   </div>
 </section>
 
@@ -105,4 +202,86 @@
 
   </div>
 </section>
+
+<section class="hub-section">
+  <div class="wrap">
+    <h2 class="hub-title">ONLINE TEST SERIES</h2>
+    <p class="hub-sub">Explore every test, grouped by type</p>
+
+    {% if sections %}
+      <div class="ts-panel">
+        <p class="ts-panel-title">Test Series</p>
+        <div class="ts-body" id="hubBody">
+          <div class="ts-sidebar">
+            <ul id="hubSidebar">
+              {% for section in sections %}
+              <li data-section="{{ section.key }}" class="{% if forloop.first %}is-active{% endif %}">
+                <span>{{ section.label }}</span>
+                <span class="count">{{ section.count }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="hub-panel-body">
+            {% for section in sections %}
+            <div class="hub-panel" data-section="{{ section.key }}" {% if not forloop.first %}hidden{% endif %}>
+              {% if section.free_count %}<span class="hub-free-tag">{{ section.free_count }} Free Test{{ section.free_count|pluralize }}</span>{% endif %}
+              {% for group in section.groups %}
+              <div class="hub-group">
+                <div class="hub-group-head">
+                  <h3>{{ group.name }} Tests</h3>
+                  <span>{{ group.tests|length }} Test Paper{{ group.tests|length|pluralize }}</span>
+                </div>
+                {% for test in group.tests %}
+                <div class="hub-row">
+                  <span class="hub-row-badge">{{ test.category.icon|default:"T" }}</span>
+                  <div class="hub-row-info">
+                    <h4>{{ test.name }}</h4>
+                    <p class="hub-row-meta">{{ test.q_count }} Question{{ test.q_count|pluralize }} | {{ test.total_marks|default:test.q_count }} Marks{% if test.duration_minutes %} | {{ test.duration_minutes }} Min{% endif %}</p>
+                  </div>
+                  <div class="hub-row-action">
+                    {% if test.is_free or test.pk in paid_course_ids %}
+                      <a class="btn-hub-start" href="{% url 'test_attempt_start' test.pk %}">▶ Start Test</a>
+                    {% else %}
+                      <a class="btn-hub-unlock" href="{% url 'test_attempt_start' test.pk %}">🔒 Unlock</a>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p class="hub-empty">No other tests published yet — check back soon.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var track = document.getElementById('quizCarouselTrack');
+  var prevBtn = document.getElementById('quizCarouselPrev');
+  var nextBtn = document.getElementById('quizCarouselNext');
+  if (track && prevBtn && nextBtn) {
+    var scrollAmount = function () { return track.clientWidth * 0.8; };
+    prevBtn.addEventListener('click', function () { track.scrollBy({ left: -scrollAmount(), behavior: 'smooth' }); });
+    nextBtn.addEventListener('click', function () { track.scrollBy({ left: scrollAmount(), behavior: 'smooth' }); });
+  }
+
+  var sidebarItems = document.querySelectorAll('#hubSidebar li');
+  var panels = document.querySelectorAll('.hub-panel');
+  sidebarItems.forEach(function (item) {
+    item.addEventListener('click', function () {
+      sidebarItems.forEach(function (i) { i.classList.remove('is-active'); });
+      item.classList.add('is-active');
+      var key = item.dataset.section;
+      panels.forEach(function (panel) { panel.hidden = panel.dataset.section !== key; });
+    });
+  });
+})();
 {% endblock %}

@@ -23,7 +23,7 @@
       <span class="expired-icon">⏳</span>
       <h1>Access expired</h1>
       <p>Your access to "{{ course.name }}" expired on {{ enrollment.expires_at|date:"d M Y" }}. Contact us to renew it.</p>
-      <a class="btn btn-primary btn-lg" href="{% url 'index' %}#contact-us">Contact Support</a>
+      <a class="btn btn-primary btn-lg" href="{% url 'contact_us_page' %}">Contact Support</a>
     </div>
   </div>
 </section>

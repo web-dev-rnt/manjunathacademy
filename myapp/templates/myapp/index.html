@@ -1,50 +1,5 @@
 {% extends "myapp/base.html" %}
 
-{% block extra_style %}
-.career-apply-btn{background:none;border:0;padding:0;font:inherit;cursor:pointer}
-.career-modal-form{margin-top:4px}
-
-.quiz-game-modal{position:fixed;inset:0;background:rgba(16,16,18,.65);display:none;align-items:center;justify-content:center;z-index:220;padding:18px}
-.quiz-game-modal.is-open{display:flex}
-.quiz-game-card{background:#fff;border-radius:18px;max-width:440px;width:100%;box-shadow:var(--shadow-lg);overflow:hidden;max-height:88vh;display:flex;flex-direction:column}
-.quiz-game-titlebar{background:#1B2030;padding:10px 14px;display:flex;align-items:center;gap:6px;flex:0 0 auto}
-.quiz-game-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-.quiz-game-dot-red{background:#EF4444}.quiz-game-dot-yellow{background:#EAB308}.quiz-game-dot-green{background:#22C55E}
-.quiz-game-titlebar-label{color:#CBD3E1;font-size:12px;font-weight:700;margin-left:8px;flex:1}
-.quiz-game-titlebar-close{background:none;border:0;color:#CBD3E1;cursor:pointer;font-size:14px;padding:2px 6px}
-.quiz-game-body{padding:24px;overflow-y:auto}
-.quiz-game-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.quiz-game-level{font-size:12.5px;font-weight:800;color:var(--orange-deep);background:var(--orange-soft);padding:5px 12px;border-radius:var(--r-pill)}
-.quiz-game-prize{font-size:12.5px;font-weight:800;color:#374151}
-.quiz-game-question{font-size:16.5px;font-weight:700;color:var(--ink);margin:0 0 18px;line-height:1.5}
-.quiz-game-options{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
-.quiz-opt-btn{
-  text-align:left;padding:12px 16px;border-radius:12px;border:1.5px solid var(--line);background:#FAFAF9;
-  font-size:14px;font-weight:600;color:#374151;cursor:pointer;transition:.15s ease;font-family:inherit;
-}
-.quiz-opt-btn:hover:not(:disabled){border-color:rgba(249,115,22,.5);background:var(--orange-soft)}
-.quiz-opt-btn:disabled{cursor:default;opacity:.55}
-.quiz-opt-btn.is-correct{background:#ECFDF3;border-color:#15803D;color:#15803D;opacity:1}
-.quiz-opt-btn.is-wrong{background:#FEF2F2;border-color:#DC2626;color:#DC2626;opacity:1}
-.quiz-opt-btn.is-eliminated{visibility:hidden}
-.quiz-game-lifelines{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.quiz-lifeline-btn{
-  padding:8px 14px;border-radius:var(--r-pill);border:1.5px solid var(--line);background:#fff;
-  font-size:12.5px;font-weight:700;color:#374151;cursor:pointer;font-family:inherit;
-}
-.quiz-lifeline-btn:hover:not(:disabled){border-color:rgba(249,115,22,.5);color:var(--orange-deep)}
-.quiz-lifeline-btn:disabled{opacity:.4;cursor:not-allowed}
-.quiz-game-audience{display:flex;gap:8px;align-items:flex-end;height:70px;margin-bottom:14px}
-.quiz-audience-bar{flex:1;background:var(--orange-soft);border-radius:6px 6px 0 0;position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:4px}
-.quiz-audience-bar span{position:absolute;top:-18px;font-size:11px;font-weight:800;color:#374151}
-.quiz-audience-bar em{position:absolute;bottom:-18px;font-size:11px;font-style:normal;font-weight:700;color:var(--muted)}
-.quiz-game-feedback{padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:700;margin-bottom:14px}
-.quiz-feedback-correct{background:#ECFDF3;color:#15803D}
-.quiz-feedback-wrong{background:#FEF2F2;color:#DC2626}
-.quiz-feedback-info{background:var(--orange-soft);color:var(--orange-deep)}
-.quiz-game-footer{display:flex;gap:10px;flex-wrap:wrap}
-{% endblock %}
-
 {% block content %}
 <!-- ================= SLIDING ADVERTISEMENT BANNER ================= -->
 <section class="ad-band" aria-label="Announcements">
@@ -54,7 +9,7 @@
 
         {% if banner_slides %}
           {% for slide in banner_slides %}
-          <article class="ad-slide{% if forloop.first %} is-active{% endif %}"{% if slide.display_image_url %} style="background-image:url('{{ slide.display_image_url }}')"{% endif %}>
+          <article class="ad-slide{% if forloop.first %} is-active{% endif %}{% if not slide.display_image_url %} ad-slide-noimg{% endif %}"{% if slide.display_image_url %} style="background-image:url('{{ slide.display_image_url }}')"{% endif %}>
             {% if slide.kicker %}<p class="ad-kicker">{{ slide.kicker }}</p>{% endif %}
             <h2 class="ad-title">{{ slide.title }}</h2>
             {% if slide.subtitle %}<p class="ad-sub">{{ slide.subtitle }}</p>{% endif %}
@@ -286,6 +241,37 @@
   </div>
 </section>
 
+{% if brands %}
+<!-- ================= BRANDS / PARTNERS ================= -->
+<section class="brand-band" aria-label="Our partners">
+  <div class="wrap">
+    <p class="brand-eyebrow">Trusted by</p>
+    <div class="brand-slider" id="brandSlider">
+      <div class="brand-track">
+        {% for brand in brands %}
+        {% if brand.logo %}
+        <div class="brand-slide-item">
+          {% if brand.link %}<a href="{{ brand.link }}" target="_blank" rel="noopener">{% endif %}
+            <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" loading="lazy">
+          {% if brand.link %}</a>{% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% for brand in brands %}
+        {% if brand.logo %}
+        <div class="brand-slide-item" aria-hidden="true">
+          {% if brand.link %}<a href="{{ brand.link }}" target="_blank" rel="noopener" tabindex="-1">{% endif %}
+            <img src="{{ brand.logo.url }}" alt="" loading="lazy">
+          {% if brand.link %}</a>{% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <!-- ================= DAILY UPDATES ================= -->
 <section class="daily-band">
   <div class="wrap">
@@ -354,64 +340,16 @@
       </div>
 
       <div class="daily-col">
-        <article class="daily-card daily-kbc">
-          <div class="daily-card-top">
-            {% if daily_news_card.visual_type == 'image' and daily_news_card.image %}
-              <img class="daily-illus" src="{{ daily_news_card.image.url }}" alt="">
-            {% elif daily_news_card.illustration_style == 'reading' %}
-              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading on a couch">
-                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
-                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
-                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
-                <rect x="185" y="100" width="130" height="70" rx="16" fill="#8FB86B"/>
-                <rect x="185" y="92" width="130" height="24" rx="12" fill="#7CA857"/>
-                <circle cx="252" cy="118" r="24" fill="#3A2A22"/>
-                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
-                <path d="M233 112c4-10 15-16 19-16s15 6 19 16c-8 4-30 4-38 0Z" fill="#1F1712"/>
-                <rect x="238" y="140" width="28" height="30" rx="6" fill="#2E6DA4"/>
-                <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
-                <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
-                <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
-              </svg>
-            {% elif daily_news_card.illustration_style == 'news' %}
-              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading the newspaper">
-                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
-                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
-                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
-                <rect x="185" y="100" width="130" height="70" rx="16" fill="#F59E0B"/>
-                <rect x="185" y="92" width="130" height="24" rx="12" fill="#D97706"/>
-                <circle cx="252" cy="118" r="24" fill="#3A2A22"/>
-                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
-                <path d="M233 112c4-10 15-16 19-16s15 6 19 16c-8 4-30 4-38 0Z" fill="#1F1712"/>
-                <path d="M214 148l38-10 38 10-38 10Z" fill="#EDEDED"/>
-                <path d="M214 148l38 10v10l-38-10Z" fill="#D8D8D8"/>
-                <path d="M290 148l-38 10v10l38-10Z" fill="#F7F7F7"/>
-                <rect x="228" y="152" width="16" height="3" fill="#B9B9B9"/>
-                <rect x="228" y="158" width="10" height="3" fill="#B9B9B9"/>
-              </svg>
-            {% else %}
-              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person on a video call">
-                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
-                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
-                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
-                <rect x="185" y="100" width="130" height="70" rx="16" fill="#5B5BD6"/>
-                <rect x="185" y="92" width="130" height="24" rx="12" fill="#4A49C4"/>
-                <circle cx="252" cy="118" r="24" fill="#7A3B22"/>
-                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
-                <path d="M231 108c2-12 12-18 21-18s19 6 21 18c-4 6-38 6-42 0Z" fill="#5A3420"/>
-                <rect x="238" y="140" width="28" height="30" rx="6" fill="#E7C36B"/>
-                <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
-                <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
-                <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
-              </svg>
-            {% endif %}
+        <article class="daily-card daily-kbc daily-quiz-ad">
+          <div class="daily-card-top daily-quiz-ad-top">
+            <span class="daily-quiz-ad-emoji">🎮</span>
           </div>
           <div class="daily-card-body">
-            <h3>{{ daily_news_card.title|linebreaksbr }}</h3>
+            <h3>Padho Aur Jeeto<br>Quiz Game</h3>
           </div>
-          <a class="btn-daily btn-daily-red" href="{% url 'daily_news_page' %}">{{ daily_news_card.button_text }}</a>
+          <a class="btn-daily btn-daily-red" href="{% url 'quiz_game_page' %}">▶ Play Now</a>
         </article>
-        <p class="daily-caption">{{ daily_news_card.caption }}</p>
+        <p class="daily-caption">Climb the money ladder one question at a time — new questions added every week.</p>
       </div>
 
     </div>
@@ -435,11 +373,7 @@
         <h3>{{ bundle.name }}</h3>
         {% if bundle.description %}<p>{{ bundle.description|truncatechars:110 }}</p>{% endif %}
         {% if bundle.badge_label %}<div class="pc-tags"><span>{{ bundle.badge_label }}</span></div>{% endif %}
-        <div class="pc-meta">
-          <span>₹{{ bundle.current_price }}</span>
-          {% if bundle.original_price and bundle.original_price != bundle.current_price %}<span><s>₹{{ bundle.original_price }}</s></span>{% endif %}
-        </div>
-        <a class="btn-pc btn-pc-orange" href="{% url 'bundle_checkout' bundle.pk %}" data-i18n="btn_enroll_now">Enroll Now →</a>
+        <a class="btn-pc btn-pc-orange" href="{% url 'index' %}?course={{ bundle.name|urlencode }}#admission" data-i18n="btn_enroll_now">Enroll Now →</a>
       </article>
       {% empty %}
       <p class="panel-empty">No course bundles added yet — check back soon.</p>
@@ -485,72 +419,6 @@
   </div>
 </section>
 
-<!-- ================= VIDEO COURSES ================= -->
-<section class="section section-tint" id="video-courses">
-  <div class="wrap">
-    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_video">🎬 Explore Video Courses</p>
-    <h2 class="section-title center-title" data-i18n="idx_title_video">Learn From Expert Faculty, <span class="text-orange">On Video</span></h2>
-    <p class="section-sub">HD recorded lectures with a clear chapter-wise breakdown — pause, rewind and rewatch as many times as you need, on any device.</p>
-    <div class="pc-grid">
-      {% for course in video_courses %}
-      <article class="pc-card">
-        {% if course.thumbnail %}
-          <img class="pc-thumb" src="{{ course.thumbnail.url }}" alt="">
-        {% else %}
-          <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span></div>
-        {% endif %}
-        <h3>{{ course.name }}</h3>
-        {% if course.about %}<p>{{ course.about|truncatechars:110 }}</p>{% endif %}
-        <div class="pc-tags">
-          {% if course.category %}<span>{{ course.category.icon }} {{ course.category.name }}</span>{% endif %}
-          {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
-        </div>
-        <div class="pc-meta">
-          <span>₹{{ course.current_price }}</span>
-          {% if course.original_price and course.original_price != course.current_price %}<span><s>₹{{ course.original_price }}</s></span>{% endif %}
-        </div>
-        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' course.pk %}" data-i18n="btn_view_course">View Course →</a>
-      </article>
-      {% empty %}
-      <p class="panel-empty">No video courses added yet — check back soon.</p>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<!-- ================= E-LIBRARY ================= -->
-<section class="section" id="e-library">
-  <div class="wrap">
-    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_elibrary">📚 Digital E-Library</p>
-    <h2 class="section-title center-title" data-i18n="idx_title_elibrary">Your Complete <span class="text-orange">Digital Library</span></h2>
-    <p class="section-sub">E-books, previous year papers and revision notes — read online in the built-in viewer or download the PDF, on any device.</p>
-    <div class="pc-grid">
-      {% for item in elibrary_items %}
-      <article class="pc-card">
-        {% if item.thumbnail %}
-          <img class="pc-thumb" src="{{ item.thumbnail.url }}" alt="">
-        {% else %}
-          <div class="pc-top"><span class="pc-icon pc-icon-grey">📖</span></div>
-        {% endif %}
-        <h3>{{ item.name }}</h3>
-        {% if item.author %}<p style="margin-bottom:4px;font-weight:600;color:#374151">by {{ item.author }}</p>{% endif %}
-        {% if item.about %}<p>{{ item.about|truncatechars:110 }}</p>{% endif %}
-        <div class="pc-tags">
-          {% if item.category %}<span>{{ item.category.icon }} {{ item.category.name }}</span>{% endif %}
-          {% if item.pages %}<span>📄 {{ item.pages }} pages</span>{% endif %}
-        </div>
-        <div class="pc-meta">
-          <span>₹{{ item.current_price }}</span>
-          {% if item.original_price and item.original_price != item.current_price %}<span><s>₹{{ item.original_price }}</s></span>{% endif %}
-        </div>
-        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' item.pk %}" data-i18n="btn_view_book">View Book →</a>
-      </article>
-      {% empty %}
-      <p class="panel-empty">No e-library items added yet — check back soon.</p>
-      {% endfor %}
-    </div>
-  </div>
-</section>
 
 <!-- ================= QUIZ / KBC-STYLE GAME ================= -->
 <section class="section" id="quiz">
@@ -574,7 +442,7 @@
         <div class="kbc-lifelines">
           <span>50-50</span><span>Audience Poll</span><span>Skip Question</span>
         </div>
-        <button type="button" class="btn btn-primary btn-lg" id="quizPlayBtn">▶ Play Now</button>
+        <a class="btn btn-primary btn-lg" href="{% url 'quiz_game_page' %}">▶ Play Now</a>
       </article>
 
       <div class="quiz-topics">
@@ -586,48 +454,6 @@
     </div>
   </div>
 </section>
-
-<div class="notif-modal" id="quizLoginModal">
-  <div class="notif-modal-card">
-    <button type="button" class="notif-modal-close" id="quizLoginModalClose" aria-label="Close">✕</button>
-    <p class="notif-modal-kicker">Login required</p>
-    <h3>Please log in to play</h3>
-    <p>Create a free account or log in to play Padho Aur Jeeto and climb the money ladder.</p>
-    <div class="notif-modal-actions">
-      <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
-      <a class="btn btn-ghost" href="{% url 'signup' %}">Sign up free</a>
-    </div>
-  </div>
-</div>
-
-<div class="quiz-game-modal" id="quizGameModal">
-  <div class="quiz-game-card">
-    <div class="quiz-game-titlebar">
-      <span class="quiz-game-dot quiz-game-dot-red"></span>
-      <span class="quiz-game-dot quiz-game-dot-yellow"></span>
-      <span class="quiz-game-dot quiz-game-dot-green"></span>
-      <span class="quiz-game-titlebar-label">Padho Aur Jeeto</span>
-      <button type="button" class="quiz-game-titlebar-close" id="quizGameClose" aria-label="Close">✕</button>
-    </div>
-    <div class="quiz-game-body">
-      {% csrf_token %}
-      <div class="quiz-game-head">
-        <span class="quiz-game-level" id="quizLevel">Question 1</span>
-        <span class="quiz-game-prize" id="quizPrize"></span>
-      </div>
-      <p class="quiz-game-question" id="quizQuestionText">Loading…</p>
-      <div class="quiz-game-options" id="quizOptions"></div>
-      <div class="quiz-game-audience" id="quizAudienceChart" hidden></div>
-      <div class="quiz-game-lifelines">
-        <button type="button" class="quiz-lifeline-btn" id="quizFiftyBtn">50-50</button>
-        <button type="button" class="quiz-lifeline-btn" id="quizAudienceBtn">Audience Poll</button>
-        <button type="button" class="quiz-lifeline-btn" id="quizSkipBtn">Skip Question</button>
-      </div>
-      <div class="quiz-game-feedback" id="quizFeedback" hidden></div>
-      <div class="quiz-game-footer" id="quizFooter" hidden></div>
-    </div>
-  </div>
-</div>
 
 <!-- ================= ACADEMIC EXCELLENCE / RESULTS ================= -->
 <section class="section" id="results">
@@ -692,95 +518,6 @@
   </div>
 </section>
 
-<!-- ================= ELIGIBILITY CHECK ================= -->
-<section class="section section-tint" id="eligibility">
-  <div class="wrap">
-    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_eligibility">🎯 Eligibility Check</p>
-    <h2 class="section-title center-title" data-i18n="idx_title_eligibility">Which Exams Are You <span class="text-orange">Eligible For?</span></h2>
-    <p class="section-sub">Enter your education, height, state, DOB, gender and marital status once — see every job/exam you currently qualify for, the way the Join Indian Army portal does it.</p>
-    <div style="text-align:center">
-      <a class="btn btn-primary btn-lg" href="{% url 'eligibility_check' %}">Check My Eligibility →</a>
-      {% if not user.is_authenticated %}<p class="section-sub" style="margin-top:14px">You'll need to log in first — it only takes a minute.</p>{% endif %}
-    </div>
-  </div>
-</section>
-
-<!-- ================= E-STORE ================= -->
-<section class="section section-tint" id="e-store">
-  <div class="wrap">
-    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_estore">🛒 E-Store</p>
-    <h2 class="section-title center-title" data-i18n="idx_title_estore">Notes, Books &amp; <span class="text-orange">Merchandise</span></h2>
-    <p class="section-sub">Printed notes, guidebooks and academy merch — ordered online, delivered to your door.</p>
-    <div class="pc-grid">
-      {% for product in store_products %}
-      <article class="pc-card">
-        {% if product.image %}
-          <img class="pc-thumb" src="{{ product.image.url }}" alt="">
-        {% else %}
-          <div class="pc-top"><span class="pc-icon pc-icon-grey">📦</span></div>
-        {% endif %}
-        <h3><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h3>
-        {% if product.description %}<p>{{ product.description|truncatechars:100 }}</p>{% endif %}
-        <div class="pc-meta">
-          <span>₹{{ product.current_price }}</span>
-          {% if product.original_price and product.original_price != product.current_price %}<span><s>₹{{ product.original_price }}</s></span>{% endif %}
-        </div>
-        {% if product.in_stock %}
-          <a class="btn-pc btn-pc-orange" href="{% url 'store_checkout' product.pk %}" data-i18n="btn_buy_now">Buy Now</a>
-        {% else %}
-          <span class="btn-pc btn-pc-orange" style="opacity:.5;pointer-events:none" data-i18n="btn_out_of_stock">Out of Stock</span>
-        {% endif %}
-      </article>
-      {% empty %}
-      <p class="panel-empty">No products added yet — check back soon.</p>
-      {% endfor %}
-    </div>
-    <div style="text-align:center;margin-top:30px">
-      <a class="btn btn-primary btn-lg" href="{% url 'store_page' %}">View All Products →</a>
-    </div>
-  </div>
-</section>
-
-<!-- ================= CAREERS ================= -->
-<section class="section" id="careers">
-  <div class="wrap">
-    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_careers">💼 Careers</p>
-    <h2 class="section-title center-title" data-i18n="idx_title_careers">Work With <span class="text-orange">Us</span></h2>
-    <div class="career-grid">
-      {% for job in jobs %}
-      <article class="career-card">
-        <div>
-          <h4>{{ job.title }}</h4>
-          <p>{% if job.location %}{{ job.location }} · {% endif %}{{ job.get_job_type_display }}{% if job.experience_required %} · {{ job.experience_required }}{% endif %}</p>
-        </div>
-        <button type="button" class="link-arrow career-apply-btn" data-job-id="{{ job.pk }}" data-job-title="{{ job.title }}">Apply →</button>
-      </article>
-      {% empty %}
-      <p class="panel-empty">No openings right now — check back soon.</p>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<div class="notif-modal" id="careerModal">
-  <div class="notif-modal-card">
-    <button type="button" class="notif-modal-close" id="careerModalClose" aria-label="Close">✕</button>
-    <p class="notif-modal-kicker">Apply for</p>
-    <h3 id="careerModalTitle">Position</h3>
-    <form class="admission-form career-modal-form" id="careerApplyForm" style="background:none;border:0;box-shadow:none;padding:0" enctype="multipart/form-data">
-      {% csrf_token %}
-      <label>Full name<input type="text" name="name" required placeholder="Your name"></label>
-      <label>Email<input type="email" name="email" required placeholder="you@example.com"></label>
-      <label>Phone<input type="tel" name="phone" required placeholder="10-digit mobile number"></label>
-      <label>Resume<input type="file" name="resume" accept=".pdf,.doc,.docx"></label>
-      <label>Cover note<textarea name="cover_note" rows="3" placeholder="Why should we hire you? (optional)"></textarea></label>
-      <button class="btn btn-primary btn-lg" type="submit">Submit Application</button>
-      <p class="form-error" id="careerApplyError" hidden>Something went wrong — please check your details and try again.</p>
-      <p class="form-success" id="careerApplySuccess" hidden>Thanks — we'll review your application and reach out if shortlisted.</p>
-    </form>
-  </div>
-</div>
-
 <!-- ================= ADMISSION FORM (OFFLINE) ================= -->
 <section class="section section-tint" id="admission">
   <div class="wrap admission-grid">
@@ -798,37 +535,17 @@
       {% csrf_token %}
       <label>Full name<input type="text" name="name" required placeholder="Your name"></label>
       <label>Phone number<input type="tel" name="phone" required placeholder="10-digit mobile number"></label>
-      <label>Course<select name="course" required><option value="">Select a course</option><option>SSC &amp; Railways</option><option>Banking &amp; Insurance</option><option>NEET &amp; JEE foundation</option></select></label>
+      <label>Course<input type="text" name="course" id="admissionCourseInput" required placeholder="e.g. SSC GD, Banking & Insurance" list="admissionCourseOptions">
+        <datalist id="admissionCourseOptions">
+          <option value="SSC &amp; Railways">
+          <option value="Banking &amp; Insurance">
+          <option value="NEET &amp; JEE foundation">
+        </datalist>
+      </label>
       <label>Preferred batch<select name="preferred_batch"><option>Morning</option><option>Afternoon</option><option>Evening</option></select></label>
       <button class="btn btn-primary btn-lg" type="submit">Submit Registration</button>
       <p class="form-error" id="admissionError" hidden>Something went wrong — please check your details and try again.</p>
       <p class="form-success" id="admissionSuccess" hidden>Thanks — our admissions team will call you within 24 hours.</p>
-    </form>
-  </div>
-</section>
-
-<!-- ================= CONTACT US ================= -->
-<section class="section" id="contact-us">
-  <div class="wrap contact-grid">
-    <div>
-      <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_contact">📞 Contact Us</p>
-      <h2 class="section-title" data-i18n="idx_title_contact">Talk To A <span class="text-orange">Counsellor</span></h2>
-      <p class="body-copy">Questions about a course, a batch timing, or which exam fits you best — ask us directly.</p>
-      <ul class="contact-info">
-        <li><span>📍</span>Hazratganj, Lucknow, Uttar Pradesh</li>
-        <li><span>📞</span><a href="tel:+915220000000">+91 522 000 0000</a></li>
-        <li><span>✉️</span><a href="mailto:hello@manjunathacademy.in">hello@manjunathacademy.in</a></li>
-        <li><span>🕐</span>Mon–Sat, 8 am – 8 pm</li>
-      </ul>
-      <a class="call-now" href="tel:+915220000000">📞 Call Now</a>
-    </div>
-    <form class="admission-form" id="contactForm">
-      <label>Name<input type="text" required placeholder="Your name"></label>
-      <label>Email<input type="email" required placeholder="you@example.com"></label>
-      <label>Phone<input type="tel" placeholder="10-digit mobile number"></label>
-      <label>Message<textarea rows="4" required placeholder="How can we help?"></textarea></label>
-      <button class="btn btn-primary btn-lg" type="submit">Send Message</button>
-      <p class="form-success" id="contactSuccess" hidden>Thanks — we'll get back to you shortly.</p>
     </form>
   </div>
 </section>
@@ -852,175 +569,4 @@
   });
 })();
 
-(function () {
-  var IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
-  var playBtn = document.getElementById('quizPlayBtn');
-  var loginModal = document.getElementById('quizLoginModal');
-  var loginModalClose = document.getElementById('quizLoginModalClose');
-  var gameModal = document.getElementById('quizGameModal');
-  var gameClose = document.getElementById('quizGameClose');
-  if (!playBtn || !gameModal) return;
-
-  var csrfToken = gameModal.querySelector('[name=csrfmiddlewaretoken]').value;
-  var levelEl = document.getElementById('quizLevel');
-  var prizeEl = document.getElementById('quizPrize');
-  var questionEl = document.getElementById('quizQuestionText');
-  var optionsEl = document.getElementById('quizOptions');
-  var audienceEl = document.getElementById('quizAudienceChart');
-  var feedbackEl = document.getElementById('quizFeedback');
-  var footerEl = document.getElementById('quizFooter');
-  var fiftyBtn = document.getElementById('quizFiftyBtn');
-  var audienceBtn = document.getElementById('quizAudienceBtn');
-  var skipBtn = document.getElementById('quizSkipBtn');
-  var currentQuestion = null;
-
-  function apiCall(url, method, params) {
-    var opts = { method: method, headers: { 'X-CSRFToken': csrfToken } };
-    if (method === 'POST') opts.body = new URLSearchParams(params || {});
-    return fetch(url + (method === 'GET' && params ? '?' + new URLSearchParams(params) : ''), opts).then(function (r) { return r.json(); });
-  }
-
-  function showFeedback(text, kind) {
-    feedbackEl.hidden = false;
-    feedbackEl.textContent = text;
-    feedbackEl.className = 'quiz-game-feedback quiz-feedback-' + kind;
-  }
-
-  function loadQuestion() {
-    feedbackEl.hidden = true;
-    audienceEl.hidden = true;
-    audienceEl.innerHTML = '';
-    footerEl.hidden = true;
-    footerEl.innerHTML = '';
-    fiftyBtn.disabled = false;
-    audienceBtn.disabled = false;
-    skipBtn.disabled = false;
-    questionEl.textContent = 'Loading…';
-    optionsEl.innerHTML = '';
-
-    apiCall('{% url "quiz_get_question" %}', 'GET').then(function (data) {
-      if (data.finished) {
-        currentQuestion = null;
-        levelEl.textContent = 'Finished';
-        prizeEl.textContent = '';
-        questionEl.textContent = '🏆 Congratulations — you have answered every question in the quiz!';
-        fiftyBtn.disabled = true; audienceBtn.disabled = true; skipBtn.disabled = true;
-        showPlayAgain();
-        return;
-      }
-      if (!data.question) {
-        questionEl.textContent = 'No quiz questions have been added yet — check back soon.';
-        fiftyBtn.disabled = true; audienceBtn.disabled = true; skipBtn.disabled = true;
-        return;
-      }
-      currentQuestion = data.question;
-      levelEl.textContent = 'Question ' + data.question.level;
-      prizeEl.textContent = data.question.prize_label || '';
-      questionEl.textContent = data.question.text;
-      fiftyBtn.disabled = !!data.lifelines_used.fifty;
-      audienceBtn.disabled = !!data.lifelines_used.audience;
-      skipBtn.disabled = !!data.lifelines_used.skip;
-
-      optionsEl.innerHTML = '';
-      ['A', 'B', 'C', 'D'].forEach(function (letter) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'quiz-opt-btn';
-        btn.dataset.option = letter;
-        btn.textContent = letter + '. ' + data.question['option_' + letter.toLowerCase()];
-        btn.addEventListener('click', function () { submitAnswer(letter); });
-        optionsEl.appendChild(btn);
-      });
-    });
-  }
-
-  function showPlayAgain() {
-    footerEl.hidden = false;
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn btn-primary';
-    btn.textContent = 'Play Again';
-    btn.addEventListener('click', function () {
-      apiCall('{% url "quiz_reset" %}', 'POST').then(loadQuestion);
-    });
-    footerEl.appendChild(btn);
-  }
-
-  function submitAnswer(letter) {
-    if (!currentQuestion) return;
-    optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) { btn.disabled = true; });
-
-    apiCall('{% url "quiz_submit_answer" %}', 'POST', { question_id: currentQuestion.id, selected_option: letter }).then(function (data) {
-      optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) {
-        if (btn.dataset.option === data.correct_option) btn.classList.add('is-correct');
-        else if (btn.dataset.option === letter) btn.classList.add('is-wrong');
-      });
-
-      if (data.is_correct) {
-        showFeedback('✓ Correct!' + (data.prize_label ? ' You have won ' + data.prize_label + '.' : ''), 'correct');
-        footerEl.hidden = false;
-        var nextBtn = document.createElement('button');
-        nextBtn.type = 'button';
-        nextBtn.className = 'btn btn-primary';
-        nextBtn.textContent = 'Next Question →';
-        nextBtn.addEventListener('click', loadQuestion);
-        footerEl.appendChild(nextBtn);
-      } else {
-        showFeedback('✗ Wrong answer. The correct answer was ' + data.correct_option + '.', 'wrong');
-        showPlayAgain();
-      }
-    });
-  }
-
-  fiftyBtn.addEventListener('click', function () {
-    if (!currentQuestion) return;
-    apiCall('{% url "quiz_lifeline_fifty" %}', 'GET', { question_id: currentQuestion.id }).then(function (data) {
-      if (!data.ok) return;
-      fiftyBtn.disabled = true;
-      data.eliminate.forEach(function (letter) {
-        var btn = optionsEl.querySelector('.quiz-opt-btn[data-option="' + letter + '"]');
-        if (btn) { btn.classList.add('is-eliminated'); btn.disabled = true; }
-      });
-    });
-  });
-
-  audienceBtn.addEventListener('click', function () {
-    if (!currentQuestion) return;
-    apiCall('{% url "quiz_lifeline_audience" %}', 'GET', { question_id: currentQuestion.id }).then(function (data) {
-      if (!data.ok) return;
-      audienceBtn.disabled = true;
-      audienceEl.hidden = false;
-      audienceEl.innerHTML = '';
-      ['A', 'B', 'C', 'D'].forEach(function (letter) {
-        var pct = data.percentages[letter] || 0;
-        var bar = document.createElement('div');
-        bar.className = 'quiz-audience-bar';
-        bar.style.height = Math.max(pct, 3) + '%';
-        bar.innerHTML = '<span>' + pct + '%</span><em>' + letter + '</em>';
-        audienceEl.appendChild(bar);
-      });
-    });
-  });
-
-  skipBtn.addEventListener('click', function () {
-    if (!currentQuestion) return;
-    apiCall('{% url "quiz_lifeline_skip" %}', 'POST', { question_id: currentQuestion.id }).then(function (data) {
-      if (!data.ok) return;
-      loadQuestion();
-    });
-  });
-
-  playBtn.addEventListener('click', function () {
-    if (!IS_AUTHENTICATED) {
-      loginModal.classList.add('is-open');
-      return;
-    }
-    gameModal.classList.add('is-open');
-    apiCall('{% url "quiz_reset" %}', 'POST').then(loadQuestion);
-  });
-
-  if (loginModalClose) loginModalClose.addEventListener('click', function () { loginModal.classList.remove('is-open'); });
-  if (loginModal) loginModal.addEventListener('click', function (e) { if (e.target === loginModal) loginModal.classList.remove('is-open'); });
-  if (gameClose) gameClose.addEventListener('click', function () { gameModal.classList.remove('is-open'); });
-})();
 {% endblock %}

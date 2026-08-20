@@ -13,6 +13,21 @@
   border:1px solid var(--line);border-radius:10px;padding:11px 12px;
   font-size:14px;font-family:inherit;color:var(--ink);resize:vertical;
 }
+.panel-form-divider{border:0;border-top:1px solid var(--line);margin:26px 0 20px}
+.panel-form-subtitle{font-size:15px;font-weight:800;color:var(--ink);margin:0 0 4px}
+.panel-form-subhelp{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+.notif-cover-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.notif-cover-preview img{max-height:80px;max-width:220px;border-radius:8px;object-fit:cover}
+.notif-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-bottom:18px}
+.notif-gallery-item{position:relative;border-radius:10px;overflow:hidden;background:#F3F4F6}
+.notif-gallery-item img{width:100%;height:90px;object-fit:cover;display:block}
+.notif-gallery-item form{position:absolute;top:6px;right:6px}
+.notif-gallery-item button{
+  width:24px;height:24px;border-radius:50%;border:0;background:rgba(220,38,38,.9);color:#fff;
+  cursor:pointer;font-size:12px;line-height:1;display:grid;place-items:center;padding:0;
+}
+.notif-gallery-add{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.notif-gallery-add label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted);font-weight:600}
 @media (max-width:560px){.notif-form-row{grid-template-columns:1fr}}
 {% endblock %}
 
@@ -26,7 +41,7 @@
     <a class="btn btn-ghost" href="{% url 'panel_notification_list' %}">← Back to notifications</a>
   </div>
 
-  <form class="panel-form" method="post" novalidate>
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
 
     <label><span class="panel-label-text">Notification text <span class="req">*</span></span>
@@ -56,6 +71,41 @@
       </label>
     </div>
 
+    <hr class="panel-form-divider">
+    <p class="panel-form-subtitle">Full details page</p>
+    <p class="panel-form-subhelp">Turns this notification into a full article page (like a job/exam notice), linked from the popup above.</p>
+
+    <label><span class="panel-label-text">Headline</span>
+      {{ form.title }}
+      <p class="custom-help">{{ form.title.help_text }}</p>
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Cover image</span>
+      {{ form.cover_image }}
+      <p class="custom-help">{{ form.cover_image.help_text }}</p>
+      {% if form.cover_image.errors %}<ul class="panel-errors">{% for e in form.cover_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if notification.cover_image_display_url %}
+      <div class="notif-cover-preview">
+        <img src="{{ notification.cover_image_display_url }}" alt="Current cover image">
+        <span class="banner-preview-label">Current cover image</span>
+      </div>
+    {% endif %}
+
+    <label><span class="panel-label-text">Video link</span>
+      {{ form.video_url }}
+      <p class="custom-help">{{ form.video_url.help_text }}</p>
+      {% if form.video_url.errors %}<ul class="panel-errors">{% for e in form.video_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Article body</span>
+      {{ form.body }}
+      <p class="custom-help">{{ form.body.help_text }}</p>
+      {% if form.body.errors %}<ul class="panel-errors">{% for e in form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
     {% if form.non_field_errors %}
       <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
     {% endif %}
@@ -63,7 +113,39 @@
     <div class="panel-form-actions">
       <button type="submit" class="btn btn-primary">{% if is_new %}Add notification{% else %}Save changes{% endif %}</button>
       <a class="btn btn-ghost" href="{% url 'panel_notification_list' %}">Cancel</a>
+      {% if not is_new %}<a class="btn btn-ghost" href="{% url 'notification_detail' notification.pk %}" target="_blank" rel="noopener">Preview details page →</a>{% endif %}
     </div>
   </form>
+
+  {% if not is_new %}
+    <hr class="panel-form-divider">
+    <p class="panel-form-subtitle">Photo gallery</p>
+    <p class="panel-form-subhelp">Extra photos shown in a gallery grid on the details page.</p>
+
+    {% if notification.gallery_images.all %}
+      <div class="notif-gallery-grid">
+        {% for photo in notification.gallery_images.all %}
+        <div class="notif-gallery-item">
+          <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+          <form method="post" action="{% url 'panel_notification_image_delete' notification.pk photo.pk %}" onsubmit="return confirm('Remove this photo?');">
+            {% csrf_token %}
+            <button type="submit" aria-label="Remove photo">✕</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form class="notif-gallery-add" method="post" action="{% url 'panel_notification_image_add' notification.pk %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <label>Photo
+        {{ image_form.image }}
+      </label>
+      <label>Caption (optional)
+        {{ image_form.caption }}
+      </label>
+      <button type="submit" class="btn btn-ghost btn-sm">+ Add photo</button>
+    </form>
+  {% endif %}
 </div>
 {% endblock %}

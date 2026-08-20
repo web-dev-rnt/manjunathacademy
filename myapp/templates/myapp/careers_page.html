@@ -1,0 +1,59 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Careers — Manjunath Academy{% endblock %}
+{% block meta_description %}Current openings at Manjunath Academy — teaching, content and operations roles.{% endblock %}
+
+{% block extra_style %}
+.career-apply-btn{background:none;border:0;padding:0;font:inherit;cursor:pointer}
+.career-modal-form{margin-top:4px}
+.browse-page-hero{padding:56px 0 40px;background:var(--peach)}
+.browse-page-hero h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px}
+.browse-page-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.browse-page-section{padding:56px 0 90px}
+{% endblock %}
+
+{% block content %}
+<section class="browse-page-hero">
+  <div class="wrap">
+    <h1>Work With Us</h1>
+    <p>Join our teaching, content and operations teams — see current openings below.</p>
+  </div>
+</section>
+
+<section class="browse-page-section">
+  <div class="wrap">
+    <div class="career-grid">
+      {% for job in jobs %}
+      <article class="career-card">
+        <div>
+          <h4>{{ job.title }}</h4>
+          <p>{% if job.location %}{{ job.location }} · {% endif %}{{ job.get_job_type_display }}{% if job.experience_required %} · {{ job.experience_required }}{% endif %}</p>
+        </div>
+        <button type="button" class="link-arrow career-apply-btn" data-job-id="{{ job.pk }}" data-job-title="{{ job.title }}">Apply →</button>
+      </article>
+      {% empty %}
+      <p class="panel-empty">No openings right now — check back soon.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="notif-modal" id="careerModal">
+  <div class="notif-modal-card">
+    <button type="button" class="notif-modal-close" id="careerModalClose" aria-label="Close">✕</button>
+    <p class="notif-modal-kicker">Apply for</p>
+    <h3 id="careerModalTitle">Position</h3>
+    <form class="admission-form career-modal-form" id="careerApplyForm" style="background:none;border:0;box-shadow:none;padding:0" enctype="multipart/form-data">
+      {% csrf_token %}
+      <label>Full name<input type="text" name="name" required placeholder="Your name"></label>
+      <label>Email<input type="email" name="email" required placeholder="you@example.com"></label>
+      <label>Phone<input type="tel" name="phone" required placeholder="10-digit mobile number"></label>
+      <label>Resume<input type="file" name="resume" accept=".pdf,.doc,.docx"></label>
+      <label>Cover note<textarea name="cover_note" rows="3" placeholder="Why should we hire you? (optional)"></textarea></label>
+      <button class="btn btn-primary btn-lg" type="submit">Submit Application</button>
+      <p class="form-error" id="careerApplyError" hidden>Something went wrong — please check your details and try again.</p>
+      <p class="form-success" id="careerApplySuccess" hidden>Thanks — we'll review your application and reach out if shortlisted.</p>
+    </form>
+  </div>
+</div>
+{% endblock %}

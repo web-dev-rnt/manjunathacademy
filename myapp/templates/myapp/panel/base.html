@@ -43,7 +43,8 @@ h1,h2,h3{font-family:"Archivo",system-ui,sans-serif;margin:0;letter-spacing:-.01
 }
 .panel-sidebar::-webkit-scrollbar{width:6px}
 .panel-sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:6px}
-.panel-brand{display:flex;align-items:center;gap:11px;padding:0 8px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:18px}
+.panel-brand{display:flex;align-items:center;gap:11px;padding:0 8px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:18px;transition:opacity .15s ease}
+.panel-brand:hover{opacity:.82}
 .panel-crest{width:34px;height:34px;flex:0 0 auto;filter:drop-shadow(0 4px 10px rgba(212,167,60,.3))}
 .panel-brand-text{font-family:"Archivo",sans-serif;font-weight:800;font-size:14px;line-height:1.2;letter-spacing:.02em;color:#F3F4F6}
 .panel-brand-text span{display:block}
@@ -99,6 +100,12 @@ h1,h2,h3{font-family:"Archivo",system-ui,sans-serif;margin:0;letter-spacing:-.01
   display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:18px 32px;background:#fff;border-bottom:1px solid var(--line);
   position:sticky;top:0;z-index:5;
+  transition:margin .2s ease,border-radius .2s ease,box-shadow .2s ease;
+}
+.panel-topbar.scrolled{
+  border-radius:12px;
+  margin:12px 16px 0;
+  box-shadow:var(--shadow-md);
 }
 .panel-topbar-left{display:flex;align-items:center;gap:14px;min-width:0}
 .panel-topbar h1{font-size:20px;font-weight:800}
@@ -261,7 +268,7 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
   </div>
   <div class="panel-sidebar-backdrop" id="panelSidebarBackdrop"></div>
   <aside class="panel-sidebar" id="panelSidebar">
-    <div class="panel-brand">
+    <a class="panel-brand" href="{% url 'index' %}" title="Go to homepage">
       <span class="panel-crest" aria-hidden="true">
         <svg viewBox="0 0 100 100" role="img">
           <defs>
@@ -281,7 +288,7 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
         </svg>
       </span>
       <span class="panel-brand-text"><span>MANJUNATH</span><span>Admin Panel</span></span>
-    </div>
+    </a>
 
     <nav class="panel-nav">
       <p class="panel-nav-label">Overview</p>
@@ -395,6 +402,9 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
       <a class="{% block nav_admissions %}{% endblock %}" href="{% url 'panel_admissions' %}">
         <span class="panel-nav-ico">🏫</span> Offline Admission
       </a>
+      <a class="{% block nav_contact_messages %}{% endblock %}" href="{% url 'panel_contact_messages' %}">
+        <span class="panel-nav-ico">✉️</span> Contact Messages
+      </a>
 
       <p class="panel-nav-label">Settings</p>
       <a class="{% block nav_pwa %}{% endblock %}" href="{% url 'panel_pwa_settings' %}">
@@ -409,6 +419,7 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
           <a class="panel-nav-sub {% block nav_hero_customization %}{% endblock %}" href="{% url 'panel_hero_section' %}">Hero section</a>
           <a class="panel-nav-sub {% block nav_navbar_customization %}{% endblock %}" href="{% url 'panel_navbar_customization' %}">Navbar</a>
           <a class="panel-nav-sub {% block nav_banner_customization %}{% endblock %}" href="{% url 'panel_banner_list' %}">Banner</a>
+          <a class="panel-nav-sub {% block nav_brands_customization %}{% endblock %}" href="{% url 'panel_brand_list' %}">Brands</a>
           <a class="panel-nav-sub {% block nav_homepage_customization %}{% endblock %}" href="{% url 'panel_homepage_content' %}">Homepage content</a>
           <a class="panel-nav-sub {% block nav_results_customization %}{% endblock %}" href="{% url 'panel_result_list' %}">Results photos</a>
           <a class="panel-nav-sub {% block nav_footer_customization %}{% endblock %}" href="{% url 'panel_footer_settings' %}">Footer</a>

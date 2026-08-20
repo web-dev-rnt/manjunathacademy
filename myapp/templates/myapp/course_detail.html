@@ -88,7 +88,7 @@
       {% else %}
         <p class="course-access-banner course-access-expired">Your access to this course expired on {{ enrollment.expires_at|date:"d M Y" }}.</p>
         <p>Contact us to renew your access and continue where you left off.</p>
-        <a class="btn btn-primary" href="{% url 'index' %}#contact-us">Contact Support</a>
+        <a class="btn btn-primary" href="{% url 'contact_us_page' %}">Contact Support</a>
       {% endif %}
     </div>
   </div>
