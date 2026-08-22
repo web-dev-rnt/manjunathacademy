@@ -41,7 +41,7 @@
           {% for category in categories %}
           <tr>
             <td>{{ category.order }}</td>
-            <td class="panel-row-name">{% if category.icon %}{{ category.icon }} {% endif %}{{ category.name }}</td>
+            <td class="panel-row-name">{{ category.name }}</td>
             <td>{{ category.courses.count }}</td>
             <td>
               <div class="category-actions">

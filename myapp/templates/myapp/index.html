@@ -1,52 +1,52 @@
 {% extends "myapp/base.html" %}
 
 {% block content %}
-<!-- ================= SLIDING ADVERTISEMENT BANNER ================= -->
-<section class="ad-band" aria-label="Announcements">
+<!-- ================= SLIDING ANNOUNCEMENT BANNER ================= -->
+<section class="promo-band" aria-label="Announcements">
   <div class="wrap">
-    <div class="ad-card" id="adCard">
-      <div class="ad-track" id="adTrack">
+    <div class="promo-card" id="promoCard">
+      <div class="promo-track" id="promoTrack">
 
         {% if banner_slides %}
           {% for slide in banner_slides %}
-          <article class="ad-slide{% if forloop.first %} is-active{% endif %}{% if not slide.display_image_url %} ad-slide-noimg{% endif %}"{% if slide.display_image_url %} style="background-image:url('{{ slide.display_image_url }}')"{% endif %}>
-            {% if slide.kicker %}<p class="ad-kicker">{{ slide.kicker }}</p>{% endif %}
-            <h2 class="ad-title">{{ slide.title }}</h2>
-            {% if slide.subtitle %}<p class="ad-sub">{{ slide.subtitle }}</p>{% endif %}
+          <article class="promo-slide{% if forloop.first %} is-active{% endif %}{% if not slide.display_image_url %} promo-slide-noimg{% endif %}"{% if slide.display_image_url %} style="background-image:url('{{ slide.display_image_url }}')"{% endif %}>
+            {% if slide.kicker %}<p class="promo-kicker">{{ slide.kicker }}</p>{% endif %}
+            <h2 class="promo-title">{{ slide.title }}</h2>
+            {% if slide.subtitle %}<p class="promo-sub">{{ slide.subtitle }}</p>{% endif %}
             {% if slide.button_text %}<a class="btn btn-primary" href="{{ slide.button_link|default:'#' }}">{{ slide.button_text }}</a>{% endif %}
           </article>
           {% endfor %}
         {% else %}
-          <article class="ad-slide is-active" style="background-image:url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=70')">
-            <p class="ad-kicker">Admissions open</p>
-            <h2 class="ad-title">Sliding Advertisement Banner</h2>
-            <p class="ad-sub">New batch for SSC, Railway &amp; Banking starts 12 August.</p>
+          <article class="promo-slide is-active" style="background-image:url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=70')">
+            <p class="promo-kicker">Admissions open</p>
+            <h2 class="promo-title">Sliding Announcement Banner</h2>
+            <p class="promo-sub">New batch for SSC, Railway &amp; Banking starts 12 August.</p>
             <a class="btn btn-primary" href="#popular-courses">See the batch plan</a>
           </article>
 
-          <article class="ad-slide" style="background-image:url('https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1400&q=70')">
-            <p class="ad-kicker">Free this week</p>
-            <h2 class="ad-title">10 Years of PYQs, Solved</h2>
-            <p class="ad-sub">Download chapter-wise papers with video solutions — no fee, no login wall.</p>
+          <article class="promo-slide" style="background-image:url('https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1400&q=70')">
+            <p class="promo-kicker">Free this week</p>
+            <h2 class="promo-title">10 Years of PYQs, Solved</h2>
+            <p class="promo-sub">Download chapter-wise papers with video solutions — no fee, no login wall.</p>
             <a class="btn btn-primary" href="#results">Download papers</a>
           </article>
 
-          <article class="ad-slide" style="background-image:url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1400&q=70')">
-            <p class="ad-kicker">Test series</p>
-            <h2 class="ad-title">Mock Test Every Sunday</h2>
-            <p class="ad-sub">Real exam timing, All-India rank, and a doubt session the same evening.</p>
+          <article class="promo-slide" style="background-image:url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1400&q=70')">
+            <p class="promo-kicker">Test series</p>
+            <h2 class="promo-title">Mock Test Every Sunday</h2>
+            <p class="promo-sub">Real exam timing, All-India rank, and a doubt session the same evening.</p>
             <a class="btn btn-primary" href="#contact">Book a free mock</a>
           </article>
         {% endif %}
 
       </div>
 
-      <div class="ad-controls">
-        <button class="ad-arrow" id="adPrev" aria-label="Previous announcement">
+      <div class="promo-controls">
+        <button class="promo-arrow" id="promoPrev" aria-label="Previous announcement">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <div class="ad-dots" id="adDots" role="tablist" aria-label="Choose announcement"></div>
-        <button class="ad-arrow" id="adNext" aria-label="Next announcement">
+        <div class="promo-dots" id="promoDots" role="tablist" aria-label="Choose announcement"></div>
+        <button class="promo-arrow" id="promoNext" aria-label="Next announcement">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -241,6 +241,35 @@
   </div>
 </section>
 
+{% if bundles %}
+<!-- ================= EXAM CATEGORIES TICKER ================= -->
+<section class="exam-ticker" aria-label="Exam categories">
+  <div class="wrap">
+    <p class="exam-ticker-eyebrow">India's Most Competitive Exams in One Platform</p>
+    <div class="exam-ticker-slider" id="examTickerSlider">
+      <div class="exam-ticker-track">
+        {% for bundle in bundles %}
+        <a class="exam-ticker-item" href="{% url 'index' %}?course={{ bundle.name|urlencode }}#admission">
+          <span class="exam-ticker-icon">{{ bundle.icon }}</span>
+          <span class="exam-ticker-label">{{ bundle.name }}</span>
+          <span class="exam-ticker-go" aria-hidden="true">→</span>
+        </a>
+        <span class="exam-ticker-divider" aria-hidden="true"></span>
+        {% endfor %}
+        {% for bundle in bundles %}
+        <a class="exam-ticker-item" href="{% url 'index' %}?course={{ bundle.name|urlencode }}#admission" aria-hidden="true" tabindex="-1">
+          <span class="exam-ticker-icon">{{ bundle.icon }}</span>
+          <span class="exam-ticker-label">{{ bundle.name }}</span>
+          <span class="exam-ticker-go" aria-hidden="true">→</span>
+        </a>
+        <span class="exam-ticker-divider" aria-hidden="true"></span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
 {% if brands %}
 <!-- ================= BRANDS / PARTNERS ================= -->
 <section class="brand-band" aria-label="Our partners">
@@ -340,9 +369,9 @@
       </div>
 
       <div class="daily-col">
-        <article class="daily-card daily-kbc daily-quiz-ad">
-          <div class="daily-card-top daily-quiz-ad-top">
-            <span class="daily-quiz-ad-emoji">🎮</span>
+        <article class="daily-card daily-kbc daily-quiz-game">
+          <div class="daily-card-top daily-quiz-game-top">
+            <span class="daily-quiz-game-emoji">🎮</span>
           </div>
           <div class="daily-card-body">
             <h3>Padho Aur Jeeto<br>Quiz Game</h3>
@@ -381,6 +410,55 @@
     </div>
   </div>
 </section>
+
+{% if video_courses %}
+<!-- ================= VIDEO COURSES ================= -->
+<section class="section" id="video-courses">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">▶ Learn at Your Pace</p>
+    <h2 class="section-title center-title">Featured <span class="text-orange">Video Courses</span></h2>
+    <p class="section-sub">Structured courses with multiple recorded lessons you can pause, replay and complete at your own pace.</p>
+    <div class="pc-grid">
+      {% for course in video_courses %}
+      <article class="pc-card">
+        {% if course.thumbnail %}<img class="pc-thumb" src="{{ course.thumbnail.url }}" alt="{{ course.name }}">{% else %}<div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span></div>{% endif %}
+        <h3>{{ course.name }}</h3>
+        {% if course.about %}<p>{{ course.about|truncatechars:105 }}</p>{% endif %}
+        <div class="pc-tags"><span>▶ {{ course.published_video_count }} video{{ course.published_video_count|pluralize }}</span>{% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}</div>
+        <div class="pc-meta"><span>{% if course.is_free %}Free{% else %}₹{{ course.current_price }}{% endif %}</span>{% if course.original_price and course.original_price != course.current_price %}<span><s>₹{{ course.original_price }}</s></span>{% endif %}</div>
+        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' course.pk %}">View Course →</a>
+      </article>
+      {% endfor %}
+    </div>
+    <div style="text-align:center;margin-top:28px"><a class="btn btn-ghost" href="{% url 'video_courses_page' %}">View all video courses →</a></div>
+  </div>
+</section>
+{% endif %}
+
+{% if elibrary_items %}
+<!-- ================= E-LIBRARY ================= -->
+<section class="section section-tint" id="elibrary">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">📚 Study Resources</p>
+    <h2 class="section-title center-title">Featured <span class="text-orange">E-Library</span></h2>
+    <p class="section-sub">Access organised PDF collections, notes, books and previous-year resources in one place.</p>
+    <div class="pc-grid">
+      {% for item in elibrary_items %}
+      <article class="pc-card">
+        {% if item.thumbnail %}<img class="pc-thumb" src="{{ item.thumbnail.url }}" alt="{{ item.name }}">{% else %}<div class="pc-top"><span class="pc-icon pc-icon-grey">📖</span></div>{% endif %}
+        <h3>{{ item.name }}</h3>
+        {% if item.author %}<p style="font-weight:600;color:#374151">by {{ item.author }}</p>{% endif %}
+        {% if item.about %}<p>{{ item.about|truncatechars:100 }}</p>{% endif %}
+        <div class="pc-tags"><span>📄 {{ item.published_document_count }} PDF{{ item.published_document_count|pluralize }}</span>{% if item.pages %}<span>{{ item.pages }} pages</span>{% endif %}</div>
+        <div class="pc-meta"><span>{% if item.is_free %}Free{% else %}₹{{ item.current_price }}{% endif %}</span>{% if item.original_price and item.original_price != item.current_price %}<span><s>₹{{ item.original_price }}</s></span>{% endif %}</div>
+        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' item.pk %}">View Library →</a>
+      </article>
+      {% endfor %}
+    </div>
+    <div style="text-align:center;margin-top:28px"><a class="btn btn-ghost" href="{% url 'elibrary_page' %}">Browse full E-Library →</a></div>
+  </div>
+</section>
+{% endif %}
 
 <!-- ================= TEST SERIES ================= -->
 <section class="section section-tint" id="test-series">
@@ -462,11 +540,18 @@
     <p class="section-sub ae-sub">{{ homepage_content.results_subtitle }}</p>
 
     <div class="ae-fan">
-      {% for photo in result_highlights %}
-      <figure class="ae-card ae-c{{ forloop.counter }}{% if forloop.counter == 5 %} ae-featured{% endif %}"><img src="{{ photo.image.url }}" alt="{{ photo.caption }}"><figcaption>{{ photo.caption }}</figcaption></figure>
-      {% empty %}
+      {% if result_highlights %}
+      <div class="ae-track">
+        {% for photo in result_highlights %}
+        <figure class="ae-card"><img src="{{ photo.image.url }}" alt="{{ photo.caption }}"><figcaption>{{ photo.caption }}</figcaption></figure>
+        {% endfor %}
+        {% for photo in result_highlights %}
+        <figure class="ae-card" aria-hidden="true"><img src="{{ photo.image.url }}" alt=""><figcaption>{{ photo.caption }}</figcaption></figure>
+        {% endfor %}
+      </div>
+      {% else %}
       <p class="panel-empty">No result photos added yet — check back soon.</p>
-      {% endfor %}
+      {% endif %}
     </div>
   </div>
 </section>

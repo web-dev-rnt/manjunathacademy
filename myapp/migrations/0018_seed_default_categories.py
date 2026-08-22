@@ -3,14 +3,14 @@
 from django.db import migrations
 
 DEFAULT_CATEGORIES = [
-    {'order': 0, 'name': 'CBSE', 'icon': '📘'},
-    {'order': 1, 'name': 'ICSE', 'icon': '📗'},
-    {'order': 2, 'name': 'UP Board', 'icon': '📙'},
-    {'order': 3, 'name': 'SSC', 'icon': '🏛'},
-    {'order': 4, 'name': 'Railway', 'icon': '🚆'},
-    {'order': 5, 'name': 'Banking & Insurance', 'icon': '🏦'},
-    {'order': 6, 'name': 'NEET', 'icon': '🩺'},
-    {'order': 7, 'name': 'JEE', 'icon': '⚙️'},
+    {'order': 0, 'name': 'CBSE', 'icon': ''},
+    {'order': 1, 'name': 'ICSE', 'icon': ''},
+    {'order': 2, 'name': 'UP Board', 'icon': ''},
+    {'order': 3, 'name': 'SSC', 'icon': ''},
+    {'order': 4, 'name': 'Railway', 'icon': ''},
+    {'order': 5, 'name': 'Banking & Insurance', 'icon': ''},
+    {'order': 6, 'name': 'NEET', 'icon': ''},
+    {'order': 7, 'name': 'JEE', 'icon': ''},
 ]
 
 

@@ -27,11 +27,6 @@
       {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
 
-    <label><span class="panel-label-text">Icon</span>
-      {{ form.icon }}
-      <p class="custom-help">{{ form.icon.help_text }}</p>
-    </label>
-
     <label><span class="panel-label-text">Order</span>
       {{ form.order }}
       <p class="custom-help">{{ form.order.help_text }}</p>

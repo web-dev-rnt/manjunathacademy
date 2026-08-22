@@ -4,48 +4,50 @@
 {% block meta_description %}Play our KBC-style quiz game — climb the money ladder one question at a time, with lifelines.{% endblock %}
 
 {% block extra_style %}
-.quiz-page-section{padding:56px 0 90px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
-.quiz-page-hero{text-align:center;margin:0 auto 32px;max-width:60ch}
-.quiz-page-hero h1{font-size:clamp(24px,3.4vw,34px);margin:0 0 10px}
+.quiz-page-section{padding:42px 0 76px;background:#fff;min-height:calc(100vh - 150px);position:relative;overflow:hidden}
+.quiz-page-section::before{display:none}
+.quiz-page-hero{text-align:center;margin:0 auto 28px;max-width:60ch;position:relative;z-index:1}
+.quiz-page-hero h1{font-size:clamp(26px,3vw,34px);margin:0 0 8px;color:var(--ink)}
 .quiz-page-hero p{color:var(--muted);font-size:15px;margin:0}
 .quiz-page-wrap{display:flex;justify-content:center}
 
-.quiz-game-card{background:#fff;border-radius:18px;max-width:460px;width:100%;box-shadow:var(--shadow-lg);overflow:hidden;display:flex;flex-direction:column}
-.quiz-game-titlebar{background:#1B2030;padding:10px 14px;display:flex;align-items:center;gap:6px;flex:0 0 auto}
-.quiz-game-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-.quiz-game-dot-red{background:#EF4444}.quiz-game-dot-yellow{background:#EAB308}.quiz-game-dot-green{background:#22C55E}
-.quiz-game-titlebar-label{color:#CBD3E1;font-size:12px;font-weight:700;margin-left:8px;flex:1}
-.quiz-game-body{padding:28px}
-.quiz-game-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.quiz-game-level{font-size:12.5px;font-weight:800;color:var(--orange-deep);background:var(--orange-soft);padding:5px 12px;border-radius:var(--r-pill)}
-.quiz-game-prize{font-size:12.5px;font-weight:800;color:#374151}
-.quiz-game-question{font-size:16.5px;font-weight:700;color:var(--ink);margin:0 0 18px;line-height:1.5}
-.quiz-game-options{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.quiz-game-card{position:relative;z-index:1;background:transparent;max-width:1040px;width:100%;overflow:visible;display:flex;flex-direction:column}
+.quiz-game-titlebar{height:3px;margin:0 10%;background:linear-gradient(90deg,transparent,#38BDF8 20%,#38BDF8 80%,transparent);flex:0 0 auto}
+.quiz-game-dot,.quiz-game-titlebar-label{display:none}
+.quiz-game-body{padding:18px 28px 30px}
+.quiz-game-head{position:relative;display:flex;align-items:center;justify-content:space-between;margin:0 auto -2px;width:78%;z-index:2}
+.quiz-game-level,.quiz-game-prize{font-size:12px;font-weight:800;color:#BAE6FD;background:#111D31;padding:7px 14px;border:1px solid #2879A5;border-radius:8px}
+.quiz-game-timer{position:absolute;left:50%;top:-13px;transform:translateX(-50%);min-width:82px;text-align:center;color:#fff;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;background:#17233A;border:1px solid #38BDF8;padding:6px 12px;border-radius:8px}
+.quiz-game-question{font-size:clamp(19px,2.3vw,27px);font-weight:700;text-align:center;color:#fff;margin:0 0 25px;padding:30px 7% 26px;line-height:1.4;background:#101B45;border:1.5px solid #38BDF8;border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.24)}
+.quiz-game-options{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-bottom:22px;position:relative}
+.quiz-game-options::before{display:none}
 .quiz-opt-btn{
-  text-align:left;padding:12px 16px;border-radius:12px;border:1.5px solid var(--line);background:#FAFAF9;
-  font-size:14px;font-weight:600;color:#374151;cursor:pointer;transition:.15s ease;font-family:inherit;
+  position:relative;text-align:left;padding:14px 20px;border:1.5px solid #2879A5;background:#101B45;
+  border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:.18s ease;
 }
-.quiz-opt-btn:hover:not(:disabled){border-color:rgba(249,115,22,.5);background:var(--orange-soft)}
+.quiz-opt-btn:nth-child(even){clip-path:none}
+.quiz-opt-btn:hover:not(:disabled){border-color:#7DD3FC;background:#172554;transform:translateY(-1px)}
 .quiz-opt-btn:disabled{cursor:default;opacity:.55}
-.quiz-opt-btn.is-correct{background:#ECFDF3;border-color:#15803D;color:#15803D;opacity:1}
-.quiz-opt-btn.is-wrong{background:#FEF2F2;border-color:#DC2626;color:#DC2626;opacity:1}
+.quiz-opt-btn.is-correct{background:linear-gradient(180deg,#15803D,#065F2E);border-color:#86EFAC;color:#fff;opacity:1}
+.quiz-opt-btn.is-wrong{background:linear-gradient(180deg,#B91C1C,#7F1D1D);border-color:#FCA5A5;color:#fff;opacity:1}
 .quiz-opt-btn.is-eliminated{visibility:hidden}
-.quiz-game-lifelines{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.quiz-game-lifelines{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .quiz-lifeline-btn{
-  padding:8px 14px;border-radius:var(--r-pill);border:1.5px solid var(--line);background:#fff;
-  font-size:12.5px;font-weight:700;color:#374151;cursor:pointer;font-family:inherit;
+  padding:8px 16px;border-radius:var(--r-pill);border:1.5px solid #38BDF8;background:#07162A;
+  font-size:12.5px;font-weight:700;color:#CFFAFE;cursor:pointer;font-family:inherit;
 }
-.quiz-lifeline-btn:hover:not(:disabled){border-color:rgba(249,115,22,.5);color:var(--orange-deep)}
+.quiz-lifeline-btn:hover:not(:disabled){border-color:#FDE047;color:#FDE047}
 .quiz-lifeline-btn:disabled{opacity:.4;cursor:not-allowed}
 .quiz-game-audience{display:flex;gap:8px;align-items:flex-end;height:70px;margin-bottom:14px}
 .quiz-audience-bar{flex:1;background:var(--orange-soft);border-radius:6px 6px 0 0;position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:4px}
 .quiz-audience-bar span{position:absolute;top:-18px;font-size:11px;font-weight:800;color:#374151}
 .quiz-audience-bar em{position:absolute;bottom:-18px;font-size:11px;font-style:normal;font-weight:700;color:var(--muted)}
-.quiz-game-feedback{padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:700;margin-bottom:14px}
+.quiz-game-feedback{padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:700;margin:0 auto 14px;max-width:560px;text-align:center}
 .quiz-feedback-correct{background:#ECFDF3;color:#15803D}
 .quiz-feedback-wrong{background:#FEF2F2;color:#DC2626}
 .quiz-feedback-info{background:var(--orange-soft);color:var(--orange-deep)}
-.quiz-game-footer{display:flex;gap:10px;flex-wrap:wrap}
+.quiz-game-footer{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+@media(max-width:720px){.quiz-page-section{padding-top:30px}.quiz-page-hero{margin-bottom:20px}.quiz-game-body{padding-inline:8px}.quiz-game-head{width:94%}.quiz-game-level,.quiz-game-prize{font-size:10px;padding:7px 9px}.quiz-game-timer{font-size:15px;min-width:68px}.quiz-game-question{font-size:19px;padding:28px 7% 23px;margin-bottom:20px}.quiz-game-options{grid-template-columns:1fr;gap:10px}.quiz-opt-btn{font-size:15px;padding:13px 16px}}
 {% endblock %}
 
 {% block content %}
@@ -68,6 +70,7 @@
           {% csrf_token %}
           <div class="quiz-game-head">
             <span class="quiz-game-level" id="quizLevel">Question 1</span>
+            <span class="quiz-game-timer" id="quizTimer">00:30</span>
             <span class="quiz-game-prize" id="quizPrize"></span>
           </div>
           <p class="quiz-game-question" id="quizQuestionText">Loading…</p>
@@ -103,7 +106,32 @@
   var fiftyBtn = document.getElementById('quizFiftyBtn');
   var audienceBtn = document.getElementById('quizAudienceBtn');
   var skipBtn = document.getElementById('quizSkipBtn');
+  var timerEl = document.getElementById('quizTimer');
   var currentQuestion = null;
+  var timerId = null;
+
+  function stopTimer() {
+    if (timerId) window.clearInterval(timerId);
+    timerId = null;
+  }
+
+  function startTimer() {
+    stopTimer();
+    var seconds = 30;
+    timerEl.textContent = '00:' + String(seconds).padStart(2, '0');
+    timerId = window.setInterval(function () {
+      seconds -= 1;
+      timerEl.textContent = '00:' + String(Math.max(seconds, 0)).padStart(2, '0');
+      if (seconds <= 0) {
+        stopTimer();
+        currentQuestion = null;
+        optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) { btn.disabled = true; });
+        showFeedback('Time is up! Try the quiz again.', 'wrong');
+        footerEl.innerHTML = '';
+        showPlayAgain();
+      }
+    }, 1000);
+  }
 
   function apiCall(url, method, params) {
     var opts = { method: method, headers: { 'X-CSRFToken': csrfToken } };
@@ -118,6 +146,7 @@
   }
 
   function loadQuestion() {
+    stopTimer();
     feedbackEl.hidden = true;
     audienceEl.hidden = true;
     audienceEl.innerHTML = '';
@@ -162,6 +191,7 @@
         btn.addEventListener('click', function () { submitAnswer(letter); });
         optionsEl.appendChild(btn);
       });
+      startTimer();
     });
   }
 
@@ -179,6 +209,7 @@
 
   function submitAnswer(letter) {
     if (!currentQuestion) return;
+    stopTimer();
     optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) { btn.disabled = true; });
 
     apiCall('{% url "quiz_submit_answer" %}', 'POST', { question_id: currentQuestion.id, selected_option: letter }).then(function (data) {

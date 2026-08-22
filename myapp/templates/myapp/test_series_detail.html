@@ -13,7 +13,6 @@
 .ts-detail-card{max-width:800px;margin:0 auto 30px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:30px;box-shadow:var(--shadow-sm)}
 .ts-detail-card h2{font-size:18px;margin:0 0 6px}
 .ts-detail-card-sub{color:var(--muted);font-size:13.5px;margin:0 0 20px}
-.daily-quiz-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:4px 12px;border-radius:var(--r-pill);background:var(--orange-soft);color:var(--orange-deep);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px}
 .quiz-result-banner{padding:16px 20px;border-radius:14px;background:#ECFDF3;color:#15803D;font-weight:700;margin-bottom:20px}
 .test-question-card{background:#FAFAF9;border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:14px}
 .test-q-text{font-size:15px;font-weight:700;color:var(--ink);margin:0 0 14px}
@@ -26,35 +25,39 @@
 .about-text{color:#374151;font-size:14.5px;line-height:1.8;white-space:pre-line}
 
 /* Daily quiz carousel */
-.quiz-carousel-section{padding:10px 0 44px}
-.quiz-carousel-head{text-align:center;margin-bottom:26px}
-.quiz-carousel-title{display:inline-flex;align-items:center;gap:10px;font-family:"Archivo",sans-serif;font-weight:800;font-size:26px;color:#DC2626;margin:0}
-.quiz-carousel-title .free-tag{background:#16A34A;color:#fff;font-size:12px;font-weight:800;padding:4px 12px;border-radius:8px}
-.quiz-carousel-sub{color:var(--muted);font-size:13.5px;margin:8px 0 0;letter-spacing:.03em;text-transform:uppercase;font-weight:700}
-.quiz-carousel-wrap{position:relative;max-width:1100px;margin:0 auto}
-.quiz-carousel-track{display:flex;gap:16px;overflow-x:auto;scroll-behavior:smooth;padding:6px 4px 10px;scrollbar-width:none}
+.quiz-carousel-section{padding:64px 0 58px;background:#fff}
+.quiz-carousel-head{text-align:center;margin-bottom:52px}
+.quiz-carousel-title{position:relative;display:inline-flex;align-items:center;gap:12px;font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(30px,3.5vw,42px);color:#B80000;margin:0;padding-bottom:18px}
+.quiz-carousel-title::after{content:"";position:absolute;left:50%;bottom:0;width:106px;height:2px;background:#555;transform:translateX(-50%)}
+.quiz-carousel-title .free-tag{background:#08BF68;color:#fff;font-size:.65em;font-weight:800;padding:3px 10px;border-radius:5px}
+.quiz-carousel-sub{color:#30343B;font-size:clamp(17px,2vw,27px);margin:18px 0 0;letter-spacing:.01em;text-transform:uppercase;font-weight:400}
+.quiz-carousel-wrap{position:relative;max-width:1170px;margin:0 auto;background:#F7F7F7;padding:10px;border-radius:5px}
+.quiz-carousel-track{display:flex;gap:10px;overflow-x:auto;scroll-behavior:smooth;padding:0;scrollbar-width:none}
 .quiz-carousel-track::-webkit-scrollbar{display:none}
 .quiz-carousel-card{
-  flex:0 0 auto;width:250px;background:#fff;border:1px solid var(--line);border-radius:16px;
-  padding:20px;box-shadow:var(--shadow-sm);
+  flex:0 0 calc((100% - 30px)/4);min-width:250px;background:#fff;border:1px solid #D9DDE2;border-radius:5px;
+  padding:12px 10px 14px;box-shadow:none;
 }
-.quiz-carousel-card h4{font-size:14.5px;margin:0 0 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;line-height:1.4}
-.quiz-carousel-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:7px 0;border-top:1px solid var(--line)}
+.quiz-carousel-card h4{font-size:18px;font-weight:500;margin:4px 0 28px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;line-height:1.15;min-height:42px}
+.quiz-carousel-card h4 span:last-child{font-size:13px;color:#333}
+.quiz-carousel-row{display:flex;justify-content:space-between;font-size:14px;color:#444;padding:10px 0;border-bottom:1px solid #E1E1E1}
+.quiz-carousel-row:first-of-type{border-top:0}
 .quiz-carousel-row strong{color:var(--ink);font-weight:700}
 .btn-quiz-start{
-  display:block;text-align:center;margin-top:14px;background:#16A34A;color:#fff;font-weight:700;font-size:13.5px;
-  padding:10px;border-radius:10px;transition:background .15s ease;
+  display:block;text-align:center;margin-top:12px;background:#25B989;color:#fff;font-weight:700;font-size:13.5px;
+  padding:8px;border-radius:5px;transition:background .15s ease;
 }
-.btn-quiz-start:hover{background:#15803D}
+.btn-quiz-start:hover{background:#15966D}
 .quiz-carousel-arrow{
-  position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;
-  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);display:grid;place-items:center;
-  cursor:pointer;color:#DC2626;z-index:2;
+  position:absolute;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;padding:0;
+  background:#C40000;border:0;box-shadow:none;display:grid;place-items:center;
+  cursor:pointer;color:#fff;font-size:19px;line-height:1;z-index:2;
 }
-.quiz-carousel-arrow.prev{left:-18px}
-.quiz-carousel-arrow.next{right:-18px}
+.quiz-carousel-arrow.prev{left:-27px}
+.quiz-carousel-arrow.next{right:-27px}
 .quiz-carousel-empty{text-align:center;color:var(--muted);font-size:14px}
-@media (max-width:640px){.quiz-carousel-arrow{display:none}}
+@media (max-width:900px){.quiz-carousel-card{flex-basis:calc((100% - 10px)/2)}.quiz-carousel-arrow{display:none}}
+@media (max-width:640px){.quiz-carousel-section{padding:44px 0}.quiz-carousel-head{margin-bottom:32px}.quiz-carousel-sub{font-size:15px}.quiz-carousel-wrap{padding:8px}.quiz-carousel-card{flex-basis:86%;min-width:240px}}
 
 /* Test series hub (sidebar + list) */
 .hub-section{padding:10px 0 70px}
@@ -133,73 +136,6 @@
     {% else %}
       <p class="quiz-carousel-empty">No daily quizzes added yet — check back soon.</p>
     {% endif %}
-  </div>
-</section>
-
-<section class="ts-detail-section">
-  <div class="wrap">
-
-    <div class="ts-detail-card">
-      <span class="daily-quiz-badge">⚡ Daily Quiz</span>
-      <h2>Quick 5-question warm-up</h2>
-      <p class="ts-detail-card-sub">Randomly picked from this test's question bank — free to attempt, doesn't affect your full test score.</p>
-
-      {% if quiz_result %}
-        <div class="quiz-result-banner">You scored {{ quiz_result.score }} / {{ quiz_result.total }} on the daily quiz. Try again for a new set of questions!</div>
-      {% endif %}
-
-      {% if daily_quiz_questions %}
-        <form method="post">
-          {% csrf_token %}
-          <input type="hidden" name="action" value="daily_quiz">
-          {% for question in daily_quiz_questions %}
-          <input type="hidden" name="quiz_question_ids" value="{{ question.id }}">
-          <div class="test-question-card">
-            <p class="test-q-text">Q{{ forloop.counter }}. {{ question.text }}</p>
-            {% if question.question_type == 'single' %}
-              <div class="test-options">
-                {% if question.option_a %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="A" required> {{ question.option_a }}</label>{% endif %}
-                {% if question.option_b %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="B"> {{ question.option_b }}</label>{% endif %}
-                {% if question.option_c %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="C"> {{ question.option_c }}</label>{% endif %}
-                {% if question.option_d %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="D"> {{ question.option_d }}</label>{% endif %}
-              </div>
-            {% elif question.question_type == 'true_false' %}
-              <div class="test-options">
-                <label class="test-option"><input type="radio" name="q_{{ question.id }}" value="True" required> True</label>
-                <label class="test-option"><input type="radio" name="q_{{ question.id }}" value="False"> False</label>
-              </div>
-            {% elif question.question_type == 'multiple' %}
-              <div class="test-options">
-                {% if question.option_a %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="A"> {{ question.option_a }}</label>{% endif %}
-                {% if question.option_b %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="B"> {{ question.option_b }}</label>{% endif %}
-                {% if question.option_c %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="C"> {{ question.option_c }}</label>{% endif %}
-                {% if question.option_d %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="D"> {{ question.option_d }}</label>{% endif %}
-              </div>
-            {% else %}
-              <input class="test-option" style="cursor:text" type="text" name="q_{{ question.id }}" placeholder="Your answer" required>
-            {% endif %}
-          </div>
-          {% endfor %}
-          <button type="submit" class="btn btn-primary">Submit Daily Quiz</button>
-        </form>
-      {% else %}
-        <p style="color:var(--muted);font-size:13.5px">No questions have been added to this test yet — the daily quiz will appear once the admin adds some.</p>
-      {% endif %}
-    </div>
-
-    <div class="ts-detail-card">
-      <h2>About this test series</h2>
-      {% if course.about %}<p class="about-text">{{ course.about }}</p>{% else %}<p class="ts-detail-card-sub" style="margin:0">Full-length test covering the complete syllabus with detailed scoring.</p>{% endif %}
-
-      <div class="full-test-row" style="margin-top:22px">
-        <div class="full-test-info">
-          <p><strong>₹{{ course.current_price }}</strong>{% if course.original_price and course.original_price != course.current_price %} <s>₹{{ course.original_price }}</s>{% endif %}</p>
-          <p>{{ course.questions.count }} question{{ course.questions.count|pluralize }}{% if course.duration_minutes %} · {{ course.duration_minutes }} minutes{% endif %}</p>
-        </div>
-        <a class="btn btn-primary btn-lg" href="{% url 'test_attempt_start' course.pk %}">Start Full Test →</a>
-      </div>
-    </div>
-
   </div>
 </section>
 

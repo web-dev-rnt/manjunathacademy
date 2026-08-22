@@ -565,8 +565,56 @@ class Course(models.Model):
     def is_free(self):
         return self.force_free or not self.current_price or self.current_price <= 0
 
+    @property
+    def published_video_count(self):
+        count = self.videos.filter(is_active=True).count()
+        return count or (1 if self.video_file else 0)
+
+    @property
+    def published_videos(self):
+        return self.videos.filter(is_active=True)
+
+    @property
+    def published_document_count(self):
+        count = self.documents.filter(is_active=True).count()
+        return count or (1 if self.pdf_file else 0)
+
+    @property
+    def published_documents(self):
+        return self.documents.filter(is_active=True)
+
     def __str__(self):
         return self.name
+
+
+class CourseVideo(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='videos', limit_choices_to={'course_type': Course.VIDEO_COURSE})
+    title = models.CharField(max_length=200)
+    video_file = models.FileField(upload_to='course_videos/playlist/', help_text='Upload an MP4 or other browser-supported video file.')
+    duration_minutes = models.PositiveIntegerField(null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f'{self.course.name} — {self.title}'
+
+
+class CourseDocument(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='documents', limit_choices_to={'course_type': Course.ELIBRARY})
+    title = models.CharField(max_length=200)
+    pdf_file = models.FileField(upload_to='elibrary_pdfs/collection/', help_text='Upload a PDF document.')
+    pages = models.PositiveIntegerField(null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f'{self.course.name} — {self.title}'
 
 
 class CourseEnrollment(models.Model):

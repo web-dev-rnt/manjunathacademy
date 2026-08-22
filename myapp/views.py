@@ -32,6 +32,8 @@ from .forms import (
     ContactMessageForm,
     CouponForm,
     CourseForm,
+    CourseDocumentFormSet,
+    CourseVideoFormSet,
     DailyUpdateCardForm,
     DailyUpdatePostForm,
     EligibilityCheckForm,
@@ -144,6 +146,8 @@ def index(request):
 
     test_series_courses = Course.objects.filter(course_type=Course.TEST_SERIES, is_active=True)
     test_series_categories = Category.objects.filter(courses__in=test_series_courses).distinct()
+    video_courses = Course.objects.filter(course_type=Course.VIDEO_COURSE, is_active=True).prefetch_related('videos')[:4]
+    elibrary_items = Course.objects.filter(course_type=Course.ELIBRARY, is_active=True).prefetch_related('documents')[:4]
     bundles = Bundle.objects.filter(is_active=True).prefetch_related('courses')
     homepage_content = HomepageContent.load()
     result_highlights = ResultHighlight.objects.filter(is_active=True)
@@ -154,6 +158,8 @@ def index(request):
         'banner_slides': banner_slides,
         'test_series_courses': test_series_courses,
         'test_series_categories': test_series_categories,
+        'video_courses': video_courses,
+        'elibrary_items': elibrary_items,
         'bundles': bundles,
         'homepage_content': homepage_content,
         'result_highlights': result_highlights,
@@ -163,12 +169,12 @@ def index(request):
 
 
 def video_courses_page(request):
-    video_courses = Course.objects.filter(course_type=Course.VIDEO_COURSE, is_active=True)
+    video_courses = Course.objects.filter(course_type=Course.VIDEO_COURSE, is_active=True).prefetch_related('videos')
     return render(request, 'myapp/video_courses_page.html', {'video_courses': video_courses})
 
 
 def elibrary_page(request):
-    elibrary_items = Course.objects.filter(course_type=Course.ELIBRARY, is_active=True)
+    elibrary_items = Course.objects.filter(course_type=Course.ELIBRARY, is_active=True).prefetch_related('documents')
     return render(request, 'myapp/elibrary_page.html', {'elibrary_items': elibrary_items})
 
 
@@ -303,6 +309,7 @@ def signup(request):
                         is_active=True,
                     )
             auth_login(request, user)
+            messages.success(request, f'Welcome, {user.name}! Your account has been created and you are now logged in')
             return redirect('index')
     else:
         initial = {}
@@ -319,14 +326,18 @@ class CustomLoginView(LoginView):
     form_class = EmailAuthenticationForm
     redirect_authenticated_user = True
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Welcome back, {self.request.user.name}! You are now logged in')
+        return response
+
     def get_success_url(self):
-        if self.request.user.is_staff:
-            return '/panel/'
-        return super().get_success_url()
+        return reverse('index')
 
 
-def _sso_post_login_redirect(user):
-    return redirect('panel_signups' if user.is_staff else 'index')
+def _sso_post_login_redirect(request, user):
+    messages.success(request, f'Welcome, {user.name}! You are now logged in')
+    return redirect('index')
 
 
 def sso_start(request, provider):
@@ -374,7 +385,7 @@ def sso_callback(request, provider):
     existing_user = CustomUser.objects.filter(email__iexact=profile['email']).first()
     if existing_user:
         auth_login(request, existing_user)
-        return _sso_post_login_redirect(existing_user)
+        return _sso_post_login_redirect(request, existing_user)
 
     request.session['pending_sso_profile'] = {'email': profile['email'], 'name': profile['name'], 'provider': provider}
     return redirect('sso_complete_signup')
@@ -398,7 +409,7 @@ def sso_complete_signup(request):
             user.save(update_fields=['device_type'])
             del request.session['pending_sso_profile']
             auth_login(request, user)
-            return _sso_post_login_redirect(user)
+            return _sso_post_login_redirect(request, user)
     else:
         form = SSOCompleteSignupForm()
 
@@ -407,6 +418,7 @@ def sso_complete_signup(request):
 
 def logout_view(request):
     auth_logout(request)
+    messages.success(request, 'You have been logged out successfully')
     return redirect('index')
 
 
@@ -553,7 +565,7 @@ def _get_or_create_free_enrollment(user, course):
 
 @login_required(login_url='login')
 def course_detail(request, pk):
-    course = get_object_or_404(Course, pk=pk, is_active=True)
+    course = get_object_or_404(Course.objects.prefetch_related('videos', 'documents'), pk=pk, is_active=True)
     enrollment = _get_or_create_free_enrollment(request.user, course)
 
     if not enrollment or not enrollment.is_paid:
@@ -1078,7 +1090,9 @@ def eligibility_check(request):
                 'state': form.cleaned_data['state'],
                 'marital_status': form.cleaned_data['marital_status'],
             }
-            matched = [c for c in EligibilityCriteria.objects.filter(is_active=True) if _matches_criteria(c, data)]
+            matched = []
+            if form.cleaned_data['nationality'] == 'indian':
+                matched = [c for c in EligibilityCriteria.objects.filter(is_active=True) if _matches_criteria(c, data)]
 
             submission = EligibilitySubmission.objects.create(
                 user=request.user,
@@ -1091,7 +1105,13 @@ def eligibility_check(request):
                 marital_status=data['marital_status'],
                 matched_jobs=', '.join(c.job_name for c in matched),
             )
-            result = {'matched': matched, 'age': age, 'submission': submission}
+            result = {
+                'matched': matched,
+                'age': age,
+                'submission': submission,
+                'nationality': form.cleaned_data['nationality'],
+                'category': form.cleaned_data['category'],
+            }
     else:
         form = EligibilityCheckForm()
 
@@ -1234,6 +1254,77 @@ def quiz_lifeline_skip(request):
 
 def _is_staff(user):
     return user.is_authenticated and user.is_staff
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_dashboard(request):
+    today = timezone.localdate()
+    dates = [today - timezone.timedelta(days=offset) for offset in range(6, -1, -1)]
+
+    signup_counts = [CustomUser.objects.filter(date_joined__date=day).count() for day in dates]
+    course_revenue = [
+        float(CourseEnrollment.objects.filter(is_paid=True, enrolled_at__date=day).aggregate(total=Sum('amount_paid'))['total'] or 0)
+        for day in dates
+    ]
+    bundle_revenue = [
+        float(BundlePurchase.objects.filter(purchased_at__date=day).aggregate(total=Sum('amount_paid'))['total'] or 0)
+        for day in dates
+    ]
+    paid_store_statuses = [StoreOrder.STATUS_PAID, StoreOrder.STATUS_SHIPPED, StoreOrder.STATUS_DELIVERED]
+    store_revenue = [
+        float(StoreOrder.objects.filter(status__in=paid_store_statuses, created_at__date=day).aggregate(total=Sum('amount'))['total'] or 0)
+        for day in dates
+    ]
+    payment_totals = [course_revenue[i] + bundle_revenue[i] + store_revenue[i] for i in range(len(dates))]
+
+    device_rows = CustomUser.objects.values('device_type').annotate(total=Count('id')).order_by('-total')
+    device_labels = dict(CustomUser.DEVICE_CHOICES)
+    device_data = {
+        'labels': [device_labels.get(row['device_type'], 'Not recorded') if row['device_type'] else 'Not recorded' for row in device_rows],
+        'values': [row['total'] for row in device_rows],
+    }
+    payment_device_totals = {}
+    payment_device_sources = [
+        CourseEnrollment.objects.filter(is_paid=True).values('user__device_type').annotate(total=Sum('amount_paid')),
+        BundlePurchase.objects.values('user__device_type').annotate(total=Sum('amount_paid')),
+        StoreOrder.objects.filter(status__in=paid_store_statuses).values('user__device_type').annotate(total=Sum('amount')),
+    ]
+    for source in payment_device_sources:
+        for row in source:
+            key = row['user__device_type'] or ''
+            payment_device_totals[key] = payment_device_totals.get(key, 0) + float(row['total'] or 0)
+    payment_device_data = {
+        'labels': [device_labels.get(key, 'Not recorded') if key else 'Not recorded' for key in payment_device_totals],
+        'values': list(payment_device_totals.values()),
+    }
+    exam_rows = Course.objects.filter(is_active=True).values('category__name').annotate(total=Count('id')).order_by('-total')
+    exam_data = {
+        'labels': [row['category__name'] or 'Uncategorised' for row in exam_rows],
+        'values': [row['total'] for row in exam_rows],
+    }
+    chart_data = {
+        'labels': [day.strftime('%d %b') for day in dates],
+        'signups': signup_counts,
+        'payments': payment_totals,
+        'devices': device_data,
+        'payment_devices': payment_device_data,
+        'exams': exam_data,
+    }
+    total_revenue = (
+        (CourseEnrollment.objects.filter(is_paid=True).aggregate(total=Sum('amount_paid'))['total'] or 0)
+        + (BundlePurchase.objects.aggregate(total=Sum('amount_paid'))['total'] or 0)
+        + (StoreOrder.objects.filter(status__in=paid_store_statuses).aggregate(total=Sum('amount'))['total'] or 0)
+    )
+    context = {
+        'chart_data': chart_data,
+        'total_users': CustomUser.objects.count(),
+        'week_signups': sum(signup_counts),
+        'total_revenue': total_revenue,
+        'active_courses': Course.objects.filter(is_active=True).count(),
+        'eligibility_checks': EligibilitySubmission.objects.count(),
+    }
+    return render(request, 'myapp/panel/dashboard.html', context)
 
 
 @login_required(login_url='login')
@@ -1913,17 +2004,30 @@ def panel_course_add(request, course_type):
     _course_type_or_404(course_type)
     if request.method == 'POST':
         form = CourseForm(request.POST, request.FILES)
-        if form.is_valid():
+        course = form.instance
+        course.course_type = course_type
+        video_formset = CourseVideoFormSet(request.POST, request.FILES, instance=course, prefix='videos') if course_type == Course.VIDEO_COURSE else None
+        document_formset = CourseDocumentFormSet(request.POST, request.FILES, instance=course, prefix='documents') if course_type == Course.ELIBRARY else None
+        if form.is_valid() and (video_formset is None or video_formset.is_valid()) and (document_formset is None or document_formset.is_valid()):
             course = form.save(commit=False)
             course.course_type = course_type
             course.save()
+            if video_formset is not None:
+                video_formset.instance = course
+                video_formset.save()
+            if document_formset is not None:
+                document_formset.instance = course
+                document_formset.save()
             messages.success(request, 'Course added.')
             return redirect('panel_course_list', course_type=course_type)
     else:
         form = CourseForm(initial={'order': Course.objects.filter(course_type=course_type).count()})
+        course = Course(course_type=course_type)
+        video_formset = CourseVideoFormSet(instance=course, prefix='videos') if course_type == Course.VIDEO_COURSE else None
+        document_formset = CourseDocumentFormSet(instance=course, prefix='documents') if course_type == Course.ELIBRARY else None
 
     return render(request, 'myapp/panel/course_form.html', {
-        'form': form, 'is_new': True, 'course_type': course_type, 'type_label': COURSE_TYPE_LABELS[course_type],
+        'form': form, 'video_formset': video_formset, 'document_formset': document_formset, 'is_new': True, 'course_type': course_type, 'type_label': COURSE_TYPE_LABELS[course_type],
     })
 
 
@@ -1935,15 +2039,23 @@ def panel_course_edit(request, course_type, pk):
 
     if request.method == 'POST':
         form = CourseForm(request.POST, request.FILES, instance=course)
-        if form.is_valid():
+        video_formset = CourseVideoFormSet(request.POST, request.FILES, instance=course, prefix='videos') if course_type == Course.VIDEO_COURSE else None
+        document_formset = CourseDocumentFormSet(request.POST, request.FILES, instance=course, prefix='documents') if course_type == Course.ELIBRARY else None
+        if form.is_valid() and (video_formset is None or video_formset.is_valid()) and (document_formset is None or document_formset.is_valid()):
             form.save()
+            if video_formset is not None:
+                video_formset.save()
+            if document_formset is not None:
+                document_formset.save()
             messages.success(request, 'Course updated.')
             return redirect('panel_course_list', course_type=course_type)
     else:
         form = CourseForm(instance=course)
+        video_formset = CourseVideoFormSet(instance=course, prefix='videos') if course_type == Course.VIDEO_COURSE else None
+        document_formset = CourseDocumentFormSet(instance=course, prefix='documents') if course_type == Course.ELIBRARY else None
 
     return render(request, 'myapp/panel/course_form.html', {
-        'form': form, 'is_new': False, 'course': course, 'course_type': course_type, 'type_label': COURSE_TYPE_LABELS[course_type],
+        'form': form, 'video_formset': video_formset, 'document_formset': document_formset, 'is_new': False, 'course': course, 'course_type': course_type, 'type_label': COURSE_TYPE_LABELS[course_type],
     })
 
 
@@ -3032,8 +3144,3 @@ def panel_account_delete(request, pk):
         transaction.delete()
         messages.success(request, 'Transaction deleted.')
     return redirect('panel_account_list')
-
-
-
-
-

@@ -31,7 +31,8 @@
         <h3>{{ course.name }}</h3>
         {% if course.about %}<p>{{ course.about|truncatechars:110 }}</p>{% endif %}
         <div class="pc-tags">
-          {% if course.category %}<span>{{ course.category.icon }} {{ course.category.name }}</span>{% endif %}
+          {% if course.category %}<span>{{ course.category.name }}</span>{% endif %}
+          <span>▶ {{ course.published_video_count }} video{{ course.published_video_count|pluralize }}</span>
           {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
         </div>
         <div class="pc-meta">

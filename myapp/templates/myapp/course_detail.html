@@ -26,13 +26,24 @@
 .course-access-expired{background:#FEF2F2;color:#DC2626}
 .course-about-text{color:#374151;font-size:14.5px;line-height:1.8;white-space:pre-line;margin:0 0 20px}
 .course-media video{width:100%;border-radius:14px;display:block;background:#000;max-height:70vh}
+.course-video-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:18px;align-items:start}
+.course-video-player h3{font-size:16px;margin:12px 2px 0}
+.course-playlist{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#FAFAF9;max-height:520px;overflow-y:auto}
+.course-playlist-title{padding:13px 14px;margin:0;font-size:13px;font-weight:800;background:#F3F4F6;border-bottom:1px solid var(--line)}
+.course-lesson{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:12px 13px;border:0;border-bottom:1px solid var(--line);background:#fff;cursor:pointer;font-family:inherit;color:#374151}
+.course-lesson:last-child{border-bottom:0}.course-lesson:hover,.course-lesson.is-active{background:var(--orange-soft);color:var(--orange-deep)}
+.course-lesson-num{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#F3F4F6;font-size:11px;font-weight:800;flex:0 0 auto}
+.course-lesson-text{min-width:0;display:flex;flex-direction:column;font-size:12.5px;font-weight:700}.course-lesson-text small{font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
 .course-pdf-frame{width:100%;height:75vh;border:1px solid var(--line);border-radius:14px}
+.course-document-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:18px;align-items:start}
+.course-document-viewer h3{font-size:16px;margin:12px 2px 0}.course-document-viewer .course-actions-row{justify-content:flex-start}
 .course-detail-empty{text-align:center;color:var(--muted);padding:40px 0}
 .complete-btn{
   background:none;border:1px solid currentColor;color:inherit;padding:6px 14px;border-radius:var(--r-pill);
   font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;
 }
 .course-actions-row{display:flex;justify-content:flex-end;margin-top:18px}
+@media(max-width:760px){.course-video-layout,.course-document-layout{grid-template-columns:1fr}.course-playlist{max-height:300px}}
 {% endblock %}
 
 {% block content %}
@@ -71,18 +82,55 @@
 
         <div class="course-media">
           {% if course.course_type == 'video_course' %}
-            {% if course.video_file %}
-              <video controls {% if course.thumbnail %}poster="{{ course.thumbnail.url }}"{% endif %} src="{{ course.video_file.url }}"></video>
-            {% else %}
-              <p class="course-detail-empty">The video for this course hasn't been uploaded yet.</p>
-            {% endif %}
+            {% with videos=course.published_videos %}
+              {% if videos %}
+              <div class="course-video-layout">
+                <div class="course-video-player">
+                  <video id="courseVideoPlayer" controls controlsList="nodownload" {% if course.thumbnail %}poster="{{ course.thumbnail.url }}"{% endif %} src="{{ videos.0.video_file.url }}"></video>
+                  <h3 id="courseVideoTitle">{{ videos.0.title }}</h3>
+                </div>
+                <div class="course-playlist">
+                  <p class="course-playlist-title">Course Lessons · {{ videos|length }} videos</p>
+                  {% for video in videos %}
+                  <button type="button" class="course-lesson{% if forloop.first %} is-active{% endif %}" data-src="{{ video.video_file.url }}" data-title="{{ video.title }}">
+                    <span class="course-lesson-num">{{ forloop.counter }}</span>
+                    <span class="course-lesson-text">{{ video.title }}{% if video.duration_minutes %}<small>{{ video.duration_minutes }} min</small>{% endif %}</span>
+                  </button>
+                  {% endfor %}
+                </div>
+              </div>
+              {% elif course.video_file %}
+                <video controls {% if course.thumbnail %}poster="{{ course.thumbnail.url }}"{% endif %} src="{{ course.video_file.url }}"></video>
+              {% else %}
+                <p class="course-detail-empty">Videos for this course haven't been uploaded yet.</p>
+              {% endif %}
+            {% endwith %}
           {% elif course.course_type == 'elibrary' %}
-            {% if course.pdf_file %}
-              <iframe class="course-pdf-frame" src="{{ course.pdf_file.url }}" title="{{ course.name }}"></iframe>
-              <div class="course-actions-row"><a class="btn btn-ghost" href="{{ course.pdf_file.url }}" download>Download PDF</a></div>
-            {% else %}
-              <p class="course-detail-empty">The PDF for this book hasn't been uploaded yet.</p>
-            {% endif %}
+            {% with documents=course.published_documents %}
+              {% if documents %}
+              <div class="course-document-layout">
+                <div class="course-document-viewer">
+                  <iframe class="course-pdf-frame" id="coursePdfViewer" src="{{ documents.0.pdf_file.url }}" title="{{ documents.0.title }}"></iframe>
+                  <h3 id="coursePdfTitle">{{ documents.0.title }}</h3>
+                  <div class="course-actions-row"><a class="btn btn-ghost" id="coursePdfDownload" href="{{ documents.0.pdf_file.url }}" download>Download PDF</a></div>
+                </div>
+                <div class="course-playlist">
+                  <p class="course-playlist-title">Library Documents · {{ documents|length }} PDFs</p>
+                  {% for document in documents %}
+                  <button type="button" class="course-lesson course-document{% if forloop.first %} is-active{% endif %}" data-src="{{ document.pdf_file.url }}" data-title="{{ document.title }}">
+                    <span class="course-lesson-num">{{ forloop.counter }}</span>
+                    <span class="course-lesson-text">{{ document.title }}{% if document.pages %}<small>{{ document.pages }} pages</small>{% endif %}</span>
+                  </button>
+                  {% endfor %}
+                </div>
+              </div>
+              {% elif course.pdf_file %}
+                <iframe class="course-pdf-frame" src="{{ course.pdf_file.url }}" title="{{ course.name }}"></iframe>
+                <div class="course-actions-row"><a class="btn btn-ghost" href="{{ course.pdf_file.url }}" download>Download PDF</a></div>
+              {% else %}
+                <p class="course-detail-empty">PDF documents for this library item haven't been uploaded yet.</p>
+              {% endif %}
+            {% endwith %}
           {% endif %}
         </div>
       {% else %}
@@ -93,4 +141,29 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_script %}
+(function(){
+  var player=document.getElementById('courseVideoPlayer');
+  if(player){
+    var title=document.getElementById('courseVideoTitle');
+    document.querySelectorAll('.course-lesson:not(.course-document)').forEach(function(button){
+      button.addEventListener('click',function(){
+        document.querySelectorAll('.course-lesson:not(.course-document)').forEach(function(item){item.classList.remove('is-active')});
+        button.classList.add('is-active');player.src=button.dataset.src;title.textContent=button.dataset.title;player.load();player.play().catch(function(){});
+      });
+    });
+  }
+  var pdfViewer=document.getElementById('coursePdfViewer');
+  if(pdfViewer){
+    var pdfTitle=document.getElementById('coursePdfTitle'),pdfDownload=document.getElementById('coursePdfDownload');
+    document.querySelectorAll('.course-document').forEach(function(button){
+      button.addEventListener('click',function(){
+        document.querySelectorAll('.course-document').forEach(function(item){item.classList.remove('is-active')});
+        button.classList.add('is-active');pdfViewer.src=button.dataset.src;pdfViewer.title=button.dataset.title;pdfTitle.textContent=button.dataset.title;pdfDownload.href=button.dataset.src;
+      });
+    });
+  }
+})();
 {% endblock %}

@@ -5,12 +5,13 @@
 {% block preloader %}{% endblock %}
 
 {% block extra_style %}
-.auth-section{padding:64px 0 90px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%)}
-.auth-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:56px;align-items:center}
+.auth-section{padding:36px 0 56px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%)}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:42px;align-items:start}
+.auth-intro{padding:38px 6px 0}
 .auth-intro .section-title{margin-bottom:14px}
 .auth-card{
   position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:24px;
-  padding:38px 34px 34px;box-shadow:var(--shadow-md);
+  padding:28px 30px 24px;box-shadow:var(--shadow-md);
 }
 .auth-card::before{
   content:"";position:absolute;top:0;left:0;right:0;height:5px;
@@ -18,17 +19,17 @@
 }
 .auth-icon{
   width:46px;height:46px;border-radius:14px;background:var(--orange-soft);color:var(--orange-deep);
-  display:grid;place-items:center;font-size:21px;margin-bottom:16px;
+  display:grid;place-items:center;font-size:21px;margin-bottom:10px;
 }
 .auth-card h1{font-size:clamp(23px,3vw,28px);font-weight:800;margin:0 0 6px}
-.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px}
-.auth-form{display:flex;flex-direction:column;gap:16px}
-.auth-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.auth-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700;color:#374151}
+.auth-sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.auth-form label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:700;color:#374151;min-width:0}
 .auth-label-text{display:inline-flex;align-items:center;gap:4px}
 .req{color:#DC2626;font-weight:800}
 .auth-form input,.auth-form select{
-  border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+  width:100%;min-width:0;height:42px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;
   font-size:14px;font-family:inherit;color:var(--ink);background:#fff;
   transition:border-color .15s ease,box-shadow .15s ease;
 }
@@ -38,19 +39,20 @@
 }
 .auth-errors{color:#DC2626;font-size:12.5px;margin:2px 0 0;padding:0;list-style:none}
 .auth-form label:has(.auth-errors) input{border-color:#DC2626}
-.auth-footer{text-align:center;margin-top:20px;font-size:13.5px;color:var(--muted)}
+.auth-footer{text-align:center;margin:14px 0 0;font-size:13.5px;color:var(--muted)}
 .auth-footer a{color:var(--orange);font-weight:700}
-.sso-row{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.sso-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:14px}
 .sso-btn{
   display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
-  border:1px solid var(--line);border-radius:10px;padding:11px;font-size:14px;font-weight:700;
+  border:1px solid var(--line);border-radius:10px;padding:9px 8px;font-size:13px;font-weight:700;
   color:var(--ink);background:#fff;transition:.15s ease;
 }
 .sso-btn:hover{border-color:rgba(249,115,22,.5);background:#FFFAF6}
 .sso-btn svg{width:18px;height:18px;flex:0 0 auto}
-.sso-divider{display:flex;align-items:center;gap:12px;margin:0 0 20px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.sso-divider{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .sso-divider::before,.sso-divider::after{content:"";flex:1;height:1px;background:var(--line)}
-@media (max-width:900px){.auth-grid{grid-template-columns:1fr}.auth-intro{text-align:center}.auth-intro .au-checks{text-align:left}}
+@media (max-width:900px){.auth-grid{grid-template-columns:1fr}.auth-intro{text-align:center;padding:0}.auth-intro .au-checks{text-align:left}}
+@media (max-width:680px){.sso-row{grid-template-columns:1fr}}
 @media (max-width:560px){.auth-row{grid-template-columns:1fr}}
 {% endblock %}
 
@@ -96,54 +98,56 @@
       <form class="auth-form" id="signupForm" method="post" novalidate>
         {% csrf_token %}
 
-        <label><span class="auth-label-text">Name <span class="req">*</span></span>
-          {{ form.name }}
-          {% if form.name.errors %}<ul class="auth-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-        </label>
-
         <div class="auth-row">
+          <label><span class="auth-label-text">Name <span class="req">*</span></span>
+            {{ form.name }}
+            {% if form.name.errors %}<ul class="auth-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
           <label><span class="auth-label-text">Email <span class="req">*</span></span>
             {{ form.email }}
             {% if form.email.errors %}<ul class="auth-errors">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
           </label>
+        </div>
+
+        <div class="auth-row">
           <label><span class="auth-label-text">Phone number <span class="req">*</span></span>
             {{ form.number }}
             {% if form.number.errors %}<ul class="auth-errors">{% for e in form.number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
           </label>
-        </div>
-
-        <div class="auth-row">
           <label><span class="auth-label-text">Age</span>
             {{ form.age }}
           </label>
+        </div>
+
+        <div class="auth-row">
           <label><span class="auth-label-text">Gender</span>
             {{ form.gender }}
+          </label>
+          <label><span class="auth-label-text">State</span>
+            {{ form.state }}
           </label>
         </div>
 
         <div class="auth-row">
-          <label><span class="auth-label-text">State</span>
-            {{ form.state }}
-          </label>
           <label><span class="auth-label-text">City</span>
             {{ form.city }}
           </label>
+          <label><span class="auth-label-text">🎁 Referral code</span>
+            {{ form.referral_code }}
+            {% if form.referral_code.errors %}<ul class="auth-errors">{% for e in form.referral_code.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
         </div>
 
-        <label><span class="auth-label-text">Password <span class="req">*</span></span>
-          {{ form.password1 }}
-          {% if form.password1.errors %}<ul class="auth-errors">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-        </label>
-
-        <label><span class="auth-label-text">Confirm password <span class="req">*</span></span>
-          {{ form.password2 }}
-          {% if form.password2.errors %}<ul class="auth-errors">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-        </label>
-
-        <label><span class="auth-label-text">🎁 Referral code</span>
-          {{ form.referral_code }}
-          {% if form.referral_code.errors %}<ul class="auth-errors">{% for e in form.referral_code.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-        </label>
+        <div class="auth-row">
+          <label><span class="auth-label-text">Password <span class="req">*</span></span>
+            {{ form.password1 }}
+            {% if form.password1.errors %}<ul class="auth-errors">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
+          <label><span class="auth-label-text">Confirm password <span class="req">*</span></span>
+            {{ form.password2 }}
+            {% if form.password2.errors %}<ul class="auth-errors">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
+        </div>
 
         {% if form.non_field_errors %}
           <ul class="auth-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>

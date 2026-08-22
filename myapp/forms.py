@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import inlineformset_factory
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from .models import (
@@ -14,6 +15,8 @@ from .models import (
     ContactMessage,
     Coupon,
     Course,
+    CourseDocument,
+    CourseVideo,
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
@@ -356,10 +359,9 @@ class GalleryImageForm(forms.ModelForm):
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ('name', 'icon', 'order')
+        fields = ('name', 'order')
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'e.g. CBSE'}),
-            'icon': forms.TextInput(attrs={'placeholder': '📘'}),
             'order': forms.NumberInput(attrs={'min': 0}),
         }
         help_texts = {
@@ -392,6 +394,48 @@ class CourseForm(forms.ModelForm):
         help_texts = {
             'order': 'Lower numbers show first.',
         }
+
+
+class CourseVideoForm(forms.ModelForm):
+    class Meta:
+        model = CourseVideo
+        fields = ('title', 'video_file', 'duration_minutes', 'order', 'is_active')
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. Lesson 1 — Introduction'}),
+            'video_file': forms.FileInput(attrs={'accept': 'video/*'}),
+            'duration_minutes': forms.NumberInput(attrs={'min': 1, 'placeholder': 'Minutes'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+
+
+CourseVideoFormSet = inlineformset_factory(
+    Course,
+    CourseVideo,
+    form=CourseVideoForm,
+    extra=1,
+    can_delete=True,
+)
+
+
+class CourseDocumentForm(forms.ModelForm):
+    class Meta:
+        model = CourseDocument
+        fields = ('title', 'pdf_file', 'pages', 'order', 'is_active')
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. Chapter 1 — Notes'}),
+            'pdf_file': forms.FileInput(attrs={'accept': 'application/pdf'}),
+            'pages': forms.NumberInput(attrs={'min': 1, 'placeholder': 'Pages'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+
+
+CourseDocumentFormSet = inlineformset_factory(
+    Course,
+    CourseDocument,
+    form=CourseDocumentForm,
+    extra=1,
+    can_delete=True,
+)
 
 
 class QuestionForm(forms.ModelForm):
@@ -845,10 +889,13 @@ class EligibilityCriteriaForm(forms.ModelForm):
 
 
 class EligibilityCheckForm(forms.Form):
+    nationality = forms.ChoiceField(choices=[('indian', 'Indian citizen'), ('other', 'Other nationality')])
     education = forms.ChoiceField(choices=EligibilityCriteria.EDUCATION_CHOICES)
+    category = forms.ChoiceField(choices=[('general', 'General / UR'), ('obc', 'OBC-NCL'), ('sc', 'Scheduled Caste (SC)'), ('st', 'Scheduled Tribe (ST)'), ('ews', 'EWS')])
     gender = forms.ChoiceField(choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
     dob = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Date of birth')
     height_cm = forms.IntegerField(min_value=100, max_value=250, label='Height (cm)', widget=forms.NumberInput(attrs={'placeholder': 'e.g. 168'}))
     state = forms.ChoiceField(choices=[c for c in STATE_CHOICES if c[0]])
     district = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'placeholder': 'e.g. Lucknow'}))
     marital_status = forms.ChoiceField(choices=[('unmarried', 'Unmarried'), ('married', 'Married')])
+    declaration = forms.BooleanField(label='I confirm that the information entered above is correct.')

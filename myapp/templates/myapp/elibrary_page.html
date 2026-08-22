@@ -32,7 +32,8 @@
         {% if item.author %}<p style="margin-bottom:4px;font-weight:600;color:#374151">by {{ item.author }}</p>{% endif %}
         {% if item.about %}<p>{{ item.about|truncatechars:110 }}</p>{% endif %}
         <div class="pc-tags">
-          {% if item.category %}<span>{{ item.category.icon }} {{ item.category.name }}</span>{% endif %}
+          {% if item.category %}<span>{{ item.category.name }}</span>{% endif %}
+          <span>📄 {{ item.published_document_count }} PDF{{ item.published_document_count|pluralize }}</span>
           {% if item.pages %}<span>📄 {{ item.pages }} pages</span>{% endif %}
         </div>
         <div class="pc-meta">

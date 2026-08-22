@@ -230,6 +230,11 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
   background:#ECFDF3;color:#15803D;border-radius:12px;padding:12px 16px;font-size:13.5px;font-weight:700;
   margin-bottom:18px;
 }
+.panel-toast-stack{position:fixed;top:88px;left:calc(50% + 129px);transform:translateX(-50%);z-index:120;width:max-content;max-width:calc(100% - 300px);display:flex;flex-direction:column;gap:8px}
+.panel-toast{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:280px;max-width:560px;padding:13px 16px;border-radius:12px;background:#ECFDF3;color:#166534;border:1px solid #BBF7D0;box-shadow:0 14px 35px rgba(15,23,42,.16);font-size:13.5px;font-weight:700}
+.panel-toast.error{background:#FEF2F2;color:#991B1B;border-color:#FECACA}.panel-toast.warning{background:#FFFBEB;color:#92400E;border-color:#FDE68A}.panel-toast.info{background:#EFF6FF;color:#1E40AF;border-color:#BFDBFE}
+.panel-toast button{border:0;background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer;padding:0;flex:0 0 auto}
+.panel-content:has(.panel-toast-stack) .panel-alert{display:none}
 
 @media (max-width:1080px){
   .panel-stats{grid-template-columns:repeat(2,1fr)}
@@ -248,6 +253,7 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
   .panel-content{padding:18px}
   .panel-form-row{grid-template-columns:1fr}
   .panel-user-info{display:none}
+  .panel-toast-stack{left:50%;max-width:calc(100% - 32px)}
 }
 @media (max-width:560px){
   .panel-stats{grid-template-columns:1fr}
@@ -258,6 +264,49 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
 }
 </style>
 <style id="panelExtraStyle">/*PJAX_STYLE_START*/{% block extra_style %}{% endblock %}/*PJAX_STYLE_END*/</style>
+<style>
+/* Final admin responsive safety layer — loaded after every page's custom CSS. */
+html,body{max-width:100%;overflow-x:hidden}
+.panel-main,.panel-content,.panel-card,.panel-form{min-width:0}
+.panel-card img,.panel-card video,.panel-card iframe{max-width:100%}
+.panel-form input:not([type="checkbox"]):not([type="radio"]),.panel-form select,.panel-form textarea{width:100%;min-width:0;max-width:100%}
+.panel-form input[type="file"]{max-width:100%;white-space:normal}
+@media(max-width:1100px){
+  .panel-content{padding:24px}
+  .panel-card-head{align-items:flex-start}
+  .panel-form{max-width:100%}
+  .panel-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:820px){
+  .panel-main{width:100%}
+  .panel-topbar{width:100%;padding:12px 14px;gap:8px}
+  .panel-topbar.scrolled{margin:8px 8px 0}
+  .panel-user{gap:7px}.panel-user-avatar{width:32px;height:32px}.panel-logout{padding:8px 12px;font-size:12px}
+  .panel-content{width:100%;padding:16px}
+  .panel-card{padding:18px;border-radius:16px}
+  .panel-card-head{flex-direction:column;margin-bottom:18px}.panel-card-head>.btn{width:100%;justify-content:center}
+  .panel-form-row,.course-form-row,.custom-row,.settings-row,.settings-row-wide,.notif-form-row,.gallery-form-row,.brand-form-row,.question-form-row,.chatbot-form-row{grid-template-columns:1fr!important;max-width:100%!important}
+  .panel-form-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.panel-form-actions .btn{width:100%}
+  .panel-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.panel-table{min-width:680px}
+  table.panel-table th,table.panel-table td{padding:11px 12px}
+  .panel-toast{min-width:0;width:100%;max-width:100%}.panel-toast-stack{width:calc(100% - 24px);top:74px}
+  .dash-chart-body,.dash-chart-wide .dash-chart-body{height:260px!important;padding:12px!important}
+  .video-modal{padding:12px!important}.video-modal-box{max-height:calc(100vh - 24px)}
+}
+@media(max-width:560px){
+  .panel-content{padding:12px}.panel-card{padding:15px;border-radius:14px}
+  .panel-stats{grid-template-columns:1fr;gap:10px}.panel-stat{padding:15px}
+  .panel-form-actions{grid-template-columns:1fr}
+  .panel-card-head h2{font-size:17px}.panel-topbar h1{font-size:16px}
+  .panel-user-avatar{display:none}.panel-logout{padding:7px 10px}
+  table.panel-table{min-width:620px;font-size:12.5px}
+  .category-actions{flex-direction:column}.category-actions .btn{width:100%}
+  .video-playlist-admin{padding:14px!important}.video-admin-item{padding:13px!important}.video-admin-item-head{align-items:flex-start!important}.video-admin-item-head-actions{width:100%;justify-content:space-between}
+  .file-field-box{padding:10px!important;overflow:hidden}.file-field-box input[type="file"]{font-size:12px}
+  .dash-grid,.erp-grid,.backup-grid,.card-grid,.panel-charts{grid-template-columns:1fr!important}
+}
+</style>
 </head>
 <body>
 <div class="panel-shell">
@@ -292,6 +341,9 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
 
     <nav class="panel-nav">
       <p class="panel-nav-label">Overview</p>
+      <a class="{% block nav_dashboard %}{% endblock %}" href="{% url 'panel_dashboard' %}">
+        <span class="panel-nav-ico">📊</span> Dashboard
+      </a>
       <a class="{% block nav_signups %}{% endblock %}" href="{% url 'panel_signups' %}">
         <span class="panel-nav-ico">👥</span> Signups
       </a>
@@ -460,6 +512,11 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
 
     <main class="panel-content" id="panelContent">
       <!--PJAX_CONTENT_START-->
+      {% if messages %}
+      <div class="panel-toast-stack" aria-live="polite">
+        {% for message in messages %}<div class="panel-toast {{ message.tags }}"><span>{{ message }}</span><button type="button" aria-label="Dismiss notification" onclick="this.parentElement.remove()">×</button></div>{% endfor %}
+      </div>
+      {% endif %}
       {% block content %}{% endblock %}
       <!--PJAX_CONTENT_END-->
     </main>

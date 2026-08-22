@@ -1,0 +1,29 @@
+<div class="video-admin-item"{% if not video_form.instance.pk %} data-new-row="1"{% endif %}>
+  {% for hidden in video_form.hidden_fields %}{{ hidden }}{% endfor %}
+  <div class="video-admin-item-head">
+    <span class="video-admin-item-num">{% if is_new_template %}New lesson{% else %}Lesson {{ lesson_number }}{% endif %}</span>
+    <div class="video-admin-item-head-actions">
+      <label class="panel-form-check video-admin-active">{{ video_form.is_active }} Active</label>
+      {% if video_form.instance.pk %}
+        <label class="video-admin-remove" title="Mark this lesson for deletion when you save">{{ video_form.DELETE }} <span>🗑 Remove</span></label>
+      {% else %}
+        <button type="button" class="video-admin-remove-new" data-remove-row title="Remove this empty row">✕ Remove</button>
+      {% endif %}
+    </div>
+  </div>
+  <div class="video-admin-item-body">
+    <label><span>Lesson title</span>
+      {{ video_form.title }}
+      {% if video_form.title.errors %}<ul class="panel-errors">{% for e in video_form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+    <label><span>Video file</span>
+      <div class="file-field-box">{{ video_form.video_file }}</div>
+      {% if video_form.instance.pk and video_form.instance.video_file %}
+        <p class="custom-help">Current file: <a href="{{ video_form.instance.video_file.url }}" target="_blank" rel="noopener">view</a> — choose a new file only to replace it.</p>
+      {% endif %}
+      {% if video_form.video_file.errors %}<ul class="panel-errors">{% for e in video_form.video_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+    <label><span>Duration (min)</span>{{ video_form.duration_minutes }}</label>
+    <label><span>Order</span>{{ video_form.order }}</label>
+  </div>
+</div>

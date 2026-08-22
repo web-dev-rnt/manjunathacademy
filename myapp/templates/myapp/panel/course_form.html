@@ -6,6 +6,7 @@
 
 {% block extra_style %}
 .course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel-form{max-width:none;width:100%}
 .course-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
 .course-preview img{max-height:80px;max-width:160px;border-radius:8px;object-fit:cover}
 .course-preview-label{font-size:12.5px;color:var(--muted)}
@@ -20,7 +21,25 @@
 .file-field-box a{color:var(--orange-deep);font-weight:700;text-decoration:underline;word-break:break-all}
 .file-field-box input[type="checkbox"]{accent-color:var(--orange);margin-right:5px}
 .file-field-box input[type="file"]{display:block;margin-top:6px;font-size:13.5px}
+.video-playlist-admin{margin-top:8px;padding:22px;background:#fff;border:1px solid var(--line);border-radius:16px}
+.video-playlist-admin h3{font-size:16px;margin:0 0 4px}.video-playlist-admin>p{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.video-admin-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.video-admin-item{width:100%;padding:16px 18px;background:#FAFAF9;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.video-admin-item label{font-size:12px}
+.video-admin-item-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.video-admin-item-num{font-weight:800;font-size:13px;color:var(--ink);background:#fff;border:1px solid var(--line);padding:4px 12px;border-radius:999px}
+.video-admin-item-head-actions{display:flex;align-items:center;gap:16px}
+.video-admin-active{margin:0!important}
+.video-admin-remove,.video-admin-remove-new{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:#DC2626;cursor:pointer;background:none;border:0;padding:0}
+.video-admin-remove input{accent-color:#DC2626}
+.video-admin-remove:hover,.video-admin-remove-new:hover{text-decoration:underline}
+.video-admin-item-body{display:grid;grid-template-columns:minmax(180px,320px) minmax(220px,380px) 110px 100px;gap:14px;align-items:start;justify-content:start}
+.video-admin-item-body input,.video-admin-item-body select{width:100%;min-width:0}
+.video-admin-item-body .file-field-box{min-height:62px;padding:10px 12px;overflow:hidden}.video-admin-item-body input[type="file"]{max-width:100%}
+.video-admin-add{margin-top:2px}
+@media (max-width:1100px){.video-admin-item-body{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 @media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+@media (max-width:560px){.video-admin-item-body{grid-template-columns:1fr}}
 {% endblock %}
 
 {% block content %}
@@ -103,11 +122,28 @@
       <label><span class="panel-label-text">Pages</span>{{ form.pages }}</label>
     </div>
 
-    <label><span class="panel-label-text">PDF file {% if is_new %}<span class="req">*</span>{% endif %}</span>
+    <label><span class="panel-label-text">Legacy/main PDF</span>
       <div class="file-field-box">{{ form.pdf_file }}</div>
-      <p class="custom-help">{{ form.pdf_file.help_text }}{% if course.pdf_file %} Uploading a new file replaces the current one.{% endif %}</p>
+      <p class="custom-help">Optional legacy/main document. Use the collection below to upload multiple PDFs.{% if course.pdf_file %} Uploading a new file replaces the current one.{% endif %}</p>
       {% if form.pdf_file.errors %}<ul class="panel-errors">{% for e in form.pdf_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
+
+    <div class="video-playlist-admin">
+      <h3>E-Library PDF collection</h3>
+      <p>Add as many PDFs as you need — click "Add another document" any time, no need to save first. Lower order numbers appear first.</p>
+      {{ document_formset.management_form }}
+      {% if document_formset.non_form_errors %}<ul class="panel-errors">{% for e in document_formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+      <div class="video-admin-list" id="documentAdminList">
+        {% for document_form in document_formset %}
+          {% include "myapp/panel/_document_row.html" with document_form=document_form document_number=forloop.counter is_new_template=False %}
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-ghost video-admin-add" id="addDocumentRowBtn">+ Add another document</button>
+
+      <script type="text/template" id="documentRowTemplate">{% include "myapp/panel/_document_row.html" with document_form=document_formset.empty_form document_number=0 is_new_template=True %}</script>
+    </div>
     {% endif %}
 
     {% if course_type == 'video_course' %}
@@ -115,11 +151,22 @@
       {{ form.duration_minutes }}
     </label>
 
-    <label><span class="panel-label-text">Video file {% if is_new %}<span class="req">*</span>{% endif %}</span>
-      <div class="file-field-box">{{ form.video_file }}</div>
-      <p class="custom-help">{{ form.video_file.help_text }}{% if course.video_file %} Uploading a new file replaces the current one.{% endif %}</p>
-      {% if form.video_file.errors %}<ul class="panel-errors">{% for e in form.video_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-    </label>
+    <div class="video-playlist-admin">
+      <h3>Course video playlist</h3>
+      <p>Add as many lessons as you need — click "Add another lesson" any time, no need to save first. Lower order numbers appear first.</p>
+      {{ video_formset.management_form }}
+      {% if video_formset.non_form_errors %}<ul class="panel-errors">{% for e in video_formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+      <div class="video-admin-list" id="videoAdminList">
+        {% for video_form in video_formset %}
+          {% include "myapp/panel/_video_lesson_row.html" with video_form=video_form lesson_number=forloop.counter is_new_template=False %}
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-ghost video-admin-add" id="addVideoRowBtn">+ Add another lesson</button>
+
+      <script type="text/template" id="videoRowTemplate">{% include "myapp/panel/_video_lesson_row.html" with video_form=video_formset.empty_form lesson_number=0 is_new_template=True %}</script>
+    </div>
     {% endif %}
 
     {% if course_type == 'test_series' %}
@@ -161,4 +208,55 @@
   enableValidity.addEventListener('change', sync);
   sync();
 })();
+
+function setupDynamicFormset(opts) {
+  var list = document.getElementById(opts.listId);
+  var addBtn = document.getElementById(opts.addBtnId);
+  var templateEl = document.getElementById(opts.templateId);
+  var totalForms = document.getElementById('id_' + opts.prefix + '-TOTAL_FORMS');
+  if (!list || !addBtn || !templateEl || !totalForms) return;
+
+  var prefixRe = new RegExp(opts.prefix + '-\\d+-');
+
+  function renumber() {
+    var rows = list.querySelectorAll('.video-admin-item');
+    rows.forEach(function (row, i) {
+      row.querySelectorAll('[name],[id]').forEach(function (el) {
+        if (el.name) el.name = el.name.replace(prefixRe, opts.prefix + '-' + i + '-');
+        if (el.id) el.id = el.id.replace(prefixRe, opts.prefix + '-' + i + '-');
+      });
+      var numEl = row.querySelector('.video-admin-item-num');
+      if (numEl) numEl.textContent = opts.itemLabel + ' ' + (i + 1);
+    });
+    totalForms.value = rows.length;
+  }
+
+  addBtn.addEventListener('click', function () {
+    var index = parseInt(totalForms.value, 10);
+    var html = templateEl.innerHTML.split('__prefix__').join(index);
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = html.trim();
+    var row = wrapper.firstElementChild;
+    list.appendChild(row);
+    renumber();
+    var titleInput = row.querySelector('input[type="text"]');
+    if (titleInput) titleInput.focus();
+  });
+
+  list.addEventListener('click', function (e) {
+    var removeBtn = e.target.closest('[data-remove-row]');
+    if (!removeBtn) return;
+    removeBtn.closest('.video-admin-item').remove();
+    renumber();
+  });
+}
+
+setupDynamicFormset({
+  listId: 'videoAdminList', addBtnId: 'addVideoRowBtn', templateId: 'videoRowTemplate',
+  prefix: 'videos', itemLabel: 'Lesson',
+});
+setupDynamicFormset({
+  listId: 'documentAdminList', addBtnId: 'addDocumentRowBtn', templateId: 'documentRowTemplate',
+  prefix: 'documents', itemLabel: 'Document',
+});
 {% endblock %}

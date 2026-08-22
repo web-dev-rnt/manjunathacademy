@@ -1,0 +1,29 @@
+<div class="video-admin-item"{% if not document_form.instance.pk %} data-new-row="1"{% endif %}>
+  {% for hidden in document_form.hidden_fields %}{{ hidden }}{% endfor %}
+  <div class="video-admin-item-head">
+    <span class="video-admin-item-num">{% if is_new_template %}New document{% else %}Document {{ document_number }}{% endif %}</span>
+    <div class="video-admin-item-head-actions">
+      <label class="panel-form-check video-admin-active">{{ document_form.is_active }} Active</label>
+      {% if document_form.instance.pk %}
+        <label class="video-admin-remove" title="Mark this document for deletion when you save">{{ document_form.DELETE }} <span>🗑 Remove</span></label>
+      {% else %}
+        <button type="button" class="video-admin-remove-new" data-remove-row title="Remove this empty row">✕ Remove</button>
+      {% endif %}
+    </div>
+  </div>
+  <div class="video-admin-item-body">
+    <label><span>Document title</span>
+      {{ document_form.title }}
+      {% if document_form.title.errors %}<ul class="panel-errors">{% for e in document_form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+    <label><span>PDF file</span>
+      <div class="file-field-box">{{ document_form.pdf_file }}</div>
+      {% if document_form.instance.pk and document_form.instance.pdf_file %}
+        <p class="custom-help">Current file: <a href="{{ document_form.instance.pdf_file.url }}" target="_blank" rel="noopener">view</a> — choose a new file only to replace it.</p>
+      {% endif %}
+      {% if document_form.pdf_file.errors %}<ul class="panel-errors">{% for e in document_form.pdf_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+    <label><span>Pages</span>{{ document_form.pages }}</label>
+    <label><span>Order</span>{{ document_form.order }}</label>
+  </div>
+</div>
