@@ -51,6 +51,12 @@
 .home-motion[data-home-motion="left"]{transform:translateX(-42px)}
 .home-motion[data-home-motion="right"]{transform:translateX(42px)}
 .home-motion.is-visible{opacity:1;filter:none;transform:none}
+@media(max-width:767px){
+  /* The sideways slide-in pushes a full-width .wrap past the viewport edge while it's
+     mid-transition, which triggers a horizontal scroll/bounce on phones. Vertical-only
+     on mobile avoids that entirely. */
+  .home-motion[data-home-motion="left"],.home-motion[data-home-motion="right"]{transform:translateY(20px)}
+}
 .hero-copy.home-motion{transition-delay:.08s}
 .hero-visual.home-motion{transition-delay:.18s}
 

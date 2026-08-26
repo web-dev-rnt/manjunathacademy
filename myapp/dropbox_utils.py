@@ -13,6 +13,9 @@ LIST_FOLDER_URL = 'https://api.dropboxapi.com/2/files/list_folder'
 LIST_FOLDER_CONTINUE_URL = 'https://api.dropboxapi.com/2/files/list_folder/continue'
 DELETE_URL = 'https://api.dropboxapi.com/2/files/delete_v2'
 ACCOUNT_URL = 'https://api.dropboxapi.com/2/users/get_current_account'
+GET_METADATA_URL = 'https://api.dropboxapi.com/2/files/get_metadata'
+CREATE_SHARED_LINK_URL = 'https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings'
+LIST_SHARED_LINKS_URL = 'https://api.dropboxapi.com/2/sharing/list_shared_links'
 
 _token_cache = {'token': None, 'expires_at': 0}
 
@@ -85,9 +88,7 @@ def test_connection():
         raise DropboxError(f'Could not connect to Dropbox: {exc}')
 
 
-def upload_file(dropbox_path, local_path):
-    with open(local_path, 'rb') as f:
-        data = f.read()
+def upload_bytes(dropbox_path, data):
     api_arg = json.dumps({'path': dropbox_path, 'mode': 'overwrite', 'autorename': False, 'mute': True})
     req = urllib.request.Request(
         UPLOAD_URL,
@@ -105,7 +106,12 @@ def upload_file(dropbox_path, local_path):
         raise DropboxError(f'Upload failed for {dropbox_path}: {_http_error_detail(exc)}')
 
 
-def download_file(dropbox_path, local_path):
+def upload_file(dropbox_path, local_path):
+    with open(local_path, 'rb') as f:
+        return upload_bytes(dropbox_path, f.read())
+
+
+def download_bytes(dropbox_path):
     api_arg = json.dumps({'path': dropbox_path})
     req = urllib.request.Request(
         DOWNLOAD_URL,
@@ -115,9 +121,13 @@ def download_file(dropbox_path, local_path):
     )
     try:
         with urllib.request.urlopen(req, timeout=120) as resp:
-            content = resp.read()
+            return resp.read()
     except urllib.error.HTTPError as exc:
         raise DropboxError(f'Download failed for {dropbox_path}: {_http_error_detail(exc)}')
+
+
+def download_file(dropbox_path, local_path):
+    content = download_bytes(dropbox_path)
     with open(local_path, 'wb') as f:
         f.write(content)
 
@@ -171,3 +181,54 @@ def delete_path(path):
         raise DropboxError(f'Could not delete {path}: {detail}')
     except Exception as exc:
         raise DropboxError(f'Could not delete {path}: {exc}')
+
+
+def get_metadata(path):
+    """Returns file metadata (dict with at least 'size'), or None if the path doesn't exist."""
+    try:
+        return _post_json(GET_METADATA_URL, {'path': path})
+    except urllib.error.HTTPError as exc:
+        detail = _http_error_detail(exc)
+        if 'not_found' in detail:
+            return None
+        raise DropboxError(f'Could not get metadata for {path}: {detail}')
+    except Exception as exc:
+        raise DropboxError(f'Could not get metadata for {path}: {exc}')
+
+
+def _to_raw_url(url):
+    """Rewrites a Dropbox shared-link URL to serve raw file bytes (for <img>/<video> embedding)
+    instead of Dropbox's HTML preview page."""
+    parsed = urllib.parse.urlsplit(url)
+    query = dict(urllib.parse.parse_qsl(parsed.query))
+    query.pop('dl', None)
+    query['raw'] = '1'
+    return urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urllib.parse.urlencode(query), parsed.fragment))
+
+
+def get_direct_link(path):
+    """Returns a permanent, directly-embeddable URL for a file, creating a shared link if needed."""
+    try:
+        payload = _post_json(LIST_SHARED_LINKS_URL, {'path': path, 'direct_only': True})
+        links = payload.get('links') or []
+        if links:
+            return _to_raw_url(links[0]['url'])
+    except urllib.error.HTTPError as exc:
+        raise DropboxError(f'Could not list shared links for {path}: {_http_error_detail(exc)}')
+    except Exception as exc:
+        raise DropboxError(f'Could not list shared links for {path}: {exc}')
+
+    try:
+        payload = _post_json(CREATE_SHARED_LINK_URL, {'path': path})
+        return _to_raw_url(payload['url'])
+    except urllib.error.HTTPError as exc:
+        detail = _http_error_detail(exc)
+        if 'shared_link_already_exists' in detail:
+            try:
+                existing_url = json.loads(detail)['error']['shared_link_already_exists']['metadata']['url']
+                return _to_raw_url(existing_url)
+            except Exception:
+                pass
+        raise DropboxError(f'Could not create shared link for {path}: {detail}')
+    except Exception as exc:
+        raise DropboxError(f'Could not create shared link for {path}: {exc}')

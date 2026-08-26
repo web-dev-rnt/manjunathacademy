@@ -3030,8 +3030,8 @@ def panel_dropbox_settings(request):
 
         if request.POST.get('action') == 'restore':
             filename = request.POST.get('filename') or None
-            ok, detail = backup_utils.restore_everything(settings_obj, filename=filename)
-            messages.success(request, f'Restore complete. {detail}') if ok else messages.error(request, f'Restore finished with errors. {detail}')
+            ok, detail = backup_utils.restore_database(settings_obj, filename=filename)
+            messages.success(request, detail) if ok else messages.error(request, f'Restore failed: {detail}')
             return redirect('panel_dropbox_settings')
 
         if request.POST.get('action') == 'delete_all_backups':

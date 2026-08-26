@@ -146,8 +146,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 STORAGES = {
+    # Every upload (banners, course videos, e-library PDFs, thumbnails, etc.) goes straight to
+    # Dropbox instead of the local disk, which Railway wipes on every redeploy. Restoring the
+    # database backup is enough to bring everything back — there's no separate media restore step.
     'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        'BACKEND': 'myapp.dropbox_storage.DropboxStorage',
     },
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',

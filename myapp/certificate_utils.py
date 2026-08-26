@@ -78,7 +78,8 @@ def _paste_logo(img, site, top_y, target_h=104):
     if site.logo_type != site.LOGO_IMAGE or not site.logo_image:
         return top_y
     try:
-        logo = Image.open(site.logo_image.path).convert('RGBA')
+        with site.logo_image.open('rb') as f:
+            logo = Image.open(io.BytesIO(f.read())).convert('RGBA')
     except Exception:
         return top_y
 

@@ -2,7 +2,7 @@
 
 {% block title %}Database Backup & Restore{% endblock %}
 {% block page_title %}Database Backup & Restore{% endblock %}
-{% block page_sub %}Manually backup your SQLite database to Dropbox or restore from a previous backup.{% endblock %}
+{% block page_sub %}Images, PDFs and videos upload straight to Dropbox as you add them. Backup/restore here only covers the database.{% endblock %}
 {% block nav_dropbox %}is-active{% endblock %}
 
 {% block extra_style %}
@@ -60,14 +60,14 @@
 <div class="redeploy-card">
   <div>
     <h3>🔄 Just pushed new code / redeployed?</h3>
-    <p>Railway resets the site's data on every deploy. Click this once, right after each deploy, to bring back your latest database and all uploaded images from Dropbox.</p>
+    <p>Railway resets the database on every deploy (your images/videos are safe — they live on Dropbox, not the local disk). Click this once, right after each deploy, to bring back your latest database.</p>
   </div>
   <form method="post"
-        data-confirm="This restores the latest database backup and all media files from Dropbox, overwriting whatever is currently live. Continue?"
-        data-loading-text="Restoring your database and media from Dropbox…">
+        data-confirm="This restores the latest database backup, overwriting whatever is currently live. Continue?"
+        data-loading-text="Restoring your database from Dropbox…">
     {% csrf_token %}
     <input type="hidden" name="action" value="restore">
-    <button type="submit" class="btn-restore-all">Restore Everything Now</button>
+    <button type="submit" class="btn-restore-all">Restore Database Now</button>
   </form>
 </div>
 {% endif %}
@@ -78,9 +78,9 @@
     <div class="backup-card-body">
       <div class="backup-fact">📁 Saves a timestamped copy to <code>Manjunath Academy/Database/files/</code></div>
       <div class="backup-fact">🔄 Also overwrites <code>Manjunath Academy/Database/db_latest.sqlite3</code></div>
-      <div class="backup-fact">🖼 Every image, PDF and video also uploads to <code>Manjunath Academy/Media/…</code>, sorted into its own folder (banners, video courses, e-library, about us, etc.)</div>
+      <div class="backup-fact">🖼 Images, PDFs and videos aren't included here — they already live on Dropbox under <code>Manjunath Academy/Media/…</code> from the moment you upload them</div>
       <div class="backup-fact">🗂 All old backups are kept — nothing is deleted</div>
-      <form method="post" style="margin-top:18px" data-loading-text="Backing up your database and media to Dropbox…">
+      <form method="post" style="margin-top:18px" data-loading-text="Backing up your database to Dropbox…">
         {% csrf_token %}
         <input type="hidden" name="action" value="backup_now">
         <button type="submit" class="btn-block btn-block-blue" {% if not settings_obj.is_configured %}disabled{% endif %}>☁ Backup Now</button>
@@ -91,10 +91,10 @@
   <div class="backup-card">
     <div class="backup-card-head head-red">⬇ Restore from Dropbox</div>
     <div class="backup-card-body">
-      <div class="backup-warn">⚠ <span><strong>Warning:</strong> This overwrites your current database and all local media (images, PDFs, videos). Take a fresh backup first!</span></div>
+      <div class="backup-warn">⚠ <span><strong>Warning:</strong> This will overwrite your current database. Take a fresh backup first!</span></div>
       <form method="post"
-            data-confirm="This will overwrite the live database and all media files with the selected backup. Are you absolutely sure?"
-            data-loading-text="Restoring your database and media from Dropbox…">
+            data-confirm="This will overwrite the live database with the selected backup. Are you absolutely sure?"
+            data-loading-text="Restoring your database from Dropbox…">
         {% csrf_token %}
         <input type="hidden" name="action" value="restore">
         <span class="backup-select-label">Select Backup File:</span>
@@ -104,7 +104,7 @@
               <option value="{{ b.filename }}">{{ b.filename }}</option>
             {% endfor %}
           </select>
-          <button type="submit" class="btn-block btn-block-red">⬇ Restore Database + Media</button>
+          <button type="submit" class="btn-block btn-block-red">⬇ Restore Selected Backup</button>
         {% else %}
           <p class="backup-empty">No backups available yet — run a backup first.</p>
         {% endif %}
@@ -139,8 +139,8 @@
             <td>{{ b.time }}</td>
             <td>
               <form method="post"
-                    data-confirm="Restore {{ b.filename }}? This overwrites the live database and all media."
-                    data-loading-text="Restoring your database and media from Dropbox…">
+                    data-confirm="Restore {{ b.filename }}? This overwrites the live database."
+                    data-loading-text="Restoring your database from Dropbox…">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="restore">
                 <input type="hidden" name="filename" value="{{ b.filename }}">

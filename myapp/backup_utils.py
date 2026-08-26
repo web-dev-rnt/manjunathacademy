@@ -2,7 +2,6 @@ import os
 import re
 import shutil
 
-from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 
@@ -10,7 +9,6 @@ from . import dropbox_utils
 from .dropbox_utils import DropboxError
 
 BACKUP_ROOT = '/Manjunath Academy'
-MEDIA_BACKUP_ROOT = f'{BACKUP_ROOT}/Media'
 DB_BACKUP_ROOT = f'{BACKUP_ROOT}/Database'
 DB_HISTORY_FOLDER = f'{DB_BACKUP_ROOT}/files'
 DB_LATEST_PATH = f'{DB_BACKUP_ROOT}/db_latest.sqlite3'
@@ -28,49 +26,30 @@ def _sqlite_path():
 
 
 def run_full_backup(dropbox_settings):
-    """Uploads every file under MEDIA_ROOT plus a timestamped copy of the SQLite database to Dropbox."""
+    """Uploads a timestamped copy of the SQLite database to Dropbox.
+
+    Media (banners, course videos, e-library PDFs, thumbnails, etc.) is uploaded straight to
+    Dropbox the moment it's uploaded in the admin panel, so there's nothing further to back up here.
+    """
     if not dropbox_utils.is_configured():
         return False, 'Dropbox is not configured.'
 
-    uploaded = 0
-    errors = []
-
-    media_root = settings.MEDIA_ROOT
-    if os.path.isdir(media_root):
-        for root, _dirs, files in os.walk(media_root):
-            for filename in files:
-                local_path = os.path.join(root, filename)
-                rel_path = os.path.relpath(local_path, media_root).replace(os.sep, '/')
-                dropbox_path = f'{MEDIA_BACKUP_ROOT}/{rel_path}'
-                try:
-                    dropbox_utils.upload_file(dropbox_path, local_path)
-                    uploaded += 1
-                except DropboxError as exc:
-                    errors.append(str(exc))
-
-    db_backed_up = False
     db_path = _sqlite_path()
-    if db_path:
-        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
-        try:
-            dropbox_utils.upload_file(f'{DB_HISTORY_FOLDER}/db_{timestamp}.sqlite3', db_path)
-            dropbox_utils.upload_file(DB_LATEST_PATH, db_path)
-            db_backed_up = True
-        except DropboxError as exc:
-            errors.append(str(exc))
+    if not db_path:
+        return False, 'No SQLite database file was found to back up.'
+
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+    try:
+        dropbox_utils.upload_file(f'{DB_HISTORY_FOLDER}/db_{timestamp}.sqlite3', db_path)
+        dropbox_utils.upload_file(DB_LATEST_PATH, db_path)
+    except DropboxError as exc:
+        return False, str(exc)
 
     dropbox_settings.last_backup_at = timezone.now()
-    if errors:
-        dropbox_settings.last_backup_status = (
-            f'{uploaded} file(s) uploaded, {len(errors)} error(s). Database backed up: {"yes" if db_backed_up else "no"}.'
-        )
-    else:
-        dropbox_settings.last_backup_status = (
-            f'{uploaded} file(s) uploaded successfully. Database backed up: {"yes" if db_backed_up else "no"}.'
-        )
+    dropbox_settings.last_backup_status = 'Database backed up successfully.'
     dropbox_settings.save(update_fields=['last_backup_at', 'last_backup_status'])
 
-    return (not errors), dropbox_settings.last_backup_status
+    return True, dropbox_settings.last_backup_status
 
 
 def list_db_backups():
@@ -95,7 +74,9 @@ def list_db_backups():
 def restore_database(dropbox_settings, filename=None):
     """Downloads a database backup from Dropbox and restores it, keeping a safety copy of the current file.
 
-    Defaults to the latest backup when `filename` isn't given.
+    Defaults to the latest backup when `filename` isn't given. Since every FileField/ImageField now
+    resolves its URL straight from Dropbox, restoring the database alone brings back all media too —
+    there's no separate media restore step.
     """
     if not dropbox_utils.is_configured():
         return False, 'Dropbox is not configured.'
@@ -126,41 +107,6 @@ def restore_database(dropbox_settings, filename=None):
     return True, f'Database restored from {filename or "the latest backup"}. Your previous database was saved as {os.path.basename(safety_path)}. Restart the app for the change to fully take effect.'
 
 
-def restore_media():
-    """Downloads every file under /Manjunath Academy/Media back into MEDIA_ROOT, overwriting local copies."""
-    if not dropbox_utils.is_configured():
-        return False, 'Dropbox is not configured.'
-
-    try:
-        entries = dropbox_utils.list_folder(MEDIA_BACKUP_ROOT, recursive=True)
-    except DropboxError as exc:
-        return False, str(exc)
-
-    if not entries:
-        return False, 'No media backup found on Dropbox yet.'
-
-    media_root = settings.MEDIA_ROOT
-    prefix = MEDIA_BACKUP_ROOT.lower() + '/'
-    restored = 0
-    errors = []
-    for entry in entries:
-        path_lower = entry['path_display'].lower()
-        if not path_lower.startswith(prefix):
-            continue
-        rel_path = entry['path_display'][len(MEDIA_BACKUP_ROOT) + 1:]
-        local_path = os.path.join(media_root, *rel_path.split('/'))
-        try:
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
-            dropbox_utils.download_file(entry['path_display'], local_path)
-            restored += 1
-        except DropboxError as exc:
-            errors.append(str(exc))
-
-    if errors:
-        return False, f'{restored} file(s) restored, {len(errors)} error(s).'
-    return True, f'{restored} media file(s) restored from Dropbox.'
-
-
 def delete_all_backups():
     """Permanently deletes every database backup (history + latest) from Dropbox. Does not touch media."""
     if not dropbox_utils.is_configured():
@@ -170,12 +116,3 @@ def delete_all_backups():
     except DropboxError as exc:
         return False, str(exc)
     return True, 'All database backups have been deleted from Dropbox.'
-
-
-def restore_everything(dropbox_settings, filename=None):
-    """Restores the database (latest or a specific backup) and every media file, in one action."""
-    db_ok, db_detail = restore_database(dropbox_settings, filename=filename)
-    media_ok, media_detail = restore_media()
-    ok = db_ok and media_ok
-    detail = f'Database: {db_detail} | Media: {media_detail}'
-    return ok, detail
