@@ -1,0 +1,58 @@
+{% extends "myapp/panel/base.html" %}
+{% block title %}Edit {{ content_label }}{% endblock %}
+{% block page_title %}Edit {{ content_label|lower }}{% endblock %}
+{% block page_sub %}{{ item.title }}{% endblock %}
+{% block extra_style %}
+.existing-video-preview{margin:0 0 18px;padding:12px;background:#111;border-radius:14px}.existing-video-preview video{display:block;width:100%;max-height:420px;border-radius:9px;background:#000}.existing-video-preview p{margin:8px 2px 0;color:#D1D5DB;font-size:12px}
+{% endblock %}
+{% block content %}
+<div class="panel-card">
+  {% if course_type == 'video_course' and item.video_file %}
+  <div class="existing-video-preview">
+    <video id="editVideoPreview" controls preload="metadata" src="{{ item.video_file.url }}"></video>
+    <p id="editVideoMeta">Previously uploaded video · {{ item.title }}</p>
+  </div>
+  {% endif %}
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading replacement {{ content_label|lower }}…">
+    {% csrf_token %}
+    <label><span class="panel-label-text">Title</span>{{ form.title }}</label>
+    {% if course_type == 'video_course' %}
+      <label><span class="panel-label-text">Video file</span>{{ form.video_file }}</label>
+      <label><span class="panel-label-text">Duration (minutes) — detected automatically when replacing the file</span>{{ form.duration_minutes }}</label>
+    {% else %}
+      <label><span class="panel-label-text">PDF file</span>{{ form.pdf_file }}</label>
+      <label><span class="panel-label-text">Pages</span>{{ form.pages }}</label>
+    {% endif %}
+    <label><span class="panel-label-text">Order</span>{{ form.order }}</label>
+    <label class="panel-form-check">{{ form.is_active }} Active</label>
+    {% if form.errors %}<ul class="panel-errors">{% for field, errors in form.errors.items %}{% for error in errors %}<li>{{ error }}</li>{% endfor %}{% endfor %}</ul>{% endif %}
+    <div class="panel-form-actions"><button class="btn btn-primary" type="submit">Save changes</button><a class="btn btn-ghost" href="{% if item.folder %}{% url 'panel_course_content_folder' course_type course.pk item.folder.pk %}{% else %}{% url 'panel_course_content' course_type course.pk %}{% endif %}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_script %}
+(function () {
+  var fileInput = document.getElementById('id_video_file');
+  var durationInput = document.getElementById('id_duration_minutes');
+  var preview = document.getElementById('editVideoPreview');
+  var meta = document.getElementById('editVideoMeta');
+  var objectUrl = null;
+  if (!fileInput || !preview) return;
+  fileInput.addEventListener('change', function () {
+    var file = fileInput.files && fileInput.files[0];
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    if (!file) return;
+    objectUrl = URL.createObjectURL(file);
+    preview.src = objectUrl; preview.load();
+    if (meta) meta.textContent = 'Reading replacement video duration…';
+    preview.onloadedmetadata = function () {
+      var seconds = preview.duration;
+      if (Number.isFinite(seconds) && seconds > 0) {
+        var minutes = Math.max(1, Math.ceil(seconds / 60));
+        if (durationInput) durationInput.value = minutes;
+        if (meta) meta.textContent = file.name + ' · ' + minutes + ' min (' + Math.round(seconds) + ' sec)';
+      }
+    };
+  });
+})();
+{% endblock %}

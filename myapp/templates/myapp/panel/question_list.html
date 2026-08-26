@@ -1,0 +1,95 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Questions — {{ course.name }}{% endblock %}
+{% block page_title %}Questions{% endblock %}
+{% block page_sub %}{{ course.name }}{% endblock %}
+{% block nav_test_series %}is-active{% endblock %}
+
+{% block extra_style %}
+.question-filter-bar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 18px;padding:14px 16px;border:1px solid #E5E7EB;border-radius:12px;background:#FAFAFA}
+.question-filter{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}.question-filter label{display:grid;gap:6px;color:#374151;font-size:12px;font-weight:800}.question-filter select{min-width:250px;padding:10px 36px 10px 12px;border:1px solid #D1D5DB;border-radius:9px;background:#fff;color:#111827;font:inherit}.question-filter select:focus{outline:2px solid #FF6B1A;outline-offset:1px}.question-filter-summary{margin:0;color:#6B7280;font-size:12.5px;font-weight:700}
+table.panel-table.question-table{min-width:980px;table-layout:fixed}
+table.panel-table.question-table th,table.panel-table.question-table td{vertical-align:top}
+table.panel-table.question-table td.question-cell,table.panel-table.question-table td.section-cell,table.panel-table.question-table td.type-cell{white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.45}
+.question-cell{color:#111827!important}
+.section-cell{color:#4B5563!important}
+.question-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+@media(max-width:700px){.question-filter-bar{align-items:stretch;flex-direction:column}.question-filter{display:grid;grid-template-columns:1fr 1fr}.question-filter label{grid-column:1/-1}.question-filter select{width:100%;min-width:0}.question-filter .btn{width:100%}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{{ course.name }}</h2>
+      <p>{% if filter_active %}{{ filtered_question_count }} of {{ total_question_count }} questions{% else %}{{ total_question_count }} question{{ total_question_count|pluralize }}{% endif %}</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a class="btn btn-ghost" href="{% url 'panel_course_list' 'test_series' %}">← Back to Test Series</a>
+      <a class="btn btn-primary" href="{% url 'panel_question_add' course.pk %}">+ Add question</a>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <div class="question-filter-bar">
+    <form class="question-filter" method="get">
+      <label>Filter by section
+        <select name="section" aria-label="Filter questions by section">
+          <option value="">All sections</option>
+          {% for section in sections %}<option value="{{ section.pk }}" {% if section.pk == selected_section_id %}selected{% endif %}>{{ section.name }}</option>{% endfor %}
+          <option value="unassigned" {% if show_unassigned %}selected{% endif %}>General / unassigned</option>
+        </select>
+      </label>
+      <button class="btn btn-primary btn-sm" type="submit">Apply filter</button>
+      {% if filter_active %}<a class="btn btn-ghost btn-sm" href="{% url 'panel_question_list' course.pk %}">Clear</a>{% endif %}
+    </form>
+    <p class="question-filter-summary">{{ sections|length }} section{{ sections|length|pluralize }}</p>
+  </div>
+
+  {% if questions %}
+    <div class="panel-table-wrap">
+      <table class="panel-table question-table">
+        <colgroup><col style="width:70px"><col><col style="width:230px"><col style="width:170px"><col style="width:72px"><col style="width:170px"></colgroup>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Question</th>
+            <th>Section</th>
+            <th>Type</th>
+            <th>Marks</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for question in questions %}
+          <tr>
+            <td>{{ question.order }}</td>
+            <td class="question-cell" title="{{ question.text }}">{{ question.text|truncatechars:140 }}</td>
+            <td class="section-cell">{{ question.section.name|default:"General / unassigned" }}</td>
+            <td class="type-cell">{{ question.get_question_type_display }}</td>
+            <td>{{ question.marks }}</td>
+            <td>
+              <div class="question-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_question_edit' course.pk question.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_question_delete' course.pk question.pk %}" onsubmit="return confirm('Delete this question?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">❓</span>{% if filter_active %}No questions found in this section.{% else %}No questions added yet.{% endif %}</p>
+  {% endif %}
+</div>
+{% endblock %}

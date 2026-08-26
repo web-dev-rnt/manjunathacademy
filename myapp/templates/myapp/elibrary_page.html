@@ -1,0 +1,34 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}E-Library — Manjunath Academy{% endblock %}
+{% block meta_description %}E-books, previous year papers and revision notes — read online or download the PDF.{% endblock %}
+
+{% block extra_style %}
+.browse-page-hero{padding:56px 0 40px;background:var(--peach)}
+.browse-page-hero h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px}
+.browse-page-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.browse-page-section{padding:56px 0 90px}
+{% endblock %}
+
+{% block content %}
+<section class="browse-page-hero">
+  <div class="wrap">
+    <h1>E-Library</h1>
+    <p>E-books, previous year papers and revision notes — read online in the built-in viewer or download the PDF, on any device.</p>
+  </div>
+</section>
+
+<section class="browse-page-section">
+  <div class="wrap">
+    {% if elibrary_items %}
+      <div class="pc-grid">
+        {% for course in elibrary_items %}
+          {% include "myapp/includes/elibrary_item_card.html" %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="panel-empty">No e-library items added yet — check back soon.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

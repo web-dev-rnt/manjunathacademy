@@ -1,0 +1,102 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Contact Us — Manjunath Academy{% endblock %}
+{% block meta_description %}Get in touch with Manjunath Academy — phone, email and address details.{% endblock %}
+
+{% block extra_style %}
+.legal-section{padding:70px 0 110px;background:var(--page-gradient);min-height:60vh}
+.legal-card{background:var(--white);border:1px solid var(--line);border-radius:22px;padding:40px;box-shadow:var(--shadow-md)}
+.legal-body{color:var(--text-secondary);font-size:15px;line-height:1.85}
+.legal-body p{margin:0 0 20px}
+.contact-grid{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1.2fr 1fr;gap:26px;align-items:start}
+.contact-info-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:20px}
+.contact-info-item{display:flex;gap:14px;align-items:flex-start}
+.contact-info-ico{width:44px;height:44px;border-radius:12px;background:var(--orange-soft);color:var(--orange-deep);display:grid;place-items:center;font-size:19px;flex:0 0 auto}
+.contact-info-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 3px}
+.contact-info-value{font-size:14.5px;color:var(--ink);font-weight:600;margin:0}
+.contact-info-value a{color:inherit}
+.contact-social-row{margin-top:24px}
+.contact-form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:16px}
+.contact-form input,.contact-form textarea{
+  border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14.5px;font-family:inherit;
+  color:var(--ink);background:var(--surface-3);resize:vertical;
+}
+.contact-form input:focus,.contact-form textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.contact-form-success{background:#ECFDF3;color:#15803D;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:700;margin-bottom:16px}
+.contact-map-inline{margin-top:10px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.contact-map-inline iframe{display:block;width:100%;height:230px;border:0;filter:saturate(1.05)}
+@media (max-width:860px){.contact-grid{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<section class="legal-section">
+  <div class="wrap">
+    <h1 class="section-title center-title" style="text-align:center;margin:0 auto 34px">Contact <span class="text-orange">Us</span></h1>
+    <div class="contact-grid">
+      <div class="legal-card">
+        <div class="legal-body">
+          {% if page_obj.content %}
+            {{ page_obj.content|linebreaks }}
+          {% else %}
+            <p>We're here to help with anything related to your courses, orders or account.</p>
+          {% endif %}
+        </div>
+        {% if sent %}
+          <p class="contact-form-success">Thanks — we'll get back to you shortly.</p>
+        {% endif %}
+        <form class="contact-form" method="post">
+          {% csrf_token %}
+          <label>Name<input type="text" name="{{ form.name.html_name }}" value="{{ form.name.value|default:'' }}" required placeholder="Your name"></label>
+          <label>Email<input type="email" name="{{ form.email.html_name }}" value="{{ form.email.value|default:'' }}" placeholder="you@example.com"></label>
+          <label>Phone<input type="tel" name="{{ form.phone.html_name }}" value="{{ form.phone.value|default:'' }}" placeholder="10-digit mobile number"></label>
+          <label>Message<textarea name="{{ form.message.html_name }}" rows="4" required placeholder="How can we help?">{{ form.message.value|default:'' }}</textarea></label>
+          {% if form.errors %}<ul class="panel-errors">{% for field in form %}{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}{% endfor %}</ul>{% endif %}
+          <button class="btn btn-primary btn-lg" type="submit">Send Message</button>
+        </form>
+      </div>
+      <div class="legal-card">
+        <ul class="contact-info-list">
+          {% if site_settings.footer_phone %}
+          <li class="contact-info-item">
+            <span class="contact-info-ico">📞</span>
+            <div><p class="contact-info-label">Call us</p><p class="contact-info-value"><a href="tel:{{ site_settings.footer_phone }}">{{ site_settings.footer_phone }}</a></p></div>
+          </li>
+          {% endif %}
+          {% if site_settings.footer_email %}
+          <li class="contact-info-item">
+            <span class="contact-info-ico">✉️</span>
+            <div><p class="contact-info-label">Email us</p><p class="contact-info-value"><a href="mailto:{{ site_settings.footer_email }}">{{ site_settings.footer_email }}</a></p></div>
+          </li>
+          {% endif %}
+          {% if site_settings.footer_address %}
+          <li class="contact-info-item">
+            <span class="contact-info-ico">📍</span>
+            <div><p class="contact-info-label">Visit us</p><p class="contact-info-value">{{ site_settings.footer_address }}</p></div>
+          </li>
+          {% endif %}
+          <li class="contact-info-item">
+            <span class="contact-info-ico">🕒</span>
+            <div><p class="contact-info-label">Working hours</p><p class="contact-info-value">Mon–Sat, 8 am – 8 pm</p></div>
+          </li>
+        </ul>
+        <div class="contact-social-row social-row">
+          {% if site_settings.facebook_url %}<a class="ico-facebook" href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">📘</a>{% endif %}
+          {% if site_settings.instagram_url %}<a class="ico-instagram" href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">📷</a>{% endif %}
+          {% if site_settings.twitter_url %}<a class="ico-twitter" href="{{ site_settings.twitter_url }}" target="_blank" rel="noopener" aria-label="Twitter/X">✖️</a>{% endif %}
+          {% if site_settings.telegram_url %}<a class="ico-telegram" href="{{ site_settings.telegram_url }}" target="_blank" rel="noopener" aria-label="Telegram">✈️</a>{% endif %}
+          {% if site_settings.linkedin_url %}<a class="ico-linkedin" href="{{ site_settings.linkedin_url }}" target="_blank" rel="noopener" aria-label="LinkedIn">in</a>{% endif %}
+          {% if site_settings.youtube_url %}<a class="ico-youtube" href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">▶️</a>{% endif %}
+          {% if site_settings.whatsapp_link %}<a class="ico-whatsapp" href="{{ site_settings.whatsapp_link }}" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>{% endif %}
+        </div>
+
+        {% if site_settings.footer_address %}
+        <p class="contact-info-label" style="margin-top:22px">Find us on the map</p>
+        <div class="contact-map-inline">
+          <iframe src="https://www.google.com/maps?q={{ site_settings.footer_address|urlencode }}&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map to {{ site_settings.footer_address }}"></iframe>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

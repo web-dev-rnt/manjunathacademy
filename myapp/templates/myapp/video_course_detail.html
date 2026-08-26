@@ -1,0 +1,121 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ course.name }} — Manjunath Academy{% endblock %}
+{% block meta_description %}{{ course.about|truncatechars:150 }}{% endblock %}
+
+{% block extra_style %}
+.vc-page{padding:34px 0 72px;background:transparent;min-height:70vh}
+.vc-page-wrap{max-width:1440px}
+.vc-shell{display:grid;grid-template-columns:minmax(290px,360px) minmax(0,1fr);gap:28px;background:transparent}
+.vc-sidebar{display:flex;flex-direction:column;min-width:0;padding:0 27px 0 0;border-right:1px solid var(--line);background:transparent}
+.vc-cover{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;background:var(--surface-2);display:block}
+.vc-cover-empty{display:grid;place-items:center;font-size:44px;color:var(--orange);background:var(--orange-soft)}
+.vc-sidebar h1{font-size:clamp(21px,2.2vw,28px);line-height:1.2;margin:14px 0 10px}
+.vc-summary-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
+.vc-count{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:7px;background:#FEF3C7;color:#92400E;font-size:12px;font-weight:800}
+.vc-validity{font-size:12.5px;color:var(--text-secondary)}.vc-validity strong{color:var(--ink)}
+.vc-about{font-size:13px;line-height:1.55;color:var(--muted);margin:0 0 16px}
+.vc-highlight-box{padding-top:14px;border-top:1px solid var(--line)}
+.vc-highlight-box h2{font-size:14px;margin:0 0 10px}
+.vc-highlights{display:grid;gap:9px;list-style:none;padding:0;margin:0}
+.vc-highlights li{display:flex;align-items:flex-start;gap:8px;color:var(--text-tertiary);font-size:12.5px;line-height:1.45}
+.vc-highlights li::before{content:"★";flex:0 0 auto;color:var(--ink);font-size:9px;margin-top:4px}
+.vc-access{margin-top:auto;padding-top:22px}
+.vc-access-note{padding:10px 12px;border-radius:9px;background:#ECFDF3;color:#15803D;font-size:12.5px;font-weight:800;margin:0 0 10px}
+.vc-complete-form{margin:0}.vc-complete-btn{width:100%;border:1px solid #15803D;border-radius:9px;padding:10px 12px;background:var(--white);color:#15803D;font-family:inherit;font-size:12.5px;font-weight:700;line-height:1.2;cursor:pointer}.vc-complete-btn:hover{background:#F0FDF4}
+.vc-main{min-width:0;background:transparent}
+.vc-inline-player{display:none;margin:0 0 18px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--white)}.vc-inline-player.is-visible{display:block}.vc-inline-player video{display:block;width:100%;max-height:70vh;aspect-ratio:16/9;border-radius:9px;background:#000}.vc-inline-title{display:block;margin:11px 2px 0;font-size:15px;color:var(--ink)}
+.vc-folder{margin:0 0 12px;border:1px solid var(--line);border-radius:8px;background:var(--white);overflow:hidden}
+.vc-folder[hidden]{display:none}.vc-folder>summary{display:flex;align-items:center;gap:12px;min-height:66px;padding:12px 17px;cursor:pointer;list-style:none;user-select:none}.vc-folder>summary::-webkit-details-marker{display:none}
+.vc-folder[open]>summary{border-bottom:1px solid var(--line)}.vc-folder-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;background:var(--orange-soft);border-radius:8px;color:var(--orange-deep);font-size:15px;font-weight:700}
+.vc-folder-heading{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}.vc-folder-heading strong{overflow:hidden;text-overflow:ellipsis;font-size:15px;font-weight:700;white-space:nowrap}.vc-folder-heading small{width:max-content;padding:4px 11px;background:var(--orange-soft);color:var(--orange-deep);font-size:10.5px;font-weight:700;border-radius:var(--r-pill)}
+.vc-folder-arrow{width:12px;height:12px;margin-right:3px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s ease}.vc-folder[open]>summary .vc-folder-arrow{transform:rotate(225deg)}
+.vc-folder-body{background:var(--surface-2)}.vc-folder-body>.vc-folder{margin:10px 12px;border-color:var(--line)}.vc-folder-body>.vc-folder:last-child{margin-bottom:12px}
+.vc-video-row{display:grid;grid-template-columns:80px minmax(0,1fr) 34px;align-items:center;gap:14px;width:100%;min-height:62px;padding:8px 15px;border:0;border-bottom:1px solid var(--line);background:var(--surface-2);color:var(--ink);text-align:left;font-family:inherit;cursor:pointer;transition:background .15s ease}.vc-video-row:last-child{border-bottom:0}.vc-video-row:hover,.vc-video-row.is-active{background:var(--orange-soft)}.vc-video-row[hidden]{display:none}
+.vc-video-row img,.vc-video-placeholder{width:80px;height:46px;border-radius:5px;object-fit:cover;background:var(--line)}.vc-video-placeholder{display:grid;place-items:center;color:var(--orange-deep)}
+.vc-video-info{display:flex;min-width:0;flex-direction:column;gap:5px}.vc-video-info strong{overflow:hidden;text-overflow:ellipsis;font-size:13.5px;font-weight:600;white-space:nowrap}.vc-video-info small{color:var(--muted);font-size:12px}
+.vc-video-play{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--orange);color:#fff;font-size:10px;box-shadow:0 3px 8px rgba(249,115,22,.28)}
+.vc-empty{padding:50px 20px;text-align:center;color:var(--muted)}
+@media(max-width:900px){.vc-shell{grid-template-columns:1fr}.vc-sidebar{padding:0 0 24px;border-right:0;border-bottom:1px solid var(--line)}.vc-access{margin-top:0}.vc-cover{max-height:340px}}
+@media(max-width:560px){.vc-page{padding:18px 0 48px}.vc-page-wrap{padding-inline:12px!important}.vc-video-row{grid-template-columns:62px minmax(0,1fr) 30px;gap:10px;padding:8px 10px}.vc-video-row img,.vc-video-placeholder{width:62px;height:40px}.vc-folder>summary{min-height:60px;padding:10px 12px}.vc-folder-heading strong{font-size:14px}.vc-inline-player{padding:8px}}
+{% endblock %}
+
+{% block content %}
+<section class="vc-page">
+  <div class="wrap vc-page-wrap">
+    <div class="vc-shell">
+      <aside class="vc-sidebar">
+        {% if course.thumbnail %}<img class="vc-cover" src="{{ course.thumbnail.url }}" alt="{{ course.name }}">{% else %}<div class="vc-cover vc-cover-empty">▶</div>{% endif %}
+        <h1>{{ course.name }}</h1>
+        <div class="vc-summary-meta">
+          <span class="vc-count">▣ {{ course.published_video_count }} Video{{ course.published_video_count|pluralize }}</span>
+          {% if enrollment.expires_at %}<span class="vc-validity"><strong>Access:</strong> until {{ enrollment.expires_at|date:"d M Y" }}</span>{% else %}<span class="vc-validity"><strong>Access:</strong> Unlimited</span>{% endif %}
+        </div>
+        {% if course.about %}<p class="vc-about">{{ course.about|truncatechars:220 }}</p>{% endif %}
+        {% if course.highlight_list %}
+        <div class="vc-highlight-box">
+          <h2>Course Highlights</h2>
+          <ul class="vc-highlights">{% for highlight in course.highlight_list %}<li>{{ highlight }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+        <div class="vc-access">
+          <p class="vc-access-note">✓ You have full access to this course</p>
+          <form class="vc-complete-form" method="post">
+            {% csrf_token %}
+            {% if enrollment.is_completed %}<input type="hidden" name="mark_incomplete" value="1"><button class="vc-complete-btn" type="submit">✓ Completed — mark as not done</button>{% else %}<button class="vc-complete-btn" type="submit">Mark course as complete</button>{% endif %}
+          </form>
+        </div>
+      </aside>
+
+      <main class="vc-main">
+        <div class="vc-inline-player" id="vcInlinePlayer">
+          <video id="vcPlayer" controls controlsList="nodownload" {% if course.thumbnail %}poster="{{ course.thumbnail.url }}"{% endif %}></video>
+          <strong class="vc-inline-title" id="vcPlayerTitle"></strong>
+        </div>
+        <div id="vcCourseOutline">
+          {% if course.enable_folders %}
+            {% if root_content %}
+            <details class="vc-folder" data-folder-name="course videos" open>
+              <summary><span class="vc-folder-icon">▻</span><span class="vc-folder-heading"><strong>Course Videos</strong><small>{{ root_content|length }} video{{ root_content|length|pluralize }}</small></span><span class="vc-folder-arrow" aria-hidden="true"></span></summary>
+              <div class="vc-folder-body">
+                {% for video in root_content %}
+                <button type="button" class="vc-video-row" data-src="{{ video.video_file.url }}" data-title="{{ video.title }}" data-search-text="{{ video.title|lower }}">
+                  {% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}
+                  <span class="vc-video-info"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vc-video-play" aria-hidden="true">▶</span>
+                </button>
+                {% endfor %}
+              </div>
+            </details>
+            {% endif %}
+            {% include "myapp/includes/video_course_outline_tree.html" with content_tree=content_tree %}
+          {% elif visible_content %}
+            <details class="vc-folder" data-folder-name="course videos" open>
+              <summary><span class="vc-folder-icon">▻</span><span class="vc-folder-heading"><strong>Course Videos</strong><small>{{ visible_content|length }} video{{ visible_content|length|pluralize }}</small></span><span class="vc-folder-arrow" aria-hidden="true"></span></summary>
+              <div class="vc-folder-body">
+                {% for video in visible_content %}
+                <button type="button" class="vc-video-row" data-src="{{ video.video_file.url }}" data-title="{{ video.title }}" data-search-text="{{ video.title|lower }}">
+                  {% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}
+                  <span class="vc-video-info"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vc-video-play" aria-hidden="true">▶</span>
+                </button>
+                {% endfor %}
+              </div>
+            </details>
+          {% elif course.video_file %}
+            <details class="vc-folder" data-folder-name="course videos" open>
+              <summary><span class="vc-folder-icon">▻</span><span class="vc-folder-heading"><strong>Course Videos</strong><small>1 video</small></span><span class="vc-folder-arrow" aria-hidden="true"></span></summary>
+              <div class="vc-folder-body"><button type="button" class="vc-video-row" data-src="{{ course.video_file.url }}" data-title="{{ course.name }}" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}<span class="vc-video-info"><strong>{{ course.name }}</strong><small>▣ {% if course.duration_minutes %}{{ course.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vc-video-play">▶</span></button></div>
+            </details>
+          {% else %}<p class="vc-empty">Videos for this course haven't been uploaded yet.</p>{% endif %}
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+(function(){
+  var inlinePlayer=document.getElementById('vcInlinePlayer'),player=document.getElementById('vcPlayer'),playerTitle=document.getElementById('vcPlayerTitle');
+  document.querySelectorAll('.vc-video-row[data-src]').forEach(function(row){row.addEventListener('click',function(){document.querySelectorAll('.vc-video-row').forEach(function(item){item.classList.remove('is-active')});row.classList.add('is-active');player.src=row.dataset.src;playerTitle.textContent=row.dataset.title||'';inlinePlayer.classList.add('is-visible');player.load();player.play().catch(function(){});inlinePlayer.scrollIntoView({behavior:'smooth',block:'start'});});});
+})();
+{% endblock %}

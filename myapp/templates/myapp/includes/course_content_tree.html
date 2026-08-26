@@ -1,0 +1,19 @@
+{% for node in content_tree %}
+<details class="course-folder" {% if forloop.first %}open{% endif %}>
+  <summary><span>📁</span><strong>{{ node.folder.name }}</strong><small>{{ node.item_count }} item{{ node.item_count|pluralize }}</small></summary>
+  <div class="course-folder-body">
+    {% for item in node.items %}
+      {% if content_type == 'video' %}
+      <button type="button" class="course-lesson" data-src="{{ item.video_file.url }}" data-title="{{ item.title }}">
+        <span class="course-lesson-num">▶</span><span class="course-lesson-text">{{ item.title }}{% if item.duration_minutes %}<small>{{ item.duration_minutes }} min</small>{% endif %}</span>
+      </button>
+      {% else %}
+      <button type="button" class="course-lesson course-document" data-src="{{ item.pdf_file.url }}" data-title="{{ item.title }}">
+        <span class="course-lesson-num">📄</span><span class="course-lesson-text">{{ item.title }}{% if item.pages %}<small>{{ item.pages }} pages</small>{% endif %}</span>
+      </button>
+      {% endif %}
+    {% endfor %}
+    {% if node.children %}{% include "myapp/includes/course_content_tree.html" with content_tree=node.children content_type=content_type %}{% endif %}
+  </div>
+</details>
+{% endfor %}

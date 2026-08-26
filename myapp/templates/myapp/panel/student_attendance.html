@@ -1,0 +1,82 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Student Attendance{% endblock %}
+{% block page_title %}Student attendance{% endblock %}
+{% block page_sub %}Mark daily attendance for registered students{% endblock %}
+{% block nav_erp %}is-active{% endblock %}
+{% block nav_erp_open %}is-open{% endblock %}
+{% block nav_erp_student_attendance %}is-active{% endblock %}
+
+{% block extra_style %}
+.attendance-date-form{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.attendance-date-form input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit}
+.attendance-search{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;min-width:220px}
+.attendance-cell{display:flex;align-items:center;gap:10px}
+select.attendance-status{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit}
+{% endblock %}
+
+{% block content %}
+<form class="attendance-date-form" method="get">
+  <label style="font-size:13px;font-weight:700;color:#374151">Date</label>
+  <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+  <input class="attendance-search" type="text" name="q" value="{{ search }}" placeholder="Search by name, email or number">
+  <button type="submit" class="btn btn-ghost btn-sm">Search</button>
+  {% if search %}<a class="btn btn-ghost btn-sm" href="?date={{ selected_date|date:'Y-m-d' }}">Clear</a>{% endif %}
+</form>
+
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Attendance — {{ selected_date|date:"d M Y" }}</h2>
+      <p>{{ rows|length }} student{{ rows|length|pluralize }}{% if search %} matching "{{ search }}"{% endif %}</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if rows %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+      <input type="hidden" name="q" value="{{ search }}">
+      <div class="panel-table-wrap">
+        <table class="panel-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Email</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr>
+              <td>
+                <div class="attendance-cell">
+                  <span class="panel-row-name">{{ row.student.name|default:row.student.email }}</span>
+                </div>
+              </td>
+              <td>{{ row.student.email }}</td>
+              <td>
+                <select class="attendance-status" name="status_{{ row.student.pk }}">
+                  {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if row.status == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="panel-form-actions" style="margin-top:20px">
+        <button type="submit" class="btn btn-primary">Save attendance</button>
+      </div>
+    </form>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">📋</span>No students found{% if search %} for "{{ search }}"{% endif %}.</p>
+  {% endif %}
+</div>
+{% endblock %}

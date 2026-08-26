@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Sports current affairs">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f0fdf4"/><stop offset="1" stop-color="#bbf7d0"/></linearGradient><linearGradient id="cup" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fde047"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs>
+  <rect width="640" height="360" rx="28" fill="url(#bg)"/><circle cx="101" cy="77" r="54" fill="#fff" opacity=".6"/><circle cx="541" cy="276" r="72" fill="#fff" opacity=".45"/>
+  <path d="M224 58h192v78c0 75-42 120-96 120s-96-45-96-120V58Z" fill="url(#cup)"/><path d="M224 84H139v35c0 66 39 104 108 104M416 84h85v35c0 66-39 104-108 104" fill="none" stroke="#f59e0b" stroke-width="25" stroke-linejoin="round"/>
+  <path d="M292 248h56v44h-56zM235 290h170v34H235z" fill="#92400e"/><path d="m320 91 16 33 37 5-27 26 7 37-33-18-33 18 7-37-27-26 37-5 16-33Z" fill="#fff7ed"/>
+</svg>

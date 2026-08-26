@@ -1,0 +1,55 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Edit Signup{% endblock %}
+{% block page_title %}Edit signup{% endblock %}
+{% block page_sub %}Update {{ student.name|default:student.email }} without changing their learning history{% endblock %}
+{% block nav_signups %}is-active{% endblock %}
+
+{% block extra_style %}
+.signup-edit-preview{display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:20px;background:#F8FAFC;border:1px solid var(--line);border-radius:12px}
+.signup-edit-preview img{width:54px;height:54px;border-radius:50%;object-fit:cover}.signup-edit-avatar{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--orange);color:#fff;font-weight:900;font-size:20px}
+.signup-edit-preview strong,.signup-edit-preview span{display:block}.signup-edit-preview span{font-size:12.5px;color:var(--muted);margin-top:2px}
+.panel-form-check{display:flex!important;align-items:center;gap:9px;min-height:42px}.panel-form-check input{width:auto!important}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div><h2>Edit student account</h2><p>Account created {{ student.date_joined|date:"d M Y, h:i A" }}</p></div>
+    <a class="btn btn-ghost" href="{% url 'panel_signups' %}">← Back to signups</a>
+  </div>
+
+  <div class="signup-edit-preview">
+    {% if student.profile_picture %}<img src="{{ student.profile_picture.url }}" alt="">{% else %}<span class="signup-edit-avatar">{{ student.name|default:student.email|first|upper }}</span>{% endif %}
+    <div><strong>{{ student.name|default:"Unnamed student" }}</strong><span>{{ student.email }}</span></div>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <label><span class="panel-label-text">Profile picture</span>{{ form.profile_picture }}{% if form.profile_picture.errors %}<ul class="panel-errors">{% for error in form.profile_picture.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    <label><span class="panel-label-text">Name <span class="req">*</span></span>{{ form.name }}{% if form.name.errors %}<ul class="panel-errors">{% for error in form.name.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    <div class="panel-form-row">
+      <label><span class="panel-label-text">Email <span class="req">*</span></span>{{ form.email }}{% if form.email.errors %}<ul class="panel-errors">{% for error in form.email.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+      <label><span class="panel-label-text">Phone number <span class="req">*</span></span>{{ form.number }}{% if form.number.errors %}<ul class="panel-errors">{% for error in form.number.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    </div>
+    <div class="panel-form-row">
+      <label><span class="panel-label-text">Age</span>{{ form.age }}{% if form.age.errors %}<ul class="panel-errors">{% for error in form.age.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+      <label><span class="panel-label-text">Gender</span>{{ form.gender }}</label>
+    </div>
+    <div class="panel-form-row">
+      <label><span class="panel-label-text">State</span>{{ form.state }}</label>
+      <label><span class="panel-label-text">City</span>{{ form.city }}</label>
+    </div>
+    <div class="panel-form-row">
+      <label><span class="panel-label-text">Signup device</span>{{ form.device_type }}</label>
+      <label class="panel-form-check">{{ form.is_active }} Account active</label>
+    </div>
+    <label><span class="panel-label-text">Reset password</span>{{ form.new_password }}<span class="custom-help">{{ form.new_password.help_text }}</span>{% if form.new_password.errors %}<ul class="panel-errors">{% for error in form.new_password.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    {% if form.non_field_errors %}<ul class="panel-errors">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+      <a class="btn btn-ghost" href="{% url 'panel_signups' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

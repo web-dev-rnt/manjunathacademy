@@ -1,0 +1,29 @@
+<span class="category-logo category-logo-{{ icon_key|default:'general' }}" aria-hidden="true">
+  <svg viewBox="0 0 64 64" focusable="false">
+    {% if icon_key == 'school' %}
+      <path class="logo-main" d="M7 24 32 12l25 12-25 12L7 24Z"/><path class="logo-dark" d="M17 31v12c9 7 21 7 30 0V31l-15 7-15-7Z"/><path class="logo-accent" d="M54 27v15h-4V28Z"/>
+    {% elif icon_key == 'staff' %}
+      <rect class="logo-paper" x="14" y="8" width="36" height="48" rx="6"/><path class="logo-main" d="M22 19h20v5H22zm0 10h13v5H22zm0 10h10v5H22z"/><path class="logo-accent" d="m36 42 5 5 10-13 4 3-14 18-9-9 4-4Z"/>
+    {% elif icon_key == 'railway' %}
+      <rect class="logo-main" x="15" y="9" width="34" height="39" rx="9"/><rect class="logo-paper" x="21" y="15" width="22" height="13" rx="3"/><circle class="logo-dark" cx="24" cy="38" r="4"/><circle class="logo-dark" cx="40" cy="38" r="4"/><path class="logo-accent" d="M19 52h26l5 5H14l5-5Z"/>
+    {% elif icon_key == 'banking' %}
+      <path class="logo-main" d="m7 22 25-13 25 13v6H7v-6Z"/><path class="logo-dark" d="M12 47h40v8H12zm5-16h7v13h-7zm12 0h7v13h-7zm12 0h7v13h-7z"/><circle class="logo-accent" cx="32" cy="20" r="4"/>
+    {% elif icon_key == 'medical' %}
+      <circle class="logo-paper" cx="32" cy="32" r="25"/><path class="logo-main" d="M27 15h10v12h12v10H37v12H27V37H15V27h12V15Z"/><path class="logo-accent" d="M44 15c7 6 8 14 4 20" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+    {% elif icon_key == 'engineering' %}
+      <path class="logo-main" d="M28 7h8l2 8 6 3 8-2 4 7-6 6v7l6 6-4 7-8-2-6 3-2 8h-8l-2-8-6-3-8 2-4-7 6-6v-7l-6-6 4-7 8 2 6-3 2-8Z"/><circle class="logo-paper" cx="32" cy="32" r="11"/><path class="logo-accent" d="m27 34 5-9 5 9H27Z"/>
+    {% elif icon_key == 'civil' %}
+      <path class="logo-main" d="m8 23 24-14 24 14v6H8v-6Z"/><path class="logo-dark" d="M11 49h42v7H11zm6-17h7v14h-7zm12 0h7v14h-7zm12 0h7v14h-7z"/><path class="logo-accent" d="M29 17h6v6h-6z"/>
+    {% elif icon_key == 'defence' %}
+      <path class="logo-main" d="M32 7 53 15v15c0 14-9 23-21 28C20 53 11 44 11 30V15l21-8Z"/><path class="logo-paper" d="m32 17 4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1 4-9Z"/>
+    {% elif icon_key == 'teaching' %}
+      <path class="logo-main" d="M7 16c10-3 18-1 25 6v34c-7-7-15-9-25-6V16Zm50 0c-10-3-18-1-25 6v34c7-7 15-9 25-6V16Z"/><path class="logo-paper" d="M13 24c6-1 11 0 15 4v5c-4-3-9-4-15-3v-6Zm38 0c-6-1-11 0-15 4v5c4-3 9-4 15-3v-6Z"/><path class="logo-accent" d="M29 10h6v10h-6z"/>
+    {% elif icon_key == 'state' %}
+      <path class="logo-main" d="M32 6c12 0 21 9 21 21 0 15-21 31-21 31S11 42 11 27C11 15 20 6 32 6Z"/><circle class="logo-paper" cx="32" cy="27" r="9"/><path class="logo-accent" d="m28 27 3 3 6-8 4 3-10 12-7-7 4-3Z"/>
+    {% elif icon_key == 'police' %}
+      <path class="logo-main" d="m32 5 7 7 10-1 2 10 8 6-5 9 1 10-10 3-5 9-8-5-8 5-5-9-10-3 1-10-5-9 8-6 2-10 10 1 7-7Z"/><path class="logo-paper" d="m32 18 4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1 4-9Z"/>
+    {% else %}
+      <rect class="logo-main" x="8" y="8" width="21" height="21" rx="6"/><rect class="logo-accent" x="35" y="8" width="21" height="21" rx="6"/><rect class="logo-dark" x="8" y="35" width="21" height="21" rx="6"/><rect class="logo-paper" x="35" y="35" width="21" height="21" rx="6"/>
+    {% endif %}
+  </svg>
+</span>

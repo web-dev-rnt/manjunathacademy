@@ -1,0 +1,20 @@
+<article class="pc-card bundle-card">
+  <div class="bundle-card-top{% if bundle.image %} bundle-card-top-image{% endif %}">
+    {% if bundle.image %}<img class="bundle-card-image" src="{{ bundle.image.url }}" alt="{{ bundle.name }}" loading="lazy">{% else %}<span class="bundle-card-icon">{{ bundle.icon }}</span>{% endif %}
+    <span class="pc-rating">★ {{ bundle.rating }}</span>
+  </div>
+  <div class="bundle-card-body">
+    <h3>{{ bundle.name }}</h3>
+    {% if bundle.description %}<p>{{ bundle.description|truncatechars:110 }}</p>{% endif %}
+    {% if bundle.badge_tags %}
+    <div class="pc-tags">
+      {% for tag in bundle.badge_tags %}<span>{{ tag }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="bundle-card-meta">
+      {% if bundle.students_label %}<span>👥 {{ bundle.students_label }}</span>{% endif %}
+      {% if bundle.access_label %}<span>🕐 {{ bundle.access_label }}</span>{% endif %}
+    </div>
+    <a class="btn-pc" href="{% url 'index' %}?course={{ bundle.name|urlencode }}#admission" data-i18n="btn_enroll_now">Enroll Now →</a>
+  </div>
+</article>

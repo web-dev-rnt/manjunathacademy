@@ -1,0 +1,42 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Delete Signup{% endblock %}
+{% block page_title %}Delete signup{% endblock %}
+{% block page_sub %}Confirm permanent account deletion{% endblock %}
+{% block nav_signups %}is-active{% endblock %}
+
+{% block extra_style %}
+.delete-user-card{max-width:680px;margin:auto}.delete-warning{padding:18px;border:1px solid #FECACA;border-radius:14px;background:#FFF7F7}.delete-warning h3{color:#B91C1C;margin:0 0 8px;font-size:18px}.delete-warning p{margin:0;color:#7F1D1D;font-size:14px}
+.delete-user-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;padding:16px;background:#F8FAFC;border:1px solid var(--line);border-radius:12px}.delete-user-summary span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.delete-user-summary strong{display:block;margin-top:3px;font-size:14px;word-break:break-word}
+.delete-impact{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 20px}.delete-impact div{text-align:center;padding:12px 8px;border:1px solid var(--line);border-radius:10px}.delete-impact strong,.delete-impact span{display:block}.delete-impact strong{font-size:20px}.delete-impact span{font-size:11px;color:var(--muted)}
+.btn-danger-confirm{background:#DC2626;color:#fff;border-color:#DC2626}.btn-danger-confirm:hover{background:#B91C1C}
+@media(max-width:620px){.delete-user-summary{grid-template-columns:1fr}.delete-impact{grid-template-columns:1fr 1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card delete-user-card">
+  <div class="delete-warning">
+    <h3>Delete this student permanently?</h3>
+    <p>This removes the account and linked learning records. This action cannot be undone.</p>
+  </div>
+  <div class="delete-user-summary">
+    <div><span>Name</span><strong>{{ student.name|default:"Unnamed student" }}</strong></div>
+    <div><span>Email</span><strong>{{ student.email }}</strong></div>
+    <div><span>Phone</span><strong>{{ student.number }}</strong></div>
+    <div><span>Joined</span><strong>{{ student.date_joined|date:"d M Y, h:i A" }}</strong></div>
+  </div>
+  <div class="delete-impact">
+    <div><strong>{{ related_counts.enrollments }}</strong><span>Enrollments</span></div>
+    <div><strong>{{ related_counts.test_attempts }}</strong><span>Test attempts</span></div>
+    <div><strong>{{ related_counts.store_orders }}</strong><span>Store orders</span></div>
+    <div><strong>{{ related_counts.classrooms }}</strong><span>Classrooms</span></div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-danger-confirm">Yes, delete student</button>
+      <a class="btn btn-ghost" href="{% url 'panel_signups' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

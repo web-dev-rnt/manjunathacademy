@@ -1,0 +1,189 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Homepage Content{% endblock %}
+{% block page_title %}Homepage content{% endblock %}
+{% block page_sub %}Text and image for the Academic Excellence, Gallery preview and About Us sections{% endblock %}
+{% block nav_homepage_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:26px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:24px 0}
+.custom-field{margin-bottom:16px;max-width:520px}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input,.custom-field textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;color:var(--ink);width:100%}
+.custom-field input:focus,.custom-field textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px}
+.custom-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.custom-preview img{max-height:90px;max-width:160px;border-radius:8px;object-fit:cover}
+@media (max-width:560px){.custom-row{grid-template-columns:1fr}}
+
+/* ---------- small live previews ---------- */
+.hp-preview{margin-top:14px;background:linear-gradient(180deg,var(--cream) 0%,#fff 100%);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.hp-preview-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.hp-preview-label::before{content:"";width:6px;height:6px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.hp-preview-title{font-family:"Archivo",sans-serif;font-weight:800;font-size:16px;margin:0 0 4px;text-align:center}
+.hp-preview-title .hp-orange{color:var(--orange)}
+.hp-preview-sub{font-size:11.5px;color:var(--muted);text-align:center;margin:0}
+.hp-about-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:16px;align-items:center}
+.hp-about-media{position:relative}
+.hp-about-media-box{width:100%;aspect-ratio:4/3;border-radius:10px;background:#F5E7D8;overflow:hidden;display:grid;place-items:center;font-size:26px;box-shadow:0 8px 18px rgba(16,16,18,.1)}
+.hp-about-media-box img{width:100%;height:100%;object-fit:cover;display:block}
+.hp-about-badge{
+  position:absolute;left:8px;bottom:-10px;display:flex;align-items:center;gap:6px;background:#fff;
+  border-radius:8px;padding:5px 9px;box-shadow:0 6px 14px rgba(16,16,18,.14);max-width:85%;
+}
+.hp-about-badge-ico{font-size:12px}
+.hp-about-badge span{display:block;font-size:9px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hp-about-copy h5{font-family:"Archivo",sans-serif;font-size:13.5px;font-weight:800;margin:0 0 6px}
+.hp-about-copy p{font-size:10.5px;color:#4b5563;line-height:1.5;margin:0 0 6px}
+.hp-about-checks{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}
+.hp-about-checks li{display:flex;align-items:flex-start;gap:5px;font-size:10px;color:var(--ink)}
+.hp-about-checks li::before{content:"✓";flex:0 0 auto;width:12px;height:12px;border-radius:50%;background:var(--orange-soft);color:var(--orange-deep);font-size:7px;font-weight:900;display:grid;place-items:center;margin-top:1px}
+@media (max-width:620px){.hp-about-grid{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <h3>Academic Excellence : Results</h3>
+      <div class="custom-field"><label>Heading</label>{{ form.results_heading }}</div>
+      <div class="custom-field"><label>Subtitle</label>{{ form.results_subtitle }}</div>
+      <p class="custom-help">Manage the actual result photos under Customization → Results photos.</p>
+      <div class="hp-preview">
+        <p class="hp-preview-label">Live preview</p>
+        <p class="hp-preview-title"><span class="hp-orange" id="pvResultsHeading">{{ content.results_heading }}</span> : Results</p>
+        <p class="hp-preview-sub" id="pvResultsSubtitle">{{ content.results_subtitle }}</p>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Life At Manjunath Academy (gallery preview)</h3>
+      <div class="custom-field"><label>Heading</label>{{ form.gallery_heading }}</div>
+      <div class="custom-field"><label>Subtitle</label>{{ form.gallery_subtitle }}</div>
+      <p class="custom-help">Shows the 5 most recent photos from the Gallery section.</p>
+      <div class="hp-preview">
+        <p class="hp-preview-label">Live preview</p>
+        <p class="hp-preview-title" id="pvGalleryHeading">{{ content.gallery_heading }}</p>
+        <p class="hp-preview-sub" id="pvGallerySubtitle">{{ content.gallery_subtitle }}</p>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>About Us</h3>
+      <div class="custom-field"><label>Heading</label>{{ form.about_heading }}</div>
+      <div class="custom-field"><label>Paragraph 1</label>{{ form.about_para1 }}</div>
+      <div class="custom-field"><label>Paragraph 2</label>{{ form.about_para2 }}</div>
+      <div class="custom-field"><label>Checklist</label>{{ form.about_checklist }}<p class="custom-help">{{ form.about_checklist.help_text }}</p></div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Badge number</label>{{ form.about_badge_value }}</div>
+        <div class="custom-field"><label>Badge label</label>{{ form.about_badge_label }}</div>
+      </div>
+      <div class="custom-field">
+        <label>Photo</label>
+        {{ form.about_image }}
+        <p class="custom-help">{{ form.about_image.help_text }}</p>
+        {% if content.about_image %}
+          <div class="custom-preview"><img src="{{ content.about_image.url }}" alt=""><span>Current photo</span></div>
+        {% endif %}
+      </div>
+
+      <div class="hp-preview">
+        <p class="hp-preview-label">Live preview</p>
+        <div class="hp-about-grid">
+          <div class="hp-about-media">
+            <div class="hp-about-media-box" id="pvAboutImageBox">
+              {% if content.about_image %}<img src="{{ content.about_image.url }}" alt="">{% else %}<span>🖼️</span>{% endif %}
+            </div>
+            <div class="hp-about-badge"><span class="hp-about-badge-ico">🎓</span><span id="pvAboutBadge">{{ content.about_badge_value }} {{ content.about_badge_label }}</span></div>
+          </div>
+          <div class="hp-about-copy">
+            <h5 id="pvAboutHeading">{{ content.about_heading }}</h5>
+            <p id="pvAboutPara1">{{ content.about_para1 }}</p>
+            <p id="pvAboutPara2">{{ content.about_para2 }}</p>
+            <ul class="hp-about-checks" id="pvAboutChecklist">
+              {% for point in content.about_checklist_items %}<li>{{ point }}</li>{% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  function bind(id, targetId) {
+    var el = document.getElementById(id);
+    var target = document.getElementById(targetId);
+    if (!el || !target) return;
+    el.addEventListener('input', function () { target.textContent = el.value; });
+  }
+
+  bind('id_results_heading', 'pvResultsHeading');
+  bind('id_results_subtitle', 'pvResultsSubtitle');
+  bind('id_gallery_heading', 'pvGalleryHeading');
+  bind('id_gallery_subtitle', 'pvGallerySubtitle');
+  bind('id_about_heading', 'pvAboutHeading');
+  bind('id_about_para1', 'pvAboutPara1');
+  bind('id_about_para2', 'pvAboutPara2');
+
+  function updateBadge() {
+    var value = document.getElementById('id_about_badge_value');
+    var label = document.getElementById('id_about_badge_label');
+    var target = document.getElementById('pvAboutBadge');
+    if (!target) return;
+    target.textContent = (value ? value.value : '') + ' ' + (label ? label.value : '');
+  }
+  var badgeValue = document.getElementById('id_about_badge_value');
+  var badgeLabel = document.getElementById('id_about_badge_label');
+  if (badgeValue) badgeValue.addEventListener('input', updateBadge);
+  if (badgeLabel) badgeLabel.addEventListener('input', updateBadge);
+
+  var checklistInput = document.getElementById('id_about_checklist');
+  var checklistTarget = document.getElementById('pvAboutChecklist');
+  if (checklistInput && checklistTarget) {
+    checklistInput.addEventListener('input', function () {
+      var lines = checklistInput.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      checklistTarget.innerHTML = '';
+      lines.forEach(function (line) {
+        var li = document.createElement('li');
+        li.textContent = line;
+        checklistTarget.appendChild(li);
+      });
+    });
+  }
+
+  var imageInput = document.getElementById('id_about_image');
+  var imageBox = document.getElementById('pvAboutImageBox');
+  if (imageInput && imageBox) {
+    imageInput.addEventListener('change', function () {
+      if (imageInput.files && imageInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) { imageBox.innerHTML = '<img src="' + e.target.result + '" alt="">'; };
+        reader.readAsDataURL(imageInput.files[0]);
+      }
+    });
+  }
+})();
+{% endblock %}

@@ -1,0 +1,19 @@
+<div class="ticker-admin-row">
+  {{ item_form.id }}
+  <div class="ticker-row-head">
+    <strong>Exam item</strong>
+    {% if item_form.instance.pk %}
+      <label class="ticker-delete">{{ item_form.DELETE }} Remove when saved</label>
+    {% else %}
+      <button type="button" class="ticker-remove-new" data-remove-ticker-row>Remove</button>
+    {% endif %}
+  </div>
+  <div class="ticker-row-fields">
+    <label class="ticker-label-field"><span>Label</span>{{ item_form.label }}{% if item_form.label.errors %}<ul class="panel-errors">{% for error in item_form.label.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    <label class="ticker-logo-field"><span>Vector logo</span><span class="ticker-logo-control"><span class="ticker-admin-logo">{% include "myapp/includes/category_logo.html" with icon_key=item_form.instance.logo_key %}</span>{{ item_form.logo_key }}</span>{% if item_form.logo_key.errors %}<ul class="panel-errors">{% for error in item_form.logo_key.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    <label class="ticker-link-field"><span>Link</span>{{ item_form.link }}{% if item_form.link.errors %}<ul class="panel-errors">{% for error in item_form.link.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    <label><span>Order</span>{{ item_form.order }}{% if item_form.order.errors %}<ul class="panel-errors">{% for error in item_form.order.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    <label class="ticker-active">{{ item_form.is_active }} <span>Visible</span></label>
+  </div>
+  {% if item_form.non_field_errors %}<ul class="panel-errors">{% for error in item_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+</div>

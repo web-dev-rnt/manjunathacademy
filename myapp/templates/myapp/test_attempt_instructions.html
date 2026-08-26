@@ -1,0 +1,143 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Instructions — {{ course.name }}{% endblock %}
+
+{% block extra_style %}
+body{background:var(--white);color:var(--ink)}
+.exam-instructions{min-height:100vh;border-top:5px solid #312B35;background:var(--white)}
+.exam-head{display:flex;align-items:center;gap:42px;min-height:82px;padding:12px 30px;border-bottom:1px solid var(--line);background:var(--white)}
+.exam-brand{display:flex;align-items:center;gap:10px;min-width:195px;color:var(--ink)}.exam-brand img{display:block;max-width:190px;max-height:54px;object-fit:contain}.exam-brand-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:12px;background:linear-gradient(145deg,#F97316,#C2410C);color:#fff;font-size:22px;font-weight:900}.exam-brand-copy{display:flex;flex-direction:column;line-height:1}.exam-brand-copy strong{font-family:"Archivo",sans-serif;font-size:17px}.exam-brand-copy small{font-size:9px;margin-top:4px;color:var(--muted)}
+.exam-name{font-size:15px;font-weight:500;color:var(--ink)}
+.exam-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:calc(100vh - 87px)}
+.exam-content{display:flex;min-width:0;flex-direction:column;border-right:1px solid var(--line)}
+.exam-section-title{padding:14px 30px;background:#5F8FF0;color:#fff;font-size:16px;font-weight:800;text-transform:uppercase}
+.exam-instruction-body{flex:1;padding:14px 32px 34px}
+.instruction-step[hidden],.exam-footer-step[hidden]{display:none!important}
+.exam-tools{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}.exam-tools h1{font-size:16px;font-weight:500;text-decoration:underline;margin:0}
+.exam-rules{margin:0;padding-left:21px;color:var(--muted);font-size:15px;line-height:1.55}.exam-rules li{padding:3px 0}.exam-rules strong{color:var(--ink)}
+.exam-section-table-wrap{overflow-x:auto;margin:0 0 22px}.exam-section-table{width:100%;max-width:910px;border-collapse:collapse;font-size:13px}.exam-section-table th,.exam-section-table td{padding:10px 9px;border:1px solid var(--line);text-align:left;white-space:nowrap}.exam-section-table th{background:var(--surface-3);color:var(--ink);font-weight:800}.exam-type{display:inline-block;padding:4px 9px;border-radius:4px;color:#fff;font-size:10px;font-weight:800}.exam-type.required{background:#46B75B}.exam-type.optional{background:#F3A53B}.exam-optional-selection{display:flex;align-items:flex-start;gap:10px;margin:10px 0 26px}.exam-optional-selection strong{color:#B73B35;font-size:13px}.exam-optional-list{display:grid;gap:7px}.exam-optional-choice{display:flex;align-items:center;gap:7px;color:var(--text-secondary);font-size:13px}.exam-optional-choice input{accent-color:#5F8FF0}.exam-optional-help{margin:4px 0 0;color:var(--muted);font-size:11.5px}.exam-agreement{padding:0 0 4px}.exam-agreement label{display:flex;align-items:flex-start;gap:10px;color:var(--muted);font-size:12.5px;line-height:1.5}.exam-agreement input{width:19px;height:19px;margin-top:1px;accent-color:#5F8FF0;flex:0 0 auto}
+.exam-status-title{margin:24px 0 14px;font-size:14.5px;color:var(--ink)}.exam-legend{display:grid;gap:14px;margin-left:36px}.exam-legend-row{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--ink)}.exam-status{position:relative;display:block;flex:0 0 34px;width:34px;height:34px;border:1px solid rgba(0,0,0,.08);box-shadow:0 2px 5px rgba(17,24,39,.18)}.exam-status.answered{background:#52B774}.exam-status.visited{background:#E25555}.exam-status.review{background:#F0C817}.exam-status.not-visited{background:var(--white)}.exam-status.review-answered{background:#F0C817}.exam-status.review-answered::after{content:"✓";position:absolute;right:-7px;top:-11px;color:#11A96A;font-size:27px;font-weight:900}
+.exam-footer{padding:15px 22px;border-top:1px solid var(--line)}.exam-footer-step{display:flex;align-items:center;justify-content:flex-end;gap:12px;width:100%}.exam-footer-step.between{justify-content:space-between}.exam-next,.exam-back{min-width:130px;padding:11px 18px;border:0;border-radius:5px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer}.exam-next{background:#5F8FF0;color:#fff}.exam-next:hover{background:#4677D8}.exam-back{background:var(--surface-2);color:var(--text-secondary)}.exam-back:hover{background:var(--surface-3)}.exam-resume-note{margin:0 12px 0 auto;align-self:center;color:#B45309;font-size:12.5px;font-weight:700}
+.exam-candidate{display:flex;align-items:center;flex-direction:column;padding:44px 24px;background:var(--surface-2);text-align:center}.exam-avatar{display:grid;place-items:center;width:104px;height:104px;overflow:hidden;border-radius:50%;background:var(--line);color:#fff;font-size:42px;font-weight:800}.exam-avatar img{width:100%;height:100%;object-fit:cover}.exam-candidate h2{font-size:17px;font-weight:500;margin:13px 0 5px}.exam-candidate p{font-size:12.5px;color:var(--muted);margin:0}.exam-candidate-meta{width:100%;margin-top:28px;padding-top:18px;border-top:1px solid var(--line);text-align:left}.exam-candidate-meta div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:12px;color:var(--muted)}.exam-candidate-meta strong{color:var(--text-secondary);text-align:right}
+@media(max-width:800px){.exam-head{gap:20px;padding:12px 18px}.exam-layout{grid-template-columns:1fr}.exam-candidate{grid-row:1;padding:22px}.exam-avatar{width:76px;height:76px}.exam-candidate-meta{display:none}.exam-content{border-right:0}.exam-instruction-body{padding:16px 20px 30px}.exam-section-title{padding-inline:20px}}
+@media(max-width:520px){.exam-head{align-items:flex-start;flex-direction:column;gap:8px}.exam-brand{min-width:0}.exam-tools{align-items:flex-start;flex-direction:column}.exam-legend{margin-left:4px}.exam-legend-row{align-items:flex-start}.exam-footer{align-items:center}.exam-next{min-width:112px}}
+{% endblock %}
+
+{% block content %}
+<div class="exam-instructions">
+  <header class="exam-head">
+    <div class="exam-brand">
+      {% if site_settings.logo_type == 'image' and site_settings.logo_image %}<img src="{{ site_settings.logo_image.url }}" alt="Manjunath Academy">{% else %}<span class="exam-brand-mark">MA</span><span class="exam-brand-copy"><strong>MANJUNATH</strong><small>ACADEMY</small></span>{% endif %}
+    </div>
+    <span class="exam-name">{{ course.name }}</span>
+  </header>
+
+  <div class="exam-layout">
+    <main class="exam-content">
+      <div class="exam-section-title">Instructions</div>
+      <div class="exam-instruction-body">
+        <section class="instruction-step" id="instructionStepOne">
+          <div class="exam-tools"><h1>General Instructions:</h1>{% include "myapp/includes/lang_switch.html" %}</div>
+          <ol class="exam-rules">
+            <li>Total duration of the examination is <strong>{% if course.duration_minutes %}{{ course.duration_minutes }} minutes{% else %}not time-limited{% endif %}</strong>.</li>
+            <li>Your clock is synchronized with the server. The countdown at the top of the question page shows the remaining time.</li>
+            <li>When the timer reaches zero, the examination will submit automatically. You do not need to submit it manually at that point.</li>
+            <li>The question palette on the right side of the test shows the status of every question using the colors below.</li>
+          </ol>
+          <p class="exam-status-title">Question status colors used during an online examination:</p>
+          <div class="exam-legend">
+            <div class="exam-legend-row"><span class="exam-status answered"></span><span>You have answered the question.</span></div>
+            <div class="exam-legend-row"><span class="exam-status visited"></span><span>You have visited but not answered the question yet.</span></div>
+            <div class="exam-legend-row"><span class="exam-status review"></span><span>You have not answered the question but have marked it for review.</span></div>
+            <div class="exam-legend-row"><span class="exam-status review-answered"></span><span>You have answered the question and marked it for review.</span></div>
+            <div class="exam-legend-row"><span class="exam-status not-visited"></span><span>You have not visited the question yet.</span></div>
+          </div>
+        </section>
+
+        <section class="instruction-step" id="instructionStepTwo" hidden>
+        <div class="exam-tools"><h1>General Instructions:</h1>{% include "myapp/includes/lang_switch.html" %}</div>
+        {% if section_rows %}
+        <p style="margin:0 0 12px;font-size:14px">Read the following section details carefully.</p>
+        <div class="exam-section-table-wrap"><table class="exam-section-table"><thead><tr><th>Sl No.</th><th>Section Name</th><th>Questions</th><th>Maximum Marks</th><th>Negative Marks</th><th>Positive Marks</th><th>Type</th></tr></thead><tbody>{% for row in section_rows %}<tr><td>{{ forloop.counter }}</td><td>{{ row.section.name }}</td><td>{{ row.question_count }}</td><td>{{ row.maximum_marks }}</td><td>{{ row.section.negative_marks }}</td><td>{{ row.positive_marks }}</td><td><span class="exam-type {% if row.section.is_optional %}optional{% else %}required{% endif %}">{% if row.section.is_optional %}Optional{% else %}Compulsory{% endif %}</span></td></tr>{% endfor %}</tbody></table></div>
+        {% if optional_section_rows %}<div class="exam-optional-selection" id="optionalSectionSelection" data-limit="{{ course.max_optional_sections }}">
+          <strong>Choose maximum {{ course.max_optional_sections }} optional section{{ course.max_optional_sections|pluralize }}:</strong>
+          <div class="exam-optional-list">
+            {% for row in optional_section_rows %}<label class="exam-optional-choice"><input class="optional-section-checkbox" type="checkbox" name="selected_sections" value="{{ row.section.pk }}" form="examStartForm" {% if row.selected %}checked{% endif %}> {{ row.section.name }}</label>{% endfor %}
+            <p class="exam-optional-help" id="optionalSectionHelp"></p>
+          </div>
+        </div>{% endif %}
+        {% endif %}
+        <ol class="exam-rules">
+          <li>Total duration of the examination is <strong>{% if course.duration_minutes %}{{ course.duration_minutes }} minutes{% else %}not time-limited{% endif %}</strong>.</li>
+        </ol>
+        <div class="exam-agreement"><label><input id="examAgreement" type="checkbox"> <span>I have read and understood the instructions. I confirm that my device is working correctly and I am ready to begin the examination.</span></label></div>
+        </section>
+      </div>
+      <footer class="exam-footer">
+        <div class="exam-footer-step" id="instructionStepOneFooter"><button class="exam-next" id="instructionNext" type="button">Next →</button></div>
+        <div class="exam-footer-step between" id="instructionStepTwoFooter" hidden>
+        <button class="exam-back" id="instructionBack" type="button">← Go back</button>
+        {% if existing_attempt %}<p class="exam-resume-note">An unfinished attempt will be resumed.</p>{% endif %}
+        <form id="examStartForm" method="post">{% csrf_token %}<button class="exam-next" id="examStartButton" type="submit" disabled>{% if existing_attempt %}Resume Test{% else %}I am ready to begin{% endif %} →</button></form>
+        </div>
+      </footer>
+    </main>
+
+    <aside class="exam-candidate">
+      <div class="exam-avatar">{% if user.profile_picture %}<img src="{{ user.profile_picture.url }}" alt="{{ user.name }}">{% else %}{{ user.name|first|upper }}{% endif %}</div>
+      <h2>{{ user.name }}</h2><p>{{ user.email }}</p>
+      <div class="exam-candidate-meta"><div><span>Test</span><strong>{{ course.name|truncatechars:28 }}</strong></div><div><span>Questions</span><strong>{{ question_count }}</strong></div><div><span>Duration</span><strong>{% if course.duration_minutes %}{{ course.duration_minutes }} min{% else %}Unlimited{% endif %}</strong></div></div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var stepOne = document.getElementById('instructionStepOne');
+  var stepTwo = document.getElementById('instructionStepTwo');
+  var stepOneFooter = document.getElementById('instructionStepOneFooter');
+  var stepTwoFooter = document.getElementById('instructionStepTwoFooter');
+  var nextButton = document.getElementById('instructionNext');
+  var backButton = document.getElementById('instructionBack');
+  var agreement = document.getElementById('examAgreement');
+  var startButton = document.getElementById('examStartButton');
+
+  function showStep(stepNumber) {
+    var second = stepNumber === 2;
+    stepOne.hidden = second;
+    stepTwo.hidden = !second;
+    stepOneFooter.hidden = second;
+    stepTwoFooter.hidden = !second;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  if (nextButton) nextButton.addEventListener('click', function () { showStep(2); });
+  if (backButton) backButton.addEventListener('click', function () { showStep(1); });
+
+  function syncAgreement() {
+    if (!agreement || !startButton) return;
+    startButton.disabled = !agreement.checked;
+    startButton.style.opacity = agreement.checked ? '1' : '.48';
+    startButton.style.cursor = agreement.checked ? 'pointer' : 'not-allowed';
+  }
+  if (agreement) agreement.addEventListener('change', syncAgreement);
+  syncAgreement();
+
+  var optionalBox = document.getElementById('optionalSectionSelection');
+  if (optionalBox) {
+    var limit = Math.max(0, parseInt(optionalBox.dataset.limit || '0', 10));
+    var choices = Array.prototype.slice.call(optionalBox.querySelectorAll('.optional-section-checkbox'));
+    var help = document.getElementById('optionalSectionHelp');
+    function syncOptionalSections() {
+      var selectedCount = choices.filter(function (choice) { return choice.checked; }).length;
+      choices.forEach(function (choice) {
+        choice.disabled = !choice.checked && selectedCount >= limit;
+      });
+      if (help) help.textContent = limit === 0 ? 'Optional section selection is disabled for this test.' : selectedCount + ' of ' + limit + ' selected';
+    }
+    choices.forEach(function (choice) { choice.addEventListener('change', syncOptionalSections); });
+    syncOptionalSections();
+  }
+})();
+{% endblock %}

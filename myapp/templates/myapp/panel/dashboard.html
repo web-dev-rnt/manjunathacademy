@@ -1,0 +1,72 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_sub %}Signups, revenue, devices and exam activity at a glance{% endblock %}
+{% block nav_dashboard %}is-active{% endblock %}
+
+{% block extra_style %}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.dash-chart{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden}
+.dash-chart-wide{grid-column:1/-1}
+.dash-chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;background:#F8FAFC;border-bottom:1px solid var(--line)}
+.dash-chart-head h2{font-size:14px;font-weight:800}.dash-chart-head span{font-size:12px;color:var(--muted)}
+.dash-chart-body{height:300px;padding:18px;position:relative}.dash-chart-wide .dash-chart-body{height:330px}
+.dash-chart canvas{width:100%;height:100%;display:block}
+.dash-empty{height:100%;display:grid;place-items:center;color:var(--muted);font-size:13px}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr}.dash-chart-wide{grid-column:auto}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-stats">
+  <div class="panel-stat panel-stat-1"><span class="panel-stat-ico">👥</span><div><div class="panel-stat-num">{{ total_users }}</div><div class="panel-stat-label">Registered students</div></div></div>
+  <div class="panel-stat panel-stat-2"><span class="panel-stat-ico">📈</span><div><div class="panel-stat-num">{{ week_signups }}</div><div class="panel-stat-label">Signups in 7 days</div></div></div>
+  <div class="panel-stat panel-stat-3"><span class="panel-stat-ico">₹</span><div><div class="panel-stat-num">₹{{ total_revenue|floatformat:0 }}</div><div class="panel-stat-label">Recorded revenue</div></div></div>
+  <div class="panel-stat panel-stat-4"><span class="panel-stat-ico">📝</span><div><div class="panel-stat-num">{{ active_courses }}</div><div class="panel-stat-label">Active courses &amp; tests</div></div></div>
+</div>
+
+<div class="dash-grid">
+  <section class="dash-chart dash-chart-wide"><div class="dash-chart-head"><h2>User Signup Trend</h2><span>Last 7 days</span></div><div class="dash-chart-body"><canvas id="signupChart"></canvas></div></section>
+  <section class="dash-chart dash-chart-wide"><div class="dash-chart-head"><h2>Payment Trend</h2><span>Courses, bundles and store · Last 7 days</span></div><div class="dash-chart-body"><canvas id="paymentChart"></canvas></div></section>
+  <section class="dash-chart"><div class="dash-chart-head"><h2>Device Distribution — Signups</h2><span>Students only</span></div><div class="dash-chart-body"><canvas id="signupDeviceChart"></canvas></div></section>
+  <section class="dash-chart"><div class="dash-chart-head"><h2>Device Distribution — Payments</h2><span>Recorded revenue</span></div><div class="dash-chart-body"><canvas id="paymentDeviceChart"></canvas></div></section>
+  <section class="dash-chart"><div class="dash-chart-head"><h2>Exam Distribution</h2><span>Active courses and tests</span></div><div class="dash-chart-body"><canvas id="examChart"></canvas></div></section>
+  <section class="dash-chart"><div class="dash-chart-head"><h2>Eligibility Activity</h2><span>All time</span></div><div class="dash-chart-body"><div class="dash-empty"><strong style="font-size:42px;color:var(--orange)">{{ eligibility_checks }}</strong><span>eligibility checks submitted</span></div></div></section>
+</div>
+
+{{ chart_data|json_script:"dashboard-chart-data" }}
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var node = document.getElementById('dashboard-chart-data');
+  if (!node) return;
+  var data = JSON.parse(node.textContent);
+  var colors = ['#F97316','#2563EB','#16A34A','#7C3AED','#DC2626','#0891B2','#EAB308','#DB2777','#64748B'];
+
+  function canvasSetup(id) {
+    var canvas = document.getElementById(id); if (!canvas) return null;
+    var rect = canvas.getBoundingClientRect(), ratio = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, rect.width * ratio); canvas.height = Math.max(1, rect.height * ratio);
+    var ctx = canvas.getContext('2d'); ctx.scale(ratio, ratio);
+    return {ctx:ctx,w:rect.width,h:rect.height};
+  }
+  function lineChart(id, labels, values, color, money) {
+    var c=canvasSetup(id); if(!c)return; var x=50,y=20,w=c.w-70,h=c.h-55,max=Math.max.apply(null,values.concat([1]));
+    c.ctx.font='11px Inter';c.ctx.fillStyle='#6B7280';c.ctx.strokeStyle='#E5E7EB';c.ctx.lineWidth=1;
+    for(var i=0;i<5;i++){var py=y+h-(h*i/4);c.ctx.beginPath();c.ctx.moveTo(x,py);c.ctx.lineTo(x+w,py);c.ctx.stroke();var val=Math.round(max*i/4);c.ctx.fillText(money?'₹'+val:val,4,py+4)}
+    var step=labels.length>1?w/(labels.length-1):w;
+    labels.forEach(function(label,i){c.ctx.fillText(label,x+i*step-14,y+h+22)});
+    c.ctx.beginPath();values.forEach(function(v,i){var px=x+i*step,py=y+h-(v/max*h);if(i)c.ctx.lineTo(px,py);else c.ctx.moveTo(px,py)});c.ctx.strokeStyle=color;c.ctx.lineWidth=2.5;c.ctx.stroke();
+    values.forEach(function(v,i){var px=x+i*step,py=y+h-(v/max*h);c.ctx.beginPath();c.ctx.arc(px,py,4,0,Math.PI*2);c.ctx.fillStyle='#fff';c.ctx.fill();c.ctx.strokeStyle=color;c.ctx.lineWidth=2;c.ctx.stroke()});
+  }
+  function doughnut(id, labels, values, money) {
+    var c=canvasSetup(id);if(!c)return;var total=values.reduce(function(a,b){return a+b},0);if(!total){c.ctx.fillStyle='#94A3B8';c.ctx.textAlign='center';c.ctx.fillText('No activity',c.w/2,c.h/2);return}
+    var cx=c.w*.36,cy=c.h*.46,r=Math.min(c.w,c.h)*.29,start=-Math.PI/2;
+    values.forEach(function(v,i){var end=start+(v/total*Math.PI*2);c.ctx.beginPath();c.ctx.moveTo(cx,cy);c.ctx.arc(cx,cy,r,start,end);c.ctx.closePath();c.ctx.fillStyle=colors[i%colors.length];c.ctx.fill();start=end});
+    labels.forEach(function(label,i){var ly=22+i*20;c.ctx.fillStyle=colors[i%colors.length];c.ctx.fillRect(c.w*.69,ly,10,10);c.ctx.fillStyle='#475569';c.ctx.textAlign='left';c.ctx.font='11px Inter';var value=money?'₹'+values[i]:values[i];c.ctx.fillText(label+' ('+value+')',c.w*.69+15,ly+9)});
+  }
+  function draw(){lineChart('signupChart',data.labels,data.signups,'#2563EB',false);lineChart('paymentChart',data.labels,data.payments,'#0F8A8A',true);doughnut('signupDeviceChart',data.devices.labels,data.devices.values,false);doughnut('paymentDeviceChart',data.payment_devices.labels,data.payment_devices.values,true);doughnut('examChart',data.exams.labels,data.exams.values,false)}
+  draw(); var resizeTimer;window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(draw,150)});
+})();
+{% endblock %}

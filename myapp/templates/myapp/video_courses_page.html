@@ -1,0 +1,34 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Video Courses — Manjunath Academy{% endblock %}
+{% block meta_description %}HD recorded video lectures with a clear chapter-wise breakdown for all major government exams.{% endblock %}
+
+{% block extra_style %}
+.browse-page-hero{padding:56px 0 40px;background:var(--peach)}
+.browse-page-hero h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px}
+.browse-page-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.browse-page-section{padding:56px 0 90px}
+{% endblock %}
+
+{% block content %}
+<section class="browse-page-hero">
+  <div class="wrap">
+    <h1>Video Courses</h1>
+    <p>HD recorded lectures with a clear chapter-wise breakdown — pause, rewind and rewatch as many times as you need, on any device.</p>
+  </div>
+</section>
+
+<section class="browse-page-section">
+  <div class="wrap">
+    {% if video_courses %}
+      <div class="pc-grid">
+        {% for course in video_courses %}
+          {% include "myapp/includes/video_course_card.html" %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="panel-empty">No video courses added yet — check back soon.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,350 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Hero Section{% endblock %}
+{% block page_title %}Hero Section{% endblock %}
+{% block page_sub %}Edit the homepage hero — headline, buttons, stats and the right-side visual{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_hero_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:28px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-radio-row{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.custom-radio{
+  display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 16px;cursor:pointer;font-size:13.5px;font-weight:600;transition:.15s ease;
+}
+.custom-radio:has(input:checked){border-color:var(--orange);background:var(--orange-soft);color:var(--orange-deep)}
+.custom-radio input{accent-color:var(--orange)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-preview{display:flex;align-items:center;gap:14px;margin-top:12px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.custom-preview img{max-height:100px;max-width:200px;display:block;border-radius:8px;object-fit:cover}
+.custom-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:26px 0}
+.custom-field{margin-bottom:16px}
+.custom-field:last-child{margin-bottom:0}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input[type="file"],.custom-field input[type="text"],.custom-field input[type="url"]{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  color:var(--ink);width:100%;max-width:420px;
+}
+.custom-field textarea{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  color:var(--ink);width:100%;max-width:520px;resize:vertical;
+}
+.custom-field input:focus,.custom-field textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.custom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px}
+#heroIllustrationField,#heroImageField,#heroVideoField{display:none}
+#heroIllustrationField.is-visible,#heroImageField.is-visible,#heroVideoField.is-visible{display:block}
+@media (max-width:560px){.custom-row{grid-template-columns:1fr}}
+
+/* ---------- live hero preview ---------- */
+.hp-card{margin-bottom:24px}
+.hp-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.hp-label::before{content:"";width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.hp-mock{
+  display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center;
+  background:linear-gradient(180deg,var(--cream) 0%,#fff 100%);border:1px solid var(--line);
+  border-radius:16px;padding:22px 24px;overflow:hidden;
+}
+.hp-mock-pill{
+  display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;background:#fff;border:1px solid var(--line);
+  padding:4px 11px;border-radius:999px;font-size:10.5px;font-weight:700;box-shadow:0 2px 6px rgba(16,16,18,.06);
+}
+.hp-mock-pill .hp-dot{color:var(--orange)}
+.hp-mock-h1{font-family:"Archivo",sans-serif;font-weight:900;font-size:20px;line-height:1.12;margin:0 0 8px;letter-spacing:-.01em}
+.hp-mock-h1 em{font-style:normal;color:var(--orange)}
+.hp-mock-lede{margin:0 0 14px;color:#4b5563;font-size:11.5px;line-height:1.5;max-width:38ch}
+.hp-mock-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.hp-mock-btn{display:inline-flex;padding:7px 13px;border-radius:999px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.hp-mock-btn-primary{background:var(--orange);color:#fff}
+.hp-mock-btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.hp-mock-stats{display:flex;gap:18px;flex-wrap:wrap}
+.hp-mock-stats div{display:flex;flex-direction:column}
+.hp-mock-stats strong{font-family:"Archivo",sans-serif;font-size:14px;font-weight:800}
+.hp-mock-stats span{font-size:9.5px;color:var(--muted)}
+.hp-mock-visual{position:relative}
+.hp-mock-visual-box{
+  width:100%;aspect-ratio:4/3;border-radius:14px;background:#F5E7D8;display:grid;place-items:center;
+  font-size:42px;overflow:hidden;box-shadow:0 10px 24px rgba(16,16,18,.12);
+}
+.hp-mock-visual-box img,.hp-mock-visual-box video{width:100%;height:100%;object-fit:cover;display:block}
+.hp-mock-visual-box .hp-video-note{font-size:9px;font-weight:700;color:var(--muted);padding:0 10px;text-align:center;line-height:1.4;word-break:break-all}
+.hp-mock-float{
+  position:absolute;display:flex;align-items:center;gap:7px;background:#fff;border-radius:10px;
+  padding:6px 9px 6px 6px;box-shadow:0 6px 16px rgba(16,16,18,.14);max-width:145px;
+}
+.hp-mock-float-1{top:6px;right:-10px}
+.hp-mock-float-2{bottom:6px;left:-10px}
+.hp-badge-round,.hp-badge-square{
+  width:22px;height:22px;flex:0 0 auto;display:grid;place-items:center;font-size:8.5px;font-weight:800;color:#fff;
+}
+.hp-badge-round{border-radius:50%;background:var(--orange)}
+.hp-badge-square{border-radius:6px;background:#2563EB}
+.hp-mock-float-text{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.hp-mock-float-text strong{font-size:9.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hp-mock-float-text small{font-size:8px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:760px){.hp-mock{grid-template-columns:1fr}.hp-mock-float{position:static;margin-top:8px;max-width:none}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card hp-card">
+  <p class="hp-label">Live preview — updates as you type</p>
+  <div class="hp-mock">
+    <div class="hp-mock-copy">
+      <p class="hp-mock-pill"><span id="pvBadgeText">{{ hero.badge_text }}</span> <span class="hp-dot">•</span> <span id="pvBadgeHighlight">{{ hero.badge_highlight }}</span></p>
+      <h4 class="hp-mock-h1"><span id="pvHeadingPrefix">{{ hero.heading_prefix }}</span><br><em id="pvHeadingHighlight">{{ hero.heading_highlight }}</em> <span id="pvHeadingSuffix">{{ hero.heading_suffix }}</span></h4>
+      <p class="hp-mock-lede" id="pvSubtitle">{{ hero.subtitle }}</p>
+      <div class="hp-mock-btns">
+        <span class="hp-mock-btn hp-mock-btn-primary" id="pvPrimaryBtn">{{ hero.primary_btn_text }}</span>
+        <span class="hp-mock-btn hp-mock-btn-ghost" id="pvSecondaryBtn">{{ hero.secondary_btn_text }}</span>
+      </div>
+      <div class="hp-mock-stats">
+        <div><strong id="pvStat1Number">{{ hero.stat1_number }}</strong><span id="pvStat1Label">{{ hero.stat1_label }}</span></div>
+        <div><strong id="pvStat2Number">{{ hero.stat2_number }}</strong><span id="pvStat2Label">{{ hero.stat2_label }}</span></div>
+        <div><strong id="pvStat3Number">{{ hero.stat3_number }}</strong><span id="pvStat3Label">{{ hero.stat3_label }}</span></div>
+      </div>
+    </div>
+    <div class="hp-mock-visual">
+      <div class="hp-mock-visual-box" id="pvVisualBox">
+        {% if hero.visual_type == 'image' and hero.visual_image %}<img src="{{ hero.visual_image.url }}" alt="">
+        {% elif hero.visual_type == 'video' %}<span class="hp-video-note">▶ Video<br>{{ hero.visual_video_url|default:"no link set yet" }}</span>
+        {% else %}<span id="pvIllustrationEmoji">💻</span>{% endif %}
+      </div>
+      <div class="hp-mock-float hp-mock-float-1">
+        <span class="hp-badge-round" id="pvBadge1Value">{{ hero.badge1_value }}</span>
+        <span class="hp-mock-float-text"><strong id="pvBadge1Title">{{ hero.badge1_title }}</strong><small id="pvBadge1Subtitle">{{ hero.badge1_subtitle }}</small></span>
+      </div>
+      <div class="hp-mock-float hp-mock-float-2">
+        <span class="hp-badge-square" id="pvBadge2Value">{{ hero.badge2_value }}</span>
+        <span class="hp-mock-float-text"><strong id="pvBadge2Title">{{ hero.badge2_title }}</strong><small id="pvBadge2Subtitle">{{ hero.badge2_subtitle }}</small></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <h3>Badge pill</h3>
+      <p class="custom-section-sub">The small rounded label above the headline.</p>
+      <div class="custom-row">
+        <div class="custom-field"><label>Text</label>{{ form.badge_text }}</div>
+        <div class="custom-field"><label>Highlight (after the dot)</label>{{ form.badge_highlight }}</div>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Headline</h3>
+      <p class="custom-section-sub">The middle part is shown in orange.</p>
+      <div class="custom-row">
+        <div class="custom-field"><label>First line</label>{{ form.heading_prefix }}</div>
+        <div class="custom-field"><label>Highlighted part</label>{{ form.heading_highlight }}</div>
+      </div>
+      <div class="custom-field"><label>Rest of the headline</label>{{ form.heading_suffix }}</div>
+      <div class="custom-field"><label>Subtitle</label>{{ form.subtitle }}</div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Buttons</h3>
+      <div class="custom-row">
+        <div class="custom-field"><label>Primary button text</label>{{ form.primary_btn_text }}</div>
+        <div class="custom-field"><label>Primary button link</label>{{ form.primary_btn_link }}</div>
+      </div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Secondary button text</label>{{ form.secondary_btn_text }}</div>
+        <div class="custom-field"><label>Secondary button link</label>{{ form.secondary_btn_link }}</div>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Stats row</h3>
+      <div class="custom-row">
+        <div class="custom-field"><label>Stat 1 number</label>{{ form.stat1_number }}</div>
+        <div class="custom-field"><label>Stat 1 label</label>{{ form.stat1_label }}</div>
+      </div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Stat 2 number</label>{{ form.stat2_number }}</div>
+        <div class="custom-field"><label>Stat 2 label</label>{{ form.stat2_label }}</div>
+      </div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Stat 3 number</label>{{ form.stat3_number }}</div>
+        <div class="custom-field"><label>Stat 3 label</label>{{ form.stat3_label }}</div>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Floating badges</h3>
+      <p class="custom-section-sub">The two small cards that float over the right-side visual.</p>
+      <div class="custom-row">
+        <div class="custom-field"><label>Badge 1 value</label>{{ form.badge1_value }}</div>
+        <div class="custom-field"><label>Badge 1 title</label>{{ form.badge1_title }}</div>
+      </div>
+      <div class="custom-field"><label>Badge 1 subtitle</label>{{ form.badge1_subtitle }}</div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Badge 2 value</label>{{ form.badge2_value }}</div>
+        <div class="custom-field"><label>Badge 2 title</label>{{ form.badge2_title }}</div>
+      </div>
+      <div class="custom-field"><label>Badge 2 subtitle</label>{{ form.badge2_subtitle }}</div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Right-side visual</h3>
+      <p class="custom-section-sub">Choose the default illustration, or replace it with your own image or video.</p>
+
+      <div class="custom-radio-row" id="heroVisualTypeRow">
+        {% for radio in form.visual_type %}
+          <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+      </div>
+
+      <div id="heroIllustrationField" class="custom-field">
+        <label>Illustration style</label>
+        <div class="custom-radio-row">
+          {% for radio in form.illustration_style %}
+            <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div id="heroImageField" class="custom-field">
+        <label>Image</label>
+        {{ form.visual_image }}
+        <p class="custom-help">{{ form.visual_image.help_text }}</p>
+        {% if form.visual_image.errors %}<ul class="panel-errors">{% for e in form.visual_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if hero.visual_image %}
+          <div class="custom-preview">
+            <img src="{{ hero.visual_image.url }}" alt="Current hero image">
+            <span class="custom-preview-label">Current image</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div id="heroVideoField" class="custom-field">
+        <label>Video link</label>
+        {{ form.visual_video_url }}
+        <p class="custom-help">{{ form.visual_video_url.help_text }}</p>
+        {% if form.visual_video_url.errors %}<ul class="panel-errors">{% for e in form.visual_video_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var radios = document.querySelectorAll('#heroVisualTypeRow input[type="radio"]');
+  var illustrationField = document.getElementById('heroIllustrationField');
+  var imageField = document.getElementById('heroImageField');
+  var videoField = document.getElementById('heroVideoField');
+
+  function syncVisibility() {
+    var checked = document.querySelector('#heroVisualTypeRow input[type="radio"]:checked');
+    var value = checked ? checked.value : '';
+    illustrationField.classList.toggle('is-visible', value === 'illustration');
+    imageField.classList.toggle('is-visible', value === 'image');
+    videoField.classList.toggle('is-visible', value === 'video');
+  }
+
+  radios.forEach(function (r) { r.addEventListener('change', syncVisibility); });
+  syncVisibility();
+})();
+
+(function () {
+  function bind(id, targetId) {
+    var el = document.getElementById(id);
+    var target = document.getElementById(targetId);
+    if (!el || !target) return;
+    el.addEventListener('input', function () { target.textContent = el.value; });
+  }
+
+  bind('id_badge_text', 'pvBadgeText');
+  bind('id_badge_highlight', 'pvBadgeHighlight');
+  bind('id_heading_prefix', 'pvHeadingPrefix');
+  bind('id_heading_highlight', 'pvHeadingHighlight');
+  bind('id_heading_suffix', 'pvHeadingSuffix');
+  bind('id_subtitle', 'pvSubtitle');
+  bind('id_primary_btn_text', 'pvPrimaryBtn');
+  bind('id_secondary_btn_text', 'pvSecondaryBtn');
+  bind('id_stat1_number', 'pvStat1Number');
+  bind('id_stat1_label', 'pvStat1Label');
+  bind('id_stat2_number', 'pvStat2Number');
+  bind('id_stat2_label', 'pvStat2Label');
+  bind('id_stat3_number', 'pvStat3Number');
+  bind('id_stat3_label', 'pvStat3Label');
+  bind('id_badge1_value', 'pvBadge1Value');
+  bind('id_badge1_title', 'pvBadge1Title');
+  bind('id_badge1_subtitle', 'pvBadge1Subtitle');
+  bind('id_badge2_value', 'pvBadge2Value');
+  bind('id_badge2_title', 'pvBadge2Title');
+  bind('id_badge2_subtitle', 'pvBadge2Subtitle');
+
+  var visualBox = document.getElementById('pvVisualBox');
+  var savedImageUrl = '{{ hero.visual_image.url|escapejs }}';
+  var illustrationEmoji = {study: '💻', reading: '📖', graduate: '🎓', online_class: '🖥️', exam: '✍️'};
+
+  function currentVisualType() {
+    var checked = document.querySelector('#heroVisualTypeRow input[type="radio"]:checked');
+    return checked ? checked.value : 'illustration';
+  }
+
+  function renderVisual() {
+    if (!visualBox) return;
+    var type = currentVisualType();
+    if (type === 'illustration') {
+      var styleChecked = document.querySelector('input[name="illustration_style"]:checked');
+      var style = styleChecked ? styleChecked.value : 'study';
+      visualBox.innerHTML = '<span style="font-size:42px">' + (illustrationEmoji[style] || '💻') + '</span>';
+    } else if (type === 'image') {
+      var fileInput = document.getElementById('id_visual_image');
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) { visualBox.innerHTML = '<img src="' + e.target.result + '" alt="">'; };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else if (savedImageUrl) {
+        visualBox.innerHTML = '<img src="' + savedImageUrl + '" alt="">';
+      } else {
+        visualBox.innerHTML = '<span class="hp-video-note">No image uploaded yet</span>';
+      }
+    } else if (type === 'video') {
+      var urlInput = document.getElementById('id_visual_video_url');
+      var url = urlInput ? urlInput.value : '';
+      visualBox.innerHTML = '<span class="hp-video-note">▶ Video<br>' + (url || 'no link set yet') + '</span>';
+    }
+  }
+
+  document.querySelectorAll('#heroVisualTypeRow input[type="radio"]').forEach(function (r) {
+    r.addEventListener('change', renderVisual);
+  });
+  document.querySelectorAll('input[name="illustration_style"]').forEach(function (r) {
+    r.addEventListener('change', renderVisual);
+  });
+  var imageInput = document.getElementById('id_visual_image');
+  if (imageInput) imageInput.addEventListener('change', renderVisual);
+  var videoInput = document.getElementById('id_visual_video_url');
+  if (videoInput) videoInput.addEventListener('input', renderVisual);
+})();
+{% endblock %}

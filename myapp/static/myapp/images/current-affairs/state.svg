@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="State current affairs">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fdf2f8"/><stop offset="1" stop-color="#fbcfe8"/></linearGradient><linearGradient id="pin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ec4899"/><stop offset="1" stop-color="#be185d"/></linearGradient></defs>
+  <rect width="640" height="360" rx="28" fill="url(#bg)"/><path d="M72 286 171 82l86 48 92-70 84 95 128-37v184H72Z" fill="#fff" opacity=".72"/><path d="m171 82 23 95 63-47 52 91 40-161 84 95 44 147M194 177l115 44m124-66-124 66" fill="none" stroke="#f9a8d4" stroke-width="9"/>
+  <path d="M320 68c-66 0-119 52-119 117 0 84 119 143 119 143s119-59 119-143c0-65-53-117-119-117Z" fill="url(#pin)"/><circle cx="320" cy="184" r="48" fill="#fff"/><path d="m270 183 50-42 50 42v53h-100v-53Z" fill="#fce7f3"/><path d="M290 187h18v35h-18zm42 0h18v35h-18z" fill="#be185d"/>
+</svg>

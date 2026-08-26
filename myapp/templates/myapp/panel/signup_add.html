@@ -1,0 +1,75 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Add User{% endblock %}
+{% block page_title %}Add User{% endblock %}
+{% block page_sub %}Create a new account from the panel{% endblock %}
+{% block nav_signups %}is-active{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Add a new user</h2>
+      <p>Creates an account the same way signup does.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_signups' %}">← Back to signups</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Name <span class="req">*</span></span>
+      {{ form.name }}
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row">
+      <label><span class="panel-label-text">Email <span class="req">*</span></span>
+        {{ form.email }}
+        {% if form.email.errors %}<ul class="panel-errors">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+      <label><span class="panel-label-text">Phone number <span class="req">*</span></span>
+        {{ form.number }}
+        {% if form.number.errors %}<ul class="panel-errors">{% for e in form.number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <div class="panel-form-row">
+      <label><span class="panel-label-text">Age</span>
+        {{ form.age }}
+      </label>
+      <label><span class="panel-label-text">Gender</span>
+        {{ form.gender }}
+      </label>
+    </div>
+
+    <div class="panel-form-row">
+      <label><span class="panel-label-text">State</span>
+        {{ form.state }}
+      </label>
+      <label><span class="panel-label-text">City</span>
+        {{ form.city }}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Password <span class="req">*</span></span>
+      {{ form.password1 }}
+      {% if form.password1.errors %}<ul class="panel-errors">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Confirm password <span class="req">*</span></span>
+      {{ form.password2 }}
+      {% if form.password2.errors %}<ul class="panel-errors">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">Create user</button>
+      <a class="btn btn-ghost" href="{% url 'panel_signups' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

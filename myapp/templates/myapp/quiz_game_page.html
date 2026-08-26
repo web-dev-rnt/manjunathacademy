@@ -1,0 +1,333 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Padho Aur Jeeto — Quiz Game — Manjunath Academy{% endblock %}
+{% block meta_description %}Play our KBC-style quiz game — climb the money ladder one question at a time, with lifelines.{% endblock %}
+
+{% block extra_style %}
+.quiz-page-section{padding:42px 0 76px;background:var(--white);min-height:calc(100vh - 150px);position:relative;overflow:hidden}
+.quiz-page-section::before{display:none}
+.quiz-page-hero{text-align:center;margin:0 auto 28px;max-width:60ch;position:relative;z-index:1}
+.quiz-page-hero h1{font-size:clamp(26px,3vw,34px);margin:0 0 8px;color:var(--ink)}
+.quiz-page-hero p{color:var(--muted);font-size:15px;margin:0}
+.quiz-page-wrap{display:flex;justify-content:center}
+
+.quiz-game-card{
+  position:relative;z-index:1;max-width:1040px;width:100%;overflow:hidden;display:flex;flex-direction:column;
+  background:radial-gradient(130% 160% at 18% -10%,#1B1140 0%,#0B0620 55%,#050310 100%);
+  border-radius:28px;border:1px solid rgba(56,189,248,.22);
+  box-shadow:0 30px 70px rgba(5,3,16,.45),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.quiz-game-card::after{
+  content:"";position:absolute;inset:-20%;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(56,189,248,.22),transparent 60%),radial-gradient(circle,rgba(168,85,247,.18),transparent 60%);
+  background-repeat:no-repeat;background-size:50% 50%,46% 46%;background-position:12% 10%,88% 85%;
+  filter:blur(40px);opacity:.8;
+}
+.quiz-game-titlebar{height:3px;margin:0;background:linear-gradient(90deg,transparent,#38BDF8 20%,#38BDF8 80%,transparent);flex:0 0 auto;position:relative;z-index:1}
+.quiz-game-dot,.quiz-game-titlebar-label{display:none}
+.quiz-game-body{padding:38px 32px 34px;position:relative;z-index:1}
+.quiz-game-head{position:relative;display:flex;align-items:center;justify-content:space-between;margin:0 auto 20px;width:78%;z-index:2}
+.quiz-game-level,.quiz-game-prize{font-size:12px;font-weight:800;color:#BAE6FD;background:#111D31;padding:7px 14px;border:1px solid #2879A5;border-radius:8px}
+.quiz-game-timer{position:absolute;left:50%;top:-13px;transform:translateX(-50%);min-width:82px;text-align:center;color:#fff;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;background:#17233A;border:1px solid #38BDF8;padding:6px 12px;border-radius:8px}
+.quiz-game-question{font-size:clamp(19px,2.3vw,27px);font-weight:700;text-align:center;color:#fff;margin:0 0 25px;padding:30px 7% 26px;line-height:1.4;background:#101B45;border:1.5px solid #38BDF8;border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.24)}
+.quiz-game-options{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin-bottom:22px;position:relative;align-items:stretch}
+.quiz-game-options::before{display:none}
+.quiz-opt-btn{
+  position:relative;display:flex;align-items:center;gap:14px;text-align:left;padding:14px 20px;
+  border:2px solid #2879A5;background:linear-gradient(180deg,#132356,#0C1836);
+  border-radius:14px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;line-height:1.4;
+  box-shadow:0 4px 14px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05);
+  transition:transform .22s cubic-bezier(.2,.75,.25,1),box-shadow .22s ease,border-color .22s ease,background .22s ease;
+}
+.quiz-opt-letter{
+  flex:0 0 auto;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+  background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.4);color:#7DD3FC;
+  font-size:13px;font-weight:800;transition:background .22s ease,border-color .22s ease,color .22s ease;
+}
+.quiz-opt-text{flex:1;min-width:0}
+.quiz-opt-btn:nth-child(even){clip-path:none}
+.quiz-opt-btn:hover:not(:disabled){
+  border-color:#7DD3FC;background:linear-gradient(180deg,#1B2E6B,#122150);transform:translateY(-2px);
+  box-shadow:0 12px 26px rgba(56,189,248,.24),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.quiz-opt-btn:hover:not(:disabled) .quiz-opt-letter{background:#38BDF8;border-color:#38BDF8;color:#0C1836}
+.quiz-opt-btn:active:not(:disabled){transform:translateY(0)}
+.quiz-opt-btn:disabled{cursor:default;opacity:.55}
+.quiz-opt-btn.is-correct{background:linear-gradient(180deg,#15803D,#065F2E);border-color:#86EFAC;color:#fff;opacity:1}
+.quiz-opt-btn.is-correct .quiz-opt-letter{background:#22C55E;border-color:#86EFAC;color:#04250F}
+.quiz-opt-btn.is-wrong{background:linear-gradient(180deg,#B91C1C,#7F1D1D);border-color:#FCA5A5;color:#fff;opacity:1}
+.quiz-opt-btn.is-wrong .quiz-opt-letter{background:#EF4444;border-color:#FCA5A5;color:#3D0A0A}
+.quiz-opt-btn.is-eliminated{visibility:hidden}
+.quiz-game-lifelines{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.quiz-lifeline-btn{
+  padding:8px 16px;border-radius:var(--r-pill);border:1.5px solid #38BDF8;background:#07162A;
+  font-size:12.5px;font-weight:700;color:#CFFAFE;cursor:pointer;font-family:inherit;
+}
+.quiz-lifeline-btn:hover:not(:disabled){border-color:#FDE047;color:#FDE047}
+.quiz-lifeline-btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-game-audience{display:flex;gap:8px;align-items:flex-end;height:70px;margin-bottom:14px}
+.quiz-audience-bar{flex:1;background:var(--orange-soft);border-radius:6px 6px 0 0;position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:4px}
+.quiz-audience-bar span{position:absolute;top:-18px;font-size:11px;font-weight:800;color:var(--text-secondary)}
+.quiz-audience-bar em{position:absolute;bottom:-18px;font-size:11px;font-style:normal;font-weight:700;color:var(--muted)}
+.quiz-game-feedback{padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:700;margin:0 auto 14px;max-width:560px;text-align:center}
+.quiz-feedback-correct{background:#ECFDF3;color:#15803D}
+.quiz-feedback-wrong{background:#FEF2F2;color:#DC2626}
+.quiz-feedback-info{background:var(--orange-soft);color:var(--orange-deep)}
+.quiz-game-footer{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+@media(max-width:720px){.quiz-page-section{padding-top:30px}.quiz-page-hero{margin-bottom:20px}.quiz-game-card{border-radius:20px}.quiz-game-body{padding:26px 16px 24px}.quiz-game-head{width:94%;margin-bottom:18px}.quiz-game-level,.quiz-game-prize{font-size:10px;padding:7px 9px}.quiz-game-timer{font-size:15px;min-width:68px}.quiz-game-question{font-size:19px;padding:28px 7% 23px;margin-bottom:20px}.quiz-game-options{grid-template-columns:1fr;gap:10px}.quiz-opt-btn{font-size:15px;padding:12px 14px;gap:11px}.quiz-opt-letter{width:26px;height:26px;font-size:12px}}
+{% endblock %}
+
+{% block content %}
+<section class="quiz-page-section">
+  <div class="wrap">
+    <div class="quiz-page-hero">
+      <h1>🎮 Padho Aur Jeeto</h1>
+      <p>Our own Kaun Banega Crorepati–style quiz — climb the ladder one question at a time, with lifelines.</p>
+    </div>
+
+    {% if quiz_settings.background_music %}
+    <audio id="quizBgMusic" src="{{ quiz_settings.background_music.url }}" loop preload="auto"></audio>
+    {% endif %}
+
+    <div class="quiz-page-wrap">
+      <div class="quiz-game-card">
+        <div class="quiz-game-titlebar">
+          <span class="quiz-game-dot quiz-game-dot-red"></span>
+          <span class="quiz-game-dot quiz-game-dot-yellow"></span>
+          <span class="quiz-game-dot quiz-game-dot-green"></span>
+          <span class="quiz-game-titlebar-label">Padho Aur Jeeto</span>
+        </div>
+        <div class="quiz-game-body">
+          {% csrf_token %}
+          <div class="quiz-game-head">
+            <span class="quiz-game-level" id="quizLevel">Question 1</span>
+            <span class="quiz-game-timer" id="quizTimer">00:30</span>
+            <span class="quiz-game-prize" id="quizPrize"></span>
+          </div>
+          <p class="quiz-game-question" id="quizQuestionText">Loading…</p>
+          <div class="quiz-game-options" id="quizOptions"></div>
+          <div class="quiz-game-audience" id="quizAudienceChart" hidden></div>
+          <div class="quiz-game-lifelines">
+            <button type="button" class="quiz-lifeline-btn" id="quizFiftyBtn">50-50</button>
+            <button type="button" class="quiz-lifeline-btn" id="quizAudienceBtn">Audience Poll</button>
+            <button type="button" class="quiz-lifeline-btn" id="quizSkipBtn">Skip Question</button>
+          </div>
+          <div class="quiz-game-feedback" id="quizFeedback" hidden></div>
+          <div class="quiz-game-footer" id="quizFooter" hidden></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var card = document.querySelector('.quiz-game-card');
+  if (!card) return;
+
+  var csrfToken = card.querySelector('[name=csrfmiddlewaretoken]').value;
+  var levelEl = document.getElementById('quizLevel');
+  var prizeEl = document.getElementById('quizPrize');
+  var questionEl = document.getElementById('quizQuestionText');
+  var optionsEl = document.getElementById('quizOptions');
+  var audienceEl = document.getElementById('quizAudienceChart');
+  var feedbackEl = document.getElementById('quizFeedback');
+  var footerEl = document.getElementById('quizFooter');
+  var fiftyBtn = document.getElementById('quizFiftyBtn');
+  var audienceBtn = document.getElementById('quizAudienceBtn');
+  var skipBtn = document.getElementById('quizSkipBtn');
+  var timerEl = document.getElementById('quizTimer');
+  var currentQuestion = null;
+  var timerId = null;
+
+  var bgMusic = document.getElementById('quizBgMusic');
+  if (bgMusic) {
+    bgMusic.loop = true;
+    var tryPlayMusic = function () {
+      bgMusic.play().catch(function () {});
+    };
+    tryPlayMusic();
+    ['click', 'keydown', 'touchstart'].forEach(function (evt) {
+      document.addEventListener(evt, function onFirstInteraction() {
+        tryPlayMusic();
+        document.removeEventListener(evt, onFirstInteraction);
+      }, { once: true });
+    });
+  }
+
+  function stopTimer() {
+    if (timerId) window.clearInterval(timerId);
+    timerId = null;
+  }
+
+  function startTimer() {
+    stopTimer();
+    var seconds = 30;
+    timerEl.textContent = '00:' + String(seconds).padStart(2, '0');
+    timerId = window.setInterval(function () {
+      seconds -= 1;
+      timerEl.textContent = '00:' + String(Math.max(seconds, 0)).padStart(2, '0');
+      if (seconds <= 0) {
+        stopTimer();
+        currentQuestion = null;
+        optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) { btn.disabled = true; });
+        fiftyBtn.disabled = true; audienceBtn.disabled = true; skipBtn.disabled = true;
+        showFeedback('Time is up! Try the quiz again.', 'wrong');
+        footerEl.innerHTML = '';
+        showPlayAgain();
+      }
+    }, 1000);
+  }
+
+  function apiCall(url, method, params) {
+    var opts = { method: method, headers: { 'X-CSRFToken': csrfToken } };
+    if (method === 'POST') opts.body = new URLSearchParams(params || {});
+    return fetch(url + (method === 'GET' && params ? '?' + new URLSearchParams(params) : ''), opts).then(function (r) { return r.json(); });
+  }
+
+  function showFeedback(text, kind) {
+    feedbackEl.hidden = false;
+    feedbackEl.textContent = text;
+    feedbackEl.className = 'quiz-game-feedback quiz-feedback-' + kind;
+  }
+
+  function loadQuestion() {
+    stopTimer();
+    feedbackEl.hidden = true;
+    audienceEl.hidden = true;
+    audienceEl.innerHTML = '';
+    footerEl.hidden = true;
+    footerEl.innerHTML = '';
+    fiftyBtn.disabled = false;
+    audienceBtn.disabled = false;
+    skipBtn.disabled = false;
+    questionEl.textContent = 'Loading…';
+    optionsEl.innerHTML = '';
+
+    apiCall('{% url "quiz_get_question" %}', 'GET').then(function (data) {
+      if (data.finished) {
+        currentQuestion = null;
+        levelEl.textContent = 'Finished';
+        prizeEl.textContent = '';
+        questionEl.textContent = '🏆 Congratulations — you have answered every question in the quiz!';
+        fiftyBtn.disabled = true; audienceBtn.disabled = true; skipBtn.disabled = true;
+        showPlayAgain();
+        return;
+      }
+      if (!data.question) {
+        questionEl.textContent = 'No quiz questions have been added yet — check back soon.';
+        fiftyBtn.disabled = true; audienceBtn.disabled = true; skipBtn.disabled = true;
+        return;
+      }
+      currentQuestion = data.question;
+      levelEl.textContent = 'Question ' + data.question.level;
+      prizeEl.textContent = data.question.prize_label || '';
+      questionEl.textContent = data.question.text;
+      fiftyBtn.disabled = !!data.lifelines_used.fifty;
+      audienceBtn.disabled = !!data.lifelines_used.audience;
+      skipBtn.disabled = !!data.lifelines_used.skip;
+
+      optionsEl.innerHTML = '';
+      ['A', 'B', 'C', 'D'].forEach(function (letter) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quiz-opt-btn';
+        btn.dataset.option = letter;
+        var letterSpan = document.createElement('span');
+        letterSpan.className = 'quiz-opt-letter';
+        letterSpan.textContent = letter;
+        var textSpan = document.createElement('span');
+        textSpan.className = 'quiz-opt-text';
+        textSpan.textContent = data.question['option_' + letter.toLowerCase()];
+        btn.appendChild(letterSpan);
+        btn.appendChild(textSpan);
+        btn.addEventListener('click', function () { submitAnswer(letter); });
+        optionsEl.appendChild(btn);
+      });
+      startTimer();
+    });
+  }
+
+  function showPlayAgain() {
+    footerEl.hidden = false;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-primary';
+    btn.textContent = 'Play Again';
+    btn.addEventListener('click', function () {
+      apiCall('{% url "quiz_reset" %}', 'POST').then(loadQuestion);
+    });
+    footerEl.appendChild(btn);
+  }
+
+  function submitAnswer(letter) {
+    if (!currentQuestion) return;
+    stopTimer();
+    optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) { btn.disabled = true; });
+
+    apiCall('{% url "quiz_submit_answer" %}', 'POST', { question_id: currentQuestion.id, selected_option: letter }).then(function (data) {
+      optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) {
+        if (btn.dataset.option === data.correct_option) btn.classList.add('is-correct');
+        else if (btn.dataset.option === letter) btn.classList.add('is-wrong');
+      });
+
+      if (data.is_correct) {
+        showFeedback('✓ Correct!' + (data.prize_label ? ' You have won ' + data.prize_label + '.' : ''), 'correct');
+        footerEl.hidden = false;
+        var nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'btn btn-primary';
+        nextBtn.textContent = 'Next Question →';
+        nextBtn.addEventListener('click', loadQuestion);
+        footerEl.appendChild(nextBtn);
+      } else {
+        currentQuestion = null;
+        fiftyBtn.disabled = true; audienceBtn.disabled = true; skipBtn.disabled = true;
+        showFeedback('✗ Wrong answer. The correct answer was ' + data.correct_option + '.', 'wrong');
+        showPlayAgain();
+      }
+    });
+  }
+
+  fiftyBtn.addEventListener('click', function () {
+    if (!currentQuestion) return;
+    apiCall('{% url "quiz_lifeline_fifty" %}', 'GET', { question_id: currentQuestion.id }).then(function (data) {
+      if (!data.ok) return;
+      fiftyBtn.disabled = true;
+      data.eliminate.forEach(function (letter) {
+        var btn = optionsEl.querySelector('.quiz-opt-btn[data-option="' + letter + '"]');
+        if (btn) { btn.classList.add('is-eliminated'); btn.disabled = true; }
+      });
+    });
+  });
+
+  audienceBtn.addEventListener('click', function () {
+    if (!currentQuestion) return;
+    apiCall('{% url "quiz_lifeline_audience" %}', 'GET', { question_id: currentQuestion.id }).then(function (data) {
+      if (!data.ok) return;
+      audienceBtn.disabled = true;
+      audienceEl.hidden = false;
+      audienceEl.innerHTML = '';
+      ['A', 'B', 'C', 'D'].forEach(function (letter) {
+        var pct = data.percentages[letter] || 0;
+        var bar = document.createElement('div');
+        bar.className = 'quiz-audience-bar';
+        bar.style.height = Math.max(pct, 3) + '%';
+        bar.innerHTML = '<span>' + pct + '%</span><em>' + letter + '</em>';
+        audienceEl.appendChild(bar);
+      });
+    });
+  });
+
+  skipBtn.addEventListener('click', function () {
+    if (!currentQuestion) return;
+    apiCall('{% url "quiz_lifeline_skip" %}', 'POST', { question_id: currentQuestion.id }).then(function (data) {
+      if (!data.ok) return;
+      loadQuestion();
+    });
+  });
+
+  apiCall('{% url "quiz_reset" %}', 'POST').then(loadQuestion);
+})();
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Exam Ticker{% endblock %}
+{% block page_title %}Exam ticker{% endblock %}
+{% block page_sub %}Customize the moving exam categories shown on the homepage{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_exam_ticker_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.ticker-settings{display:grid;grid-template-columns:minmax(260px,2fr) minmax(150px,.6fr) minmax(190px,.7fr);gap:18px;align-items:end}
+.ticker-settings label,.ticker-row-fields label{display:block}
+.ticker-settings label>span,.ticker-row-fields label>span{display:block;font-size:12px;font-weight:800;color:#475569;margin-bottom:7px}
+.ticker-settings input[type="text"],.ticker-settings input[type="number"],.ticker-row-fields input[type="text"],.ticker-row-fields input[type="number"],.ticker-row-fields select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 11px;font:inherit;color:var(--ink);background:#fff}
+.ticker-settings input:focus,.ticker-row-fields input:focus,.ticker-row-fields select:focus{outline:2px solid var(--orange);outline-offset:1px}
+.ticker-switch{display:flex!important;align-items:center;gap:9px;min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fafaf9;font-size:13px;font-weight:700}
+.ticker-switch span{margin:0!important}
+.ticker-help{margin:7px 0 0;color:var(--muted);font-size:12px}
+.ticker-section-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:28px 0 12px;padding-top:24px;border-top:1px solid var(--line)}
+.ticker-section-head h3{margin:0 0 3px;font-size:16px}.ticker-section-head p{margin:0;color:var(--muted);font-size:13px}
+.ticker-admin-list{display:grid;gap:10px}
+.ticker-admin-row{padding:14px;border:1px solid var(--line);border-radius:13px;background:#fcfcfb}
+.ticker-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;font-size:13px}
+.ticker-delete{display:flex;align-items:center;gap:7px;color:#b42318;font-size:12px;cursor:pointer}
+.ticker-remove-new{border:0;background:transparent;color:#b42318;font-weight:700;cursor:pointer}
+.ticker-row-fields{display:grid;grid-template-columns:minmax(200px,1.2fr) minmax(205px,.9fr) minmax(220px,1.4fr) 80px 76px;gap:11px;align-items:end}
+.ticker-logo-control{display:flex;align-items:center;gap:9px}.ticker-logo-control select{min-width:0}.ticker-admin-logo{display:block;width:42px;height:42px;flex:0 0 42px}.ticker-admin-logo .category-logo{border:1px solid rgba(15,23,42,.06)}
+.ticker-active{display:flex!important;align-items:center;gap:7px;min-height:41px}.ticker-active span{margin:0!important}
+.ticker-save{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+@media(max-width:1100px){.ticker-row-fields{grid-template-columns:1fr 100px 1.4fr}.ticker-active{align-self:end}}
+@media(max-width:760px){.ticker-settings,.ticker-row-fields{grid-template-columns:1fr}.ticker-section-head{align-items:flex-start;flex-direction:column}.ticker-section-head .btn{width:100%}.ticker-active{min-height:auto}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}{% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}{% endif %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="ticker-settings">
+      <label><span>Section heading</span>{{ settings_form.heading }}{% if settings_form.heading.errors %}<ul class="panel-errors">{% for error in settings_form.heading.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+      <label><span>Loop duration (seconds)</span>{{ settings_form.animation_duration }}<p class="ticker-help">Lower is faster (8–60).</p>{% if settings_form.animation_duration.errors %}<ul class="panel-errors">{% for error in settings_form.animation_duration.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+      <label class="ticker-switch">{{ settings_form.is_active }} <span>Show on homepage</span></label>
+    </div>
+    {% if settings_form.non_field_errors %}<ul class="panel-errors">{% for error in settings_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+
+    <div class="ticker-section-head">
+      <div><h3>Exam categories</h3><p>Edit the icon, name, destination, order, and visibility of every moving item.</p></div>
+      <button type="button" class="btn btn-ghost" id="addTickerItem">+ Add exam item</button>
+    </div>
+
+    {{ item_formset.management_form }}
+    {% if item_formset.non_form_errors %}<ul class="panel-errors">{% for error in item_formset.non_form_errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+    <div class="ticker-admin-list" id="tickerItemList">
+      {% for item_form in item_formset %}{% include "myapp/panel/_exam_ticker_item_row.html" with item_form=item_form %}{% endfor %}
+    </div>
+    <script type="text/template" id="tickerItemTemplate">{% include "myapp/panel/_exam_ticker_item_row.html" with item_form=item_formset.empty_form %}</script>
+    <div id="tickerLogoTemplates" hidden>
+      <template data-logo-key="general">{% include "myapp/includes/category_logo.html" with icon_key="general" %}</template>
+      <template data-logo-key="school">{% include "myapp/includes/category_logo.html" with icon_key="school" %}</template>
+      <template data-logo-key="staff">{% include "myapp/includes/category_logo.html" with icon_key="staff" %}</template>
+      <template data-logo-key="railway">{% include "myapp/includes/category_logo.html" with icon_key="railway" %}</template>
+      <template data-logo-key="banking">{% include "myapp/includes/category_logo.html" with icon_key="banking" %}</template>
+      <template data-logo-key="medical">{% include "myapp/includes/category_logo.html" with icon_key="medical" %}</template>
+      <template data-logo-key="engineering">{% include "myapp/includes/category_logo.html" with icon_key="engineering" %}</template>
+      <template data-logo-key="civil">{% include "myapp/includes/category_logo.html" with icon_key="civil" %}</template>
+      <template data-logo-key="defence">{% include "myapp/includes/category_logo.html" with icon_key="defence" %}</template>
+      <template data-logo-key="teaching">{% include "myapp/includes/category_logo.html" with icon_key="teaching" %}</template>
+      <template data-logo-key="state">{% include "myapp/includes/category_logo.html" with icon_key="state" %}</template>
+      <template data-logo-key="police">{% include "myapp/includes/category_logo.html" with icon_key="police" %}</template>
+    </div>
+
+    <div class="ticker-save">
+      <a href="{% url 'index' %}" class="btn btn-ghost" target="_blank">View homepage</a>
+      <button type="submit" class="btn btn-primary">Save ticker</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var list = document.getElementById('tickerItemList');
+  var addButton = document.getElementById('addTickerItem');
+  var template = document.getElementById('tickerItemTemplate');
+  var total = document.getElementById('id_items-TOTAL_FORMS');
+  var logoTemplates = {};
+  document.querySelectorAll('#tickerLogoTemplates template[data-logo-key]').forEach(function (logoTemplate) {
+    logoTemplates[logoTemplate.dataset.logoKey] = logoTemplate.innerHTML;
+  });
+  if (!list || !addButton || !template || !total) return;
+
+  function refreshLogo(row) {
+    var select = row.querySelector('select[name$="-logo_key"]');
+    var preview = row.querySelector('.ticker-admin-logo');
+    if (select && preview && logoTemplates[select.value]) preview.innerHTML = logoTemplates[select.value];
+  }
+
+  list.querySelectorAll('.ticker-admin-row').forEach(refreshLogo);
+
+  addButton.addEventListener('click', function () {
+    var index = parseInt(total.value, 10);
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = template.innerHTML.split('__prefix__').join(index).trim();
+    var row = wrapper.firstElementChild;
+    list.appendChild(row);
+    total.value = index + 1;
+    refreshLogo(row);
+    var labelInput = row.querySelector('input[name$="-label"]');
+    if (labelInput) labelInput.focus();
+  });
+
+  list.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-remove-ticker-row]');
+    if (!button) return;
+    var row = button.closest('.ticker-admin-row');
+    row.querySelectorAll('input').forEach(function (input) {
+      if (input.type === 'checkbox') input.checked = false;
+      else input.value = '';
+    });
+    row.style.display = 'none';
+  });
+
+  list.addEventListener('change', function (event) {
+    if (event.target.matches('select[name$="-logo_key"]')) refreshLogo(event.target.closest('.ticker-admin-row'));
+  });
+})();
+{% endblock %}

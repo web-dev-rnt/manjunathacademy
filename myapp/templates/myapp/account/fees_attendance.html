@@ -1,0 +1,123 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Fees &amp; Attendance — Manjunath Academy{% endblock %}
+{% block meta_description %}View your fee invoices, payment history and attendance record at Manjunath Academy.{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:64px 0 110px;background:var(--page-gradient);min-height:60vh}
+.fa-wrap{max-width:760px;margin:0 auto}
+.fa-section{margin-bottom:44px}
+.fa-section:last-child{margin-bottom:0}
+.fa-section-title{font-size:19px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+.fa-section-sub{color:var(--muted);font-size:13.5px;margin:0 0 20px}
+.not-available-card{
+  position:relative;overflow:hidden;background:var(--white);border:1px solid var(--line);border-radius:18px;
+  padding:26px 24px;box-shadow:var(--shadow-sm);text-align:center;
+}
+.not-available-pill{display:inline-flex;align-items:center;font-size:12px;font-weight:800;padding:6px 16px;border-radius:999px;background:var(--surface-2);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
+.fees-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.fees-stat{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow-sm)}
+.fees-stat-label{font-size:12px;color:var(--muted);font-weight:700;margin:0 0 6px}
+.fees-stat-num{font-size:20px;font-weight:800;color:var(--ink)}
+.fees-stat-due .fees-stat-num{color:#DC2626}
+.fees-stat-paid .fees-stat-num{color:#15803D}
+.fees-list{display:flex;flex-direction:column;gap:14px}
+.fee-card{
+  display:flex;align-items:center;gap:16px;background:var(--white);
+  border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow-sm);
+}
+.fee-card-icon{width:44px;height:44px;border-radius:12px;background:var(--orange-soft);color:var(--orange-deep);display:grid;place-items:center;font-size:19px;flex:0 0 auto}
+.fee-card-body{min-width:0;flex:1}
+.fee-title{font-weight:700;color:var(--ink);margin:0 0 4px}
+.fee-meta{font-size:13px;color:var(--muted);margin:0}
+.fee-meta.is-overdue{color:#DC2626;font-weight:700}
+.fee-status{flex:0 0 auto;font-size:12px;font-weight:800;padding:6px 13px;border-radius:999px;white-space:nowrap}
+.fee-status-paid{background:#ECFDF3;color:#15803D}
+.fee-status-pending{background:#FFF7ED;color:#C2410C}
+.fee-status-overdue{background:#FEF2F2;color:#DC2626}
+.att-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.att-stat{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow-sm)}
+.att-stat-label{font-size:12px;color:var(--muted);font-weight:700;margin:0 0 6px}
+.att-stat-num{font-size:20px;font-weight:800;color:var(--ink)}
+.att-stat-percent .att-stat-num{color:#15803D}
+.att-stat-absent .att-stat-num{color:#DC2626}
+.att-list{background:var(--white);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-sm);overflow:hidden}
+.att-row{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--line);font-size:13.5px}
+.att-row:last-child{border-bottom:0}
+.att-status{font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px}
+.att-status-present{background:#ECFDF3;color:#15803D}
+.att-status-absent{background:#FEF2F2;color:#DC2626}
+.att-status-half_day{background:#FFF7ED;color:#C2410C}
+.att-status-leave{background:#EFF6FF;color:#1E40AF}
+@media (max-width:600px){.fees-stats,.att-stats{grid-template-columns:1fr}.fee-card{flex-wrap:wrap}}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap">
+    <div class="fa-wrap">
+
+      <div class="fa-section">
+        <h2 class="fa-section-title">🧾 My Fees</h2>
+        <p class="fa-section-sub">Invoices billed to you and your payment history.</p>
+        {% if invoices %}
+          <div class="fees-stats">
+            <div class="fees-stat fees-stat-due"><p class="fees-stat-label">Amount due</p><div class="fees-stat-num">₹{{ fee_stats.pending_total }}</div></div>
+            <div class="fees-stat"><p class="fees-stat-label">Pending invoices</p><div class="fees-stat-num">{{ fee_stats.pending_count }}</div></div>
+            <div class="fees-stat fees-stat-paid"><p class="fees-stat-label">Total paid</p><div class="fees-stat-num">₹{{ fee_stats.paid_total }}</div></div>
+          </div>
+          <div class="fees-list">
+            {% for invoice in invoices %}
+            <div class="fee-card">
+              <span class="fee-card-icon">🧾</span>
+              <div class="fee-card-body">
+                <p class="fee-title">{{ invoice.title }} · ₹{{ invoice.amount }}</p>
+                {% if invoice.status == 'paid' %}
+                  <p class="fee-meta">Paid {{ invoice.paid_on|date:"d M Y" }}{% if invoice.payment_mode %} · {{ invoice.get_payment_mode_display }}{% endif %}</p>
+                {% else %}
+                  <p class="fee-meta{% if invoice.is_overdue %} is-overdue{% endif %}">Due {{ invoice.due_date|date:"d M Y" }}{% if invoice.is_overdue %} · overdue{% endif %}</p>
+                {% endif %}
+              </div>
+              {% if invoice.status == 'paid' %}<span class="fee-status fee-status-paid">Paid</span>
+              {% elif invoice.is_overdue %}<span class="fee-status fee-status-overdue">Overdue</span>
+              {% else %}<span class="fee-status fee-status-pending">Pending</span>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="not-available-card">
+            <p style="margin:0;color:var(--muted);font-size:13.5px">You don't have any fee invoices yet. Fees billed to you by Manjunath Academy will appear here.</p>
+            <span class="not-available-pill">Not available</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="fa-section">
+        <h2 class="fa-section-title">📋 My Attendance</h2>
+        <p class="fa-section-sub">Your attendance record and overall attendance percentage.</p>
+        {% if records %}
+          <div class="att-stats">
+            <div class="att-stat att-stat-percent"><p class="att-stat-label">Attendance</p><div class="att-stat-num">{% if attendance_stats.attendance_percent != None %}{{ attendance_stats.attendance_percent }}%{% else %}—{% endif %}</div></div>
+            <div class="att-stat"><p class="att-stat-label">Present days</p><div class="att-stat-num">{{ attendance_stats.present_count }}</div></div>
+            <div class="att-stat att-stat-absent"><p class="att-stat-label">Absent days</p><div class="att-stat-num">{{ attendance_stats.absent_count }}</div></div>
+          </div>
+          <div class="att-list">
+            {% for record in records %}
+            <div class="att-row">
+              <span>{{ record.date|date:"d M Y" }}</span>
+              <span class="att-status att-status-{{ record.status }}">{{ record.get_status_display }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="not-available-card">
+            <p style="margin:0;color:var(--muted);font-size:13.5px">Your attendance record will appear here once Manjunath Academy starts marking it.</p>
+            <span class="not-available-pill">Not available</span>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

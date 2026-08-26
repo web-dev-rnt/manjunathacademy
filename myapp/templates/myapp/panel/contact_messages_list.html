@@ -1,0 +1,92 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Contact Messages{% endblock %}
+{% block page_title %}Contact Messages{% endblock %}
+{% block page_sub %}Messages submitted from the Contact Us page{% endblock %}
+{% block nav_contact_messages %}is-active{% endblock %}
+
+{% block extra_style %}
+.contact-msg-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.contact-msg-cell{max-width:360px;white-space:normal}
+{% endblock %}
+
+{% block content %}
+<div class="panel-stats">
+  <div class="panel-stat panel-stat-1">
+    <span class="panel-stat-ico">✉️</span>
+    <div><div class="panel-stat-num">{{ stats.total }}</div><div class="panel-stat-label">Total messages</div></div>
+  </div>
+  <div class="panel-stat panel-stat-2">
+    <span class="panel-stat-ico">🔴</span>
+    <div><div class="panel-stat-num">{{ stats.unread }}</div><div class="panel-stat-label">Unread</div></div>
+  </div>
+  <div class="panel-stat panel-stat-3">
+    <span class="panel-stat-ico">🆕</span>
+    <div><div class="panel-stat-num">{{ stats.this_week }}</div><div class="panel-stat-label">This week</div></div>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Contact form messages</h2>
+      <p>{{ contact_messages|length }} message{{ contact_messages|length|pluralize }}</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if contact_messages %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Message</th>
+            <th>Received</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for msg in contact_messages %}
+          <tr>
+            <td class="panel-row-name">{{ msg.name }}</td>
+            <td>{% if msg.email %}{{ msg.email }}<br>{% endif %}{% if msg.phone %}<a href="tel:{{ msg.phone }}">{{ msg.phone }}</a>{% endif %}</td>
+            <td class="contact-msg-cell">{{ msg.message|truncatechars:140 }}</td>
+            <td>{{ msg.created_at|date:"d M Y, h:i A" }}</td>
+            <td>
+              {% if msg.is_read %}<span class="panel-badge panel-badge-muted">Read</span>
+              {% else %}
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="mark_read">
+                  <input type="hidden" name="pk" value="{{ msg.pk }}">
+                  <button type="submit" class="btn btn-ghost btn-sm">Mark read</button>
+                </form>
+              {% endif %}
+            </td>
+            <td>
+              <div class="contact-msg-actions">
+                <form method="post" action="{% url 'panel_contact_message_delete' msg.pk %}" onsubmit="return confirm('Delete this message?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">✉️</span>No contact messages yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

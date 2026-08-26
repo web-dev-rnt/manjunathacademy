@@ -1,0 +1,225 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ course.name }} — Manjunath Academy{% endblock %}
+{% block meta_description %}{{ course.about|truncatechars:150 }}{% endblock %}
+
+{% block extra_style %}
+.course-detail-hero{padding:52px 0 36px;background:linear-gradient(120deg,var(--peach) 0%,var(--cream) 100%)}
+.course-detail-kicker{font-size:12.5px;font-weight:800;color:var(--orange-deep);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+.course-detail-hero h1{font-size:clamp(24px,3.6vw,38px);margin:0 0 10px}
+.course-detail-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.course-detail-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.course-detail-meta span{
+  background:rgba(var(--glass-tint),.7);padding:6px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:700;color:var(--ts-ink);
+}
+.course-detail-section{padding:34px 0 76px;background:linear-gradient(180deg,var(--white) 0%,var(--surface-3) 100%)}
+.course-detail-wrap{max-width:1320px}
+.course-detail-card{
+  width:100%;background:var(--white);border:1px solid var(--line);border-radius:18px;
+  padding:clamp(20px,2.2vw,32px);box-shadow:var(--shadow-sm);
+}
+.course-detail-thumb{
+  width:100%;height:clamp(220px,22vw,320px);object-fit:cover;object-position:center;
+  border-radius:14px;margin-bottom:20px;display:block;
+}
+.course-access-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:14px 18px;border-radius:12px;font-size:14px;font-weight:700;margin-bottom:22px;
+}
+.course-access-ok{background:#ECFDF3;color:#15803D}
+.course-access-expired{background:#FEF2F2;color:#DC2626}
+.course-about-text{color:var(--text-secondary);font-size:14.5px;line-height:1.8;white-space:pre-line;margin:0 0 20px}
+.course-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;list-style:none;padding:0;margin:0 0 22px}
+.course-highlights li{display:flex;align-items:center;gap:9px;padding:11px 13px;border:1px solid #BBF7D0;border-radius:11px;background:#F0FDF4;color:#166534;font-size:13px;font-weight:700}
+.course-highlights li::before{content:"✓";display:grid;place-items:center;flex:0 0 20px;width:20px;height:20px;border-radius:50%;background:#22C55E;color:#fff;font-size:11px}
+.course-media{margin-top:22px;padding-top:24px;border-top:1px solid var(--line)}
+.course-media video{width:100%;border-radius:14px;display:block;background:#000;max-height:620px}
+.course-video-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(275px,310px);gap:22px;align-items:start}
+.course-video-player video{aspect-ratio:16/9;object-fit:contain}
+.course-video-player h3{font-size:16px;margin:12px 2px 0}
+.course-playlist{
+  position:sticky;top:104px;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  background:var(--surface-3);max-height:min(68vh,620px);overflow-y:auto;box-shadow:0 6px 18px rgba(17,24,39,.05);
+}
+.course-playlist-title{padding:13px 14px;margin:0;font-size:13px;font-weight:800;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.course-lesson{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:12px 13px;border:0;border-bottom:1px solid var(--line);background:var(--white);cursor:pointer;font-family:inherit;color:var(--text-secondary)}
+.course-lesson:last-child{border-bottom:0}.course-lesson:hover,.course-lesson.is-active{background:var(--orange-soft);color:var(--orange-deep)}
+.course-lesson-num{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font-size:11px;font-weight:800;flex:0 0 auto}
+.course-lesson-text{min-width:0;display:flex;flex-direction:column;font-size:12.5px;font-weight:700}.course-lesson-text small{font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+.course-folder{border-bottom:1px solid var(--line);background:var(--white)}.course-folder>summary{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer;list-style:none}.course-folder>summary::-webkit-details-marker{display:none}
+.course-folder>summary strong{flex:1;font-size:12.5px}.course-folder>summary small{font-size:10.5px;color:var(--muted)}.course-folder-body{padding-left:12px;border-top:1px solid var(--surface-2)}.course-folder-body .course-folder{border-left:1px solid var(--line)}
+.course-pdf-frame{width:100%;height:clamp(460px,65vh,680px);border:1px solid var(--line);border-radius:14px}
+.course-document-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(275px,310px);gap:22px;align-items:start}
+.course-document-viewer h3{font-size:16px;margin:12px 2px 0}.course-document-viewer .course-actions-row{justify-content:flex-start}
+.course-detail-empty{text-align:center;color:var(--muted);padding:40px 0}
+.complete-btn{
+  background:none;border:1px solid currentColor;color:inherit;padding:6px 14px;border-radius:var(--r-pill);
+  font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;
+}
+.course-actions-row{display:flex;justify-content:flex-end;margin-top:18px}
+@media(max-width:900px){
+  .course-video-layout,.course-document-layout{grid-template-columns:1fr}
+  .course-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .course-playlist{position:static;max-height:360px}
+}
+@media(max-width:760px){
+  .course-detail-section{padding:24px 0 56px}
+  .course-detail-thumb{height:clamp(180px,48vw,260px);border-radius:12px}
+  .course-highlights{grid-template-columns:1fr}
+  .course-media{margin-top:18px;padding-top:18px}
+  .course-playlist{max-height:300px}
+  .course-pdf-frame{height:62vh;min-height:420px}
+}
+{% endblock %}
+
+{% block content %}
+<section class="course-detail-hero">
+  <div class="wrap">
+    <p class="course-detail-kicker">{{ course.get_course_type_display }}{% if course.category %} · {{ course.category.icon }} {{ course.category.name }}{% endif %}</p>
+    <h1>{{ course.name }}</h1>
+    <div class="course-detail-meta">
+      {% if course.author %}<span>✍️ {{ course.author }}</span>{% endif %}
+      {% if course.pages %}<span>📄 {{ course.pages }} pages</span>{% endif %}
+      {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="course-detail-section">
+  <div class="wrap course-detail-wrap">
+    <div class="course-detail-card">
+      {% if course.thumbnail %}<img class="course-detail-thumb" src="{{ course.thumbnail.url }}" alt="">{% endif %}
+
+      {% if enrollment.has_access %}
+        <div class="course-access-banner course-access-ok">
+          <span>{% if enrollment.expires_at %}Access valid until {{ enrollment.expires_at|date:"d M Y" }}{% else %}You have full access to this course{% endif %}</span>
+          <form method="post">
+            {% csrf_token %}
+            {% if enrollment.is_completed %}
+              <input type="hidden" name="mark_incomplete" value="1">
+              <button type="submit" class="complete-btn">✓ Completed — mark as not done</button>
+            {% else %}
+              <button type="submit" class="complete-btn">Mark as complete</button>
+            {% endif %}
+          </form>
+        </div>
+
+        {% if course.about %}<p class="course-about-text">{{ course.about }}</p>{% endif %}
+
+        {% if course.highlight_list %}
+        <ul class="course-highlights">
+          {% for highlight in course.highlight_list %}<li>{{ highlight }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="course-media">
+          {% if course.course_type == 'video_course' %}
+            {% with videos=visible_content %}
+              {% if videos %}
+              <div class="course-video-layout">
+                <div class="course-video-player">
+                  <video id="courseVideoPlayer" controls controlsList="nodownload" {% if course.thumbnail %}poster="{{ course.thumbnail.url }}"{% endif %} src="{{ videos.0.video_file.url }}"></video>
+                  <h3 id="courseVideoTitle">{{ videos.0.title }}</h3>
+                </div>
+                <div class="course-playlist">
+                  <p class="course-playlist-title">Course Lessons · {{ videos|length }} videos</p>
+                  {% if course.enable_folders %}
+                    {% for video in root_content %}
+                    <button type="button" class="course-lesson" data-src="{{ video.video_file.url }}" data-title="{{ video.title }}">
+                      <span class="course-lesson-num">▶</span>
+                      <span class="course-lesson-text">{{ video.title }}{% if video.duration_minutes %}<small>{{ video.duration_minutes }} min</small>{% endif %}</span>
+                    </button>
+                    {% endfor %}
+                    {% include "myapp/includes/course_content_tree.html" with content_tree=content_tree content_type="video" %}
+                  {% else %}
+                  {% for video in videos %}
+                  <button type="button" class="course-lesson" data-src="{{ video.video_file.url }}" data-title="{{ video.title }}">
+                    <span class="course-lesson-num">{{ forloop.counter }}</span>
+                    <span class="course-lesson-text">{{ video.title }}{% if video.duration_minutes %}<small>{{ video.duration_minutes }} min</small>{% endif %}</span>
+                  </button>
+                  {% endfor %}
+                  {% endif %}
+                </div>
+              </div>
+              {% elif course.video_file %}
+                <video controls {% if course.thumbnail %}poster="{{ course.thumbnail.url }}"{% endif %} src="{{ course.video_file.url }}"></video>
+              {% else %}
+                <p class="course-detail-empty">Videos for this course haven't been uploaded yet.</p>
+              {% endif %}
+            {% endwith %}
+          {% elif course.course_type == 'elibrary' %}
+            {% with documents=visible_content %}
+              {% if documents %}
+              <div class="course-document-layout">
+                <div class="course-document-viewer">
+                  <iframe class="course-pdf-frame" id="coursePdfViewer" src="{{ documents.0.pdf_file.url }}" title="{{ documents.0.title }}"></iframe>
+                  <h3 id="coursePdfTitle">{{ documents.0.title }}</h3>
+                  <div class="course-actions-row"><a class="btn btn-ghost" id="coursePdfDownload" href="{{ documents.0.pdf_file.url }}" download>Download PDF</a></div>
+                </div>
+                <div class="course-playlist">
+                  <p class="course-playlist-title">Library Documents · {{ documents|length }} PDFs</p>
+                  {% if course.enable_folders %}
+                    {% for document in root_content %}
+                    <button type="button" class="course-lesson course-document" data-src="{{ document.pdf_file.url }}" data-title="{{ document.title }}">
+                      <span class="course-lesson-num">📄</span>
+                      <span class="course-lesson-text">{{ document.title }}{% if document.pages %}<small>{{ document.pages }} pages</small>{% endif %}</span>
+                    </button>
+                    {% endfor %}
+                    {% include "myapp/includes/course_content_tree.html" with content_tree=content_tree content_type="document" %}
+                  {% else %}
+                  {% for document in documents %}
+                  <button type="button" class="course-lesson course-document" data-src="{{ document.pdf_file.url }}" data-title="{{ document.title }}">
+                    <span class="course-lesson-num">{{ forloop.counter }}</span>
+                    <span class="course-lesson-text">{{ document.title }}{% if document.pages %}<small>{{ document.pages }} pages</small>{% endif %}</span>
+                  </button>
+                  {% endfor %}
+                  {% endif %}
+                </div>
+              </div>
+              {% elif course.pdf_file %}
+                <iframe class="course-pdf-frame" src="{{ course.pdf_file.url }}" title="{{ course.name }}"></iframe>
+                <div class="course-actions-row"><a class="btn btn-ghost" href="{{ course.pdf_file.url }}" download>Download PDF</a></div>
+              {% else %}
+                <p class="course-detail-empty">PDF documents for this library item haven't been uploaded yet.</p>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
+        </div>
+      {% else %}
+        <p class="course-access-banner course-access-expired">Your access to this course expired on {{ enrollment.expires_at|date:"d M Y" }}.</p>
+        <p>Contact us to renew your access and continue where you left off.</p>
+        <a class="btn btn-primary" href="{% url 'contact_us_page' %}">Contact Support</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+(function(){
+  var player=document.getElementById('courseVideoPlayer');
+  if(player){
+    var title=document.getElementById('courseVideoTitle');
+    var videoButtons=document.querySelectorAll('.course-lesson:not(.course-document)');
+    if(videoButtons.length) videoButtons[0].classList.add('is-active');
+    videoButtons.forEach(function(button){
+      button.addEventListener('click',function(){
+        document.querySelectorAll('.course-lesson:not(.course-document)').forEach(function(item){item.classList.remove('is-active')});
+        button.classList.add('is-active');player.src=button.dataset.src;title.textContent=button.dataset.title;player.load();player.play().catch(function(){});
+      });
+    });
+  }
+  var pdfViewer=document.getElementById('coursePdfViewer');
+  if(pdfViewer){
+    var pdfTitle=document.getElementById('coursePdfTitle'),pdfDownload=document.getElementById('coursePdfDownload');
+    var documentButtons=document.querySelectorAll('.course-document');
+    if(documentButtons.length) documentButtons[0].classList.add('is-active');
+    documentButtons.forEach(function(button){
+      button.addEventListener('click',function(){
+        document.querySelectorAll('.course-document').forEach(function(item){item.classList.remove('is-active')});
+        button.classList.add('is-active');pdfViewer.src=button.dataset.src;pdfViewer.title=button.dataset.title;pdfTitle.textContent=button.dataset.title;pdfDownload.href=button.dataset.src;
+      });
+    });
+  }
+})();
+{% endblock %}

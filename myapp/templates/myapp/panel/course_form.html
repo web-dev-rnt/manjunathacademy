@@ -1,0 +1,359 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} {{ type_label }}{% endblock %}
+{% block page_title %}{% if is_new %}Add {{ type_label|lower }}{% else %}Edit {{ type_label|lower }}{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel-form{max-width:none;width:100%}
+.course-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.course-preview img{max-height:80px;max-width:160px;border-radius:8px;object-fit:cover}
+.course-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+#validityFields{display:none}
+#validityFields.is-visible{display:grid}
+.folder-mode-box{margin:16px 0;padding:20px;border:1px solid #FED7AA;border-radius:14px;background:#FFF7ED}
+.folder-mode-box h3{font-size:16px;margin:0 0 6px}.folder-mode-box p{font-size:13px;color:var(--muted);margin:0 0 14px}
+.folder-mode-hidden{display:none!important}
+.file-field-box{
+  background:#FAFAF9;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;
+  font-size:13.5px;color:#374151;line-height:1.9;
+}
+.file-field-box a{color:var(--orange-deep);font-weight:700;text-decoration:underline;word-break:break-all}
+.file-field-box input[type="checkbox"]{accent-color:var(--orange);margin-right:5px}
+.file-field-box input[type="file"]{display:block;margin-top:6px;font-size:13.5px}
+.video-playlist-admin{margin-top:8px;padding:22px;background:#fff;border:1px solid var(--line);border-radius:16px}
+.video-playlist-admin h3{font-size:16px;margin:0 0 4px}.video-playlist-admin>p{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.video-admin-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.video-admin-item{width:100%;padding:16px 18px;background:#FAFAF9;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.video-admin-item label{font-size:12px}
+.video-admin-item-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.video-admin-item-num{font-weight:800;font-size:13px;color:var(--ink);background:#fff;border:1px solid var(--line);padding:4px 12px;border-radius:999px}
+.video-admin-item-head-actions{display:flex;align-items:center;gap:16px}
+.video-admin-active{margin:0!important}
+.video-admin-remove,.video-admin-remove-new{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:#DC2626;cursor:pointer;background:none;border:0;padding:0}
+.video-admin-remove input{accent-color:#DC2626}
+.video-admin-remove:hover,.video-admin-remove-new:hover{text-decoration:underline}
+.video-admin-item-body{display:grid;grid-template-columns:minmax(180px,320px) minmax(220px,380px) 110px 100px;gap:14px;align-items:start;justify-content:start}
+.video-admin-item-body input,.video-admin-item-body select{width:100%;min-width:0}
+.video-admin-item-body .file-field-box{min-height:62px;padding:10px 12px;overflow:hidden}.video-admin-item-body input[type="file"]{max-width:100%}
+.video-admin-add{margin-top:2px}
+.video-admin-existing-preview{margin-top:8px}.video-admin-existing-preview summary{cursor:pointer;color:var(--orange-deep);font-weight:700}.video-admin-existing-preview video{display:block;width:min(520px,100%);max-height:280px;margin-top:9px;border-radius:9px;background:#000}
+.test-sections-admin{margin:18px 0;padding:22px;background:#F8FAFC;border:1px solid #CBD5E1;border-radius:16px}.test-sections-admin h3{font-size:17px;margin:0 0 5px}.test-sections-admin>p{font-size:12.5px;color:var(--muted);margin:0 0 14px}.test-section-fields{display:grid;grid-template-columns:minmax(220px,1fr) 150px 100px 170px;gap:14px;align-items:start}.test-section-optional{margin-top:27px}
+@media (max-width:1100px){.video-admin-item-body{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:900px){.test-section-fields{grid-template-columns:1fr 1fr}.test-section-optional{margin-top:0}}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+@media (max-width:560px){.video-admin-item-body{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new {{ type_label|lower }}{% else %}Editing: {{ course.name }}{% endif %}</h2>
+      <p>Category is shared across Test Series, Video Courses and E-Library.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_course_list' course_type %}">← Back to {{ type_label|lower }}</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate
+        data-loading-text="Uploading your file(s) to the server…">
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Category</span>
+      {{ form.category }}
+      {% if form.category.errors %}<ul class="panel-errors">{% for e in form.category.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Course name <span class="req">*</span></span>
+      {{ form.name }}
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if course_type == 'test_series' %}
+    <label><span class="panel-label-text">Test type</span>
+      {{ form.test_type }}
+      {% if form.test_type.errors %}<ul class="panel-errors">{% for e in form.test_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+    {% endif %}
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Original price (₹)</span>
+        {{ form.original_price }}
+        {% if form.original_price.errors %}<ul class="panel-errors">{% for e in form.original_price.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+      <label><span class="panel-label-text">Current price (₹)</span>
+        {{ form.current_price }}
+        {% if form.current_price.errors %}<ul class="panel-errors">{% for e in form.current_price.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <label class="panel-form-check">{{ form.force_free }} Make this free (students get access without paying, even if a price is set above)</label>
+
+    <label class="panel-form-check">{{ form.enable_validity }} Enable validity</label>
+
+    <div id="validityFields" class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Validity length</span>
+        {{ form.validity_value }}
+        {% if form.validity_value.errors %}<ul class="panel-errors">{% for e in form.validity_value.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+      <label><span class="panel-label-text">Unit</span>
+        {{ form.validity_unit }}
+      </label>
+    </div>
+
+    {% if form.enable_folders %}
+    <label class="panel-form-check">{{ form.enable_folders }} Enable folders and subfolders for uploaded content</label>
+    <p class="custom-help">When enabled, save this item and use the folder manager to create folders, open them, and upload videos or PDFs inside the current folder.</p>
+    {% endif %}
+
+    <label><span class="panel-label-text">About course</span>
+      {{ form.about }}
+      {% if form.about.errors %}<ul class="panel-errors">{% for e in form.about.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if form.highlights %}
+    <label><span class="panel-label-text">Course highlights</span>
+      {{ form.highlights }}
+      <p class="custom-help">Add one short highlight per line. Up to three highlights are shown on each homepage card.</p>
+      {% if form.highlights.errors %}<ul class="panel-errors">{% for e in form.highlights.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+    {% endif %}
+
+    <label><span class="panel-label-text">Banner / thumbnail</span>
+      {{ form.thumbnail }}
+      <p class="custom-help">{{ form.thumbnail.help_text }}</p>
+      {% if form.thumbnail.errors %}<ul class="panel-errors">{% for e in form.thumbnail.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if course.thumbnail %}
+      <div class="course-preview">
+        <img src="{{ course.thumbnail.url }}" alt="Current thumbnail">
+        <span class="course-preview-label">Current thumbnail</span>
+      </div>
+    {% endif %}
+
+    {% if course_type == 'elibrary' %}
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Author</span>{{ form.author }}</label>
+      <label><span class="panel-label-text">Pages</span>{{ form.pages }}</label>
+    </div>
+
+    <label><span class="panel-label-text">Legacy/main PDF</span>
+      <div class="file-field-box">{{ form.pdf_file }}</div>
+      <p class="custom-help">Optional legacy/main document. Use the collection below to upload multiple PDFs.{% if course.pdf_file %} Uploading a new file replaces the current one.{% endif %}</p>
+      {% if form.pdf_file.errors %}<ul class="panel-errors">{% for e in form.pdf_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div data-flat-content>
+    <div class="video-playlist-admin">
+      <h3>E-Library PDF collection</h3>
+      <p>Add as many PDFs as you need — click "Add another document" any time, no need to save first. Lower order numbers appear first.</p>
+      {{ document_formset.management_form }}
+      {% if document_formset.non_form_errors %}<ul class="panel-errors">{% for e in document_formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+      <div class="video-admin-list" id="documentAdminList">
+        {% for document_form in document_formset %}
+          {% include "myapp/panel/_document_row.html" with document_form=document_form document_number=forloop.counter is_new_template=False %}
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-ghost video-admin-add" id="addDocumentRowBtn">+ Add another document</button>
+
+      <script type="text/template" id="documentRowTemplate">{% include "myapp/panel/_document_row.html" with document_form=document_formset.empty_form document_number=0 is_new_template=True %}</script>
+    </div>
+    </div>
+    {% endif %}
+
+    {% if course_type == 'video_course' %}
+    <label><span class="panel-label-text">Duration (minutes)</span>
+      {{ form.duration_minutes }}
+    </label>
+
+    <div data-flat-content>
+    <div class="video-playlist-admin">
+      <h3>Course video playlist</h3>
+      <p>Add as many lessons as you need — click "Add another lesson" any time, no need to save first. Lower order numbers appear first.</p>
+      {{ video_formset.management_form }}
+      {% if video_formset.non_form_errors %}<ul class="panel-errors">{% for e in video_formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+      <div class="video-admin-list" id="videoAdminList">
+        {% for video_form in video_formset %}
+          {% include "myapp/panel/_video_lesson_row.html" with video_form=video_form lesson_number=forloop.counter is_new_template=False %}
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-ghost video-admin-add" id="addVideoRowBtn">+ Add another lesson</button>
+
+      <script type="text/template" id="videoRowTemplate">{% include "myapp/panel/_video_lesson_row.html" with video_form=video_formset.empty_form lesson_number=0 is_new_template=True %}</script>
+    </div>
+    </div>
+    {% endif %}
+
+    {% if form.enable_folders %}
+    <div class="folder-mode-box" id="folderModeBox">
+      <h3>📁 Folder content manager</h3>
+      {% if course.pk %}
+        <p>The flat playlist is replaced by the folder manager while folders are enabled.</p>
+        <a class="btn btn-primary" href="{% url 'panel_course_content' course_type course.pk %}">Open folder manager →</a>
+      {% else %}
+        <p>Save this {{ type_label|lower }} first. The folder manager will open automatically so you can create a folder or upload content at the root.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if course_type == 'test_series' %}
+    <label><span class="panel-label-text">Time limit (minutes)</span>
+      {{ form.duration_minutes }}
+      <p class="custom-help">Optional — students see a live countdown and the test auto-submits when time runs out.</p>
+    </label>
+
+    <label><span class="panel-label-text">Maximum optional sections</span>
+      {{ form.max_optional_sections }}
+      {% if form.max_optional_sections.errors %}<ul class="panel-errors">{% for e in form.max_optional_sections.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <p class="custom-help">How many optional sections a student may select on the second instruction page. Use 0 to disable optional selection.</p>
+    </label>
+
+    <div class="test-sections-admin">
+      <h3>Test sections</h3>
+      <p>Create compulsory or optional sections. Questions can be assigned to these sections after the test is saved.</p>
+      {{ section_formset.management_form }}
+      {% if section_formset.non_form_errors %}<ul class="panel-errors">{% for e in section_formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <div class="video-admin-list" id="testSectionList">
+        {% for section_form in section_formset %}{% include "myapp/panel/_test_section_row.html" with section_form=section_form section_number=forloop.counter %}{% endfor %}
+      </div>
+      <button class="btn btn-ghost video-admin-add" id="addTestSectionBtn" type="button">+ Add another section</button>
+      <script type="text/template" id="testSectionTemplate">{% include "myapp/panel/_test_section_row.html" with section_form=section_formset.empty_form section_number=0 %}</script>
+    </div>
+    {% endif %}
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Order</span>
+        {{ form.order }}
+        <p class="custom-help">{{ form.order.help_text }}</p>
+      </label>
+      <label class="panel-form-check" style="margin-top:26px">
+        {{ form.is_active }} Show on homepage
+      </label>
+    </div>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add {{ type_label|lower }}{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_course_list' course_type %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var enableValidity = document.getElementById('id_enable_validity');
+  var validityFields = document.getElementById('validityFields');
+  if (!enableValidity || !validityFields) return;
+
+  function sync() { validityFields.classList.toggle('is-visible', enableValidity.checked); }
+  enableValidity.addEventListener('change', sync);
+  sync();
+})();
+
+(function () {
+  var videoList = document.getElementById('videoAdminList');
+  if (!videoList) return;
+  videoList.addEventListener('change', function (event) {
+    var input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.type !== 'file' || !input.accept.includes('video')) return;
+    var file = input.files && input.files[0];
+    var row = input.closest('.video-admin-item');
+    var durationInput = row && row.querySelector('input[name$="-duration_minutes"]');
+    if (!file || !durationInput) return;
+    var objectUrl = URL.createObjectURL(file);
+    var metadataVideo = document.createElement('video');
+    metadataVideo.preload = 'metadata';
+    metadataVideo.onloadedmetadata = function () {
+      if (Number.isFinite(metadataVideo.duration) && metadataVideo.duration > 0) {
+        durationInput.value = Math.max(1, Math.ceil(metadataVideo.duration / 60));
+      }
+      URL.revokeObjectURL(objectUrl);
+    };
+    metadataVideo.onerror = function () { URL.revokeObjectURL(objectUrl); };
+    metadataVideo.src = objectUrl;
+  });
+})();
+
+(function () {
+  var enableFolders = document.getElementById('id_enable_folders');
+  if (!enableFolders) return;
+  var flatSections = document.querySelectorAll('[data-flat-content]');
+  var folderBox = document.getElementById('folderModeBox');
+
+  function syncFolderMode() {
+    flatSections.forEach(function (section) {
+      section.classList.toggle('folder-mode-hidden', enableFolders.checked);
+    });
+    if (folderBox) folderBox.classList.toggle('folder-mode-hidden', !enableFolders.checked);
+  }
+  enableFolders.addEventListener('change', syncFolderMode);
+  syncFolderMode();
+})();
+
+function setupDynamicFormset(opts) {
+  var list = document.getElementById(opts.listId);
+  var addBtn = document.getElementById(opts.addBtnId);
+  var templateEl = document.getElementById(opts.templateId);
+  var totalForms = document.getElementById('id_' + opts.prefix + '-TOTAL_FORMS');
+  if (!list || !addBtn || !templateEl || !totalForms) return;
+
+  var prefixRe = new RegExp(opts.prefix + '-\\d+-');
+
+  function renumber() {
+    var rows = list.querySelectorAll('.video-admin-item');
+    rows.forEach(function (row, i) {
+      row.querySelectorAll('[name],[id]').forEach(function (el) {
+        if (el.name) el.name = el.name.replace(prefixRe, opts.prefix + '-' + i + '-');
+        if (el.id) el.id = el.id.replace(prefixRe, opts.prefix + '-' + i + '-');
+      });
+      var numEl = row.querySelector('.video-admin-item-num');
+      if (numEl) numEl.textContent = opts.itemLabel + ' ' + (i + 1);
+    });
+    totalForms.value = rows.length;
+  }
+
+  addBtn.addEventListener('click', function () {
+    var index = parseInt(totalForms.value, 10);
+    var html = templateEl.innerHTML.split('__prefix__').join(index);
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = html.trim();
+    var row = wrapper.firstElementChild;
+    list.appendChild(row);
+    renumber();
+    var titleInput = row.querySelector('input[type="text"]');
+    if (titleInput) titleInput.focus();
+  });
+
+  list.addEventListener('click', function (e) {
+    var removeBtn = e.target.closest('[data-remove-row]');
+    if (!removeBtn) return;
+    removeBtn.closest('.video-admin-item').remove();
+    renumber();
+  });
+}
+
+setupDynamicFormset({
+  listId: 'videoAdminList', addBtnId: 'addVideoRowBtn', templateId: 'videoRowTemplate',
+  prefix: 'videos', itemLabel: 'Lesson',
+});
+setupDynamicFormset({
+  listId: 'documentAdminList', addBtnId: 'addDocumentRowBtn', templateId: 'documentRowTemplate',
+  prefix: 'documents', itemLabel: 'Document',
+});
+setupDynamicFormset({
+  listId: 'testSectionList', addBtnId: 'addTestSectionBtn', templateId: 'testSectionTemplate',
+  prefix: 'sections', itemLabel: 'Section',
+});
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ card.title }} — Manjunath Academy{% endblock %}
+{% block meta_description %}{{ card.caption }}{% endblock %}
+
+{% block extra_style %}
+.daily-page-hero{padding:52px 0 46px;background:linear-gradient(135deg,var(--peach),#FFF7F1);border-bottom:1px solid rgba(249,115,22,.12)}
+.daily-page-hero-inner{display:flex;align-items:end;justify-content:space-between;gap:28px}
+.daily-page-hero h1{font-size:clamp(30px,4vw,46px);margin:0 0 10px}
+.daily-page-hero p{color:var(--muted);font-size:15px;max-width:62ch;margin:0}
+.ca-hero-mark{width:76px;height:76px;display:grid;place-items:center;border-radius:22px;background:var(--white);color:var(--orange);box-shadow:var(--shadow-md);flex:0 0 auto}
+.ca-hero-mark svg{width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ca-page{padding:38px 0 90px;background:linear-gradient(180deg,var(--surface-3),#fff 280px)}
+.ca-wrap{max-width:1120px}
+.ca-filter{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:38px;padding:17px 18px;border:1px solid var(--line);border-radius:16px;background:var(--white);box-shadow:var(--shadow-sm)}
+.ca-filter label{display:grid;gap:6px;font-size:12px;font-weight:800;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em}
+.ca-filter input{min-width:190px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;color:var(--ink);background:var(--white)}
+.ca-filter button,.ca-filter-clear{height:42px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;padding:0 17px;font-size:13px;font-weight:800;cursor:pointer}
+.ca-filter button{border:0;color:#fff;background:var(--orange)}.ca-filter-clear{border:1px solid var(--line);background:var(--white);color:var(--text-secondary)}
+.ca-date-shortcuts{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-left:auto}.ca-date-shortcuts a{padding:7px 10px;border-radius:9px;background:var(--surface-3);color:var(--text-secondary);font-size:12px;font-weight:700;border:1px solid var(--line)}.ca-date-shortcuts a:hover{border-color:var(--orange);color:var(--orange-deep)}
+.ca-day{margin-bottom:46px}.ca-day:last-child{margin-bottom:0}
+.ca-day-heading{display:flex;align-items:center;gap:14px;margin:0 0 20px;font-family:"Archivo",sans-serif;font-size:20px;font-weight:800;color:var(--ink)}
+.ca-day-heading::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.ca-post-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ca-post-row{position:relative;display:flex;min-width:0;min-height:126px;background:var(--white);border:1px solid var(--line);border-radius:17px;box-shadow:0 5px 16px rgba(15,23,42,.045);transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;overflow:hidden}
+.ca-post-row:hover{border-color:rgba(249,115,22,.45);box-shadow:0 14px 28px rgba(120,50,10,.11);transform:translateY(-2px)}
+.ca-post-main{display:flex;gap:15px;align-items:center;min-width:0;flex:1;padding:12px 52px 12px 12px;text-decoration:none}
+.ca-post-img{width:142px;height:100px;border-radius:13px;flex:0 0 auto;object-fit:cover;background:var(--surface-2);border:1px solid rgba(15,23,42,.06)}
+.ca-post-category{display:inline-flex;margin-bottom:6px;padding:3px 8px;border-radius:999px;background:var(--orange-soft);color:var(--orange-deep);font-size:9.5px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+.ca-post-body{min-width:0}.ca-post-title{font-size:15px;font-weight:800;line-height:1.35;color:var(--ink);margin:0 0 5px}.ca-post-excerpt{font-size:12.8px;line-height:1.48;color:var(--muted);margin:0;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ca-media-tags{display:flex;gap:6px;margin-top:8px}.ca-media-tag{font-size:10.5px;font-weight:800;color:#7C3AED;background:#F5F3FF;padding:3px 7px;border-radius:999px}.ca-media-tag-video{color:#0369A1;background:#E0F2FE}
+.ca-share-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--orange);display:grid;place-items:center;cursor:pointer}.ca-share-btn:hover{background:var(--orange);color:#fff}.ca-share-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ca-share-status{position:fixed;left:50%;bottom:28px;z-index:120;transform:translateX(-50%) translateY(18px);padding:10px 16px;border-radius:999px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;opacity:0;pointer-events:none;transition:.2s}.ca-share-status.is-visible{opacity:1;transform:translateX(-50%) translateY(0)}
+.ca-empty{text-align:center;padding:68px 20px;border:1px dashed #D6D3D1;border-radius:18px;background:var(--surface-3);color:var(--muted)}
+.ca-empty svg{width:42px;height:42px;display:block;margin:0 auto 12px;fill:none;stroke:#F97316;stroke-width:1.6}
+@media(max-width:900px){.ca-post-list{grid-template-columns:1fr}.ca-date-shortcuts{width:100%;margin-left:0}.daily-page-hero-inner{align-items:center}}
+@media(max-width:620px){.daily-page-hero{padding:38px 0 34px}.ca-hero-mark{display:none}.ca-page{padding-top:26px}.ca-filter{align-items:stretch}.ca-filter label,.ca-filter input,.ca-filter button,.ca-filter-clear{width:100%}.ca-post-img{width:94px;height:84px}.ca-post-main{align-items:flex-start;padding-left:11px}.ca-post-excerpt{-webkit-line-clamp:1}}
+{% endblock %}
+
+{% block content %}
+<section class="daily-page-hero">
+  <div class="wrap daily-page-hero-inner">
+    <div><h1>{{ card.title }}</h1>{% if card.caption %}<p>{{ card.caption }}</p>{% endif %}</div>
+    <span class="ca-hero-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8m-8 4h8m-8 4h5"/></svg></span>
+  </div>
+</section>
+
+<section class="ca-page">
+  <div class="wrap ca-wrap">
+    <form class="ca-filter" method="get">
+      <label>Filter by date<input type="date" name="date" value="{% if selected_date %}{{ selected_date|date:'Y-m-d' }}{% endif %}"></label>
+      <button type="submit">Show updates</button>
+      {% if selected_date %}<a class="ca-filter-clear" href="{% url 'current_affairs_page' %}">Clear filter</a>{% endif %}
+      {% if available_dates %}<div class="ca-date-shortcuts" aria-label="Recent dates">{% for available_date in available_dates|slice:":5" %}<a href="{% url 'current_affairs_page' %}?date={{ available_date|date:'Y-m-d' }}">{{ available_date|date:"d M" }}</a>{% endfor %}</div>{% endif %}
+    </form>
+
+    {% if days %}
+      {% for day in days %}
+      <div class="ca-day">
+        <h2 class="ca-day-heading">{{ day.date|date:"d M Y" }}</h2>
+        <div class="ca-post-list">
+            {% for post in day.posts %}
+            <article class="ca-post-row">
+              <a class="ca-post-main" href="{% url 'current_affairs_detail' post.pk %}">
+                {% if post.display_thumbnail %}<img class="ca-post-img" src="{{ post.display_thumbnail.url }}" alt="{{ post.title }}">{% elif post.news_category == 'International' %}<img class="ca-post-img" src="/static/myapp/images/current-affairs/international.svg" alt="International current affairs">{% elif post.news_category == 'State' %}<img class="ca-post-img" src="/static/myapp/images/current-affairs/state.svg" alt="State current affairs">{% elif post.news_category == 'Sports' %}<img class="ca-post-img" src="/static/myapp/images/current-affairs/sports.svg" alt="Sports current affairs">{% else %}<img class="ca-post-img" src="/static/myapp/images/current-affairs/national.svg" alt="National current affairs">{% endif %}
+                <span class="ca-post-body">
+                  <span class="ca-post-category" {% if post.news_category %}data-ca-cat="{{ post.news_category }}"{% endif %}>{{ post.news_category|default:"General" }}</span>
+                  <span class="ca-post-title" data-ca-id="{{ post.pk }}" data-ca-field="title">{{ post.title }}</span>
+                  <span class="ca-post-excerpt" data-ca-id="{{ post.pk }}" data-ca-field="body">{{ post.body|truncatechars:140 }}</span>
+                  {% if post.youtube_url or post.video_url %}<span class="ca-media-tags">{% if post.youtube_url %}<span class="ca-media-tag">YouTube</span>{% endif %}{% if post.video_url %}<span class="ca-media-tag ca-media-tag-video">Video</span>{% endif %}</span>{% endif %}
+                </span>
+              </a>
+              <button type="button" class="ca-share-btn" data-share-url="{% url 'current_affairs_detail' post.pk %}" data-share-title="{{ post.title }}" aria-label="Share {{ post.title }}"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4m-6.8 7 6.8 4"/></svg></button>
+            </article>
+            {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="ca-empty">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8m-8 4h8m-8 4h5"/></svg>
+        {% if selected_date %}No Current Affairs updates were published on {{ selected_date|date:"d M Y" }}.{% else %}Nothing posted here yet — check back soon.{% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+<span class="ca-share-status" id="caShareStatus" role="status">Link copied</span>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var CA_I18N = {{ ca_i18n_json|safe }};
+  var CA_CATS = {
+    hi: { National: 'राष्ट्रीय', International: 'अंतरराष्ट्रीय', State: 'राज्य', Sports: 'खेल' },
+    kn: { National: 'ರಾಷ್ಟ್ರೀಯ', International: 'ಅಂತರರಾಷ್ಟ್ರೀಯ', State: 'ರಾಜ್ಯ', Sports: 'ಕ್ರೀಡೆ' },
+  };
+
+  function applyCaTranslations(lang) {
+    document.querySelectorAll('[data-ca-id]').forEach(function (el) {
+      if (!el.dataset.caDefault) el.dataset.caDefault = el.innerHTML;
+      var entry = CA_I18N[el.dataset.caId];
+      var field = el.dataset.caField;
+      if (lang !== 'en' && entry && entry[lang] && entry[lang][field]) {
+        el.textContent = entry[lang][field];
+      } else {
+        el.innerHTML = el.dataset.caDefault;
+      }
+    });
+    document.querySelectorAll('[data-ca-cat]').forEach(function (el) {
+      if (!el.dataset.caDefault) el.dataset.caDefault = el.innerHTML;
+      var cat = el.dataset.caCat;
+      if (lang !== 'en' && CA_CATS[lang] && CA_CATS[lang][cat]) {
+        el.innerHTML = el.dataset.caDefault.replace(cat, CA_CATS[lang][cat]);
+      } else {
+        el.innerHTML = el.dataset.caDefault;
+      }
+    });
+  }
+
+  var baseSetLanguage = window.setSiteLanguage;
+  window.setSiteLanguage = function (lang) {
+    if (baseSetLanguage) baseSetLanguage(lang);
+    applyCaTranslations(lang);
+  };
+  applyCaTranslations(localStorage.getItem('site_lang') || 'en');
+})();
+
+(function () {
+  var status = document.getElementById('caShareStatus');
+  function showStatus(message) {
+    if (!status) return;
+    status.textContent = message;
+    status.classList.add('is-visible');
+    window.setTimeout(function () { status.classList.remove('is-visible'); }, 1800);
+  }
+  document.querySelectorAll('.ca-share-btn').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var url = new URL(button.dataset.shareUrl, window.location.origin).href;
+      var data = {title: button.dataset.shareTitle || document.title, url: url};
+      if (navigator.share) {
+        navigator.share(data).catch(function () {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function () { showStatus('Link copied'); });
+      } else {
+        window.prompt('Copy this link', url);
+      }
+    });
+  });
+})();
+{% endblock %}

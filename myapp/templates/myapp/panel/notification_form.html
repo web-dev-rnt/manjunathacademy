@@ -1,0 +1,197 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Notification{% endblock %}
+{% block page_title %}{% if is_new %}Add notification{% else %}Edit notification{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_notification_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.notif-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+.panel-form textarea{
+  border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+  font-size:14px;font-family:inherit;color:var(--ink);resize:vertical;
+}
+.panel-form-divider{border:0;border-top:1px solid var(--line);margin:26px 0 20px}
+.panel-form-subtitle{font-size:15px;font-weight:800;color:var(--ink);margin:0 0 4px}
+.panel-form-subhelp{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+.notif-cover-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.notif-cover-preview img{max-height:80px;max-width:220px;border-radius:8px;object-fit:cover}
+.notif-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-bottom:18px}
+.notif-gallery-item{position:relative;border-radius:10px;overflow:hidden;background:#F3F4F6}
+.notif-gallery-item img{width:100%;height:90px;object-fit:cover;display:block}
+.notif-gallery-item form{position:absolute;top:6px;right:6px}
+.notif-gallery-item button{
+  width:24px;height:24px;border-radius:50%;border:0;background:rgba(220,38,38,.9);color:#fff;
+  cursor:pointer;font-size:12px;line-height:1;display:grid;place-items:center;padding:0;
+}
+.notif-gallery-add{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.notif-gallery-add label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted);font-weight:600}
+.notif-table-rows{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13.5px}
+.notif-table-rows th,.notif-table-rows td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+.notif-table-rows th{background:var(--peach);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.notif-table-rows td:last-child{width:44px;text-align:center}
+.notif-table-rows button{
+  width:24px;height:24px;border-radius:50%;border:0;background:rgba(220,38,38,.9);color:#fff;
+  cursor:pointer;font-size:12px;line-height:1;display:inline-grid;place-items:center;padding:0;
+}
+@media (max-width:560px){.notif-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new notification{% else %}Editing notification{% endif %}</h2>
+      <p>Shown as a scrolling item in the ticker at the top of the site.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_notification_list' %}">← Back to notifications</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Notification text <span class="req">*</span></span>
+      {{ form.text }}
+      <p class="custom-help">{{ form.text.help_text }}</p>
+      {% if form.text.errors %}<ul class="panel-errors">{% for e in form.text.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Popup detail text</span>
+      {{ form.detail }}
+      {% if form.detail.errors %}<ul class="panel-errors">{% for e in form.detail.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Attach link</span>
+      {{ form.link }}
+      <p class="custom-help">{{ form.link.help_text }}</p>
+      {% if form.link.errors %}<ul class="panel-errors">{% for e in form.link.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row notif-form-row">
+      <label><span class="panel-label-text">Order</span>
+        {{ form.order }}
+        <p class="custom-help">{{ form.order.help_text }}</p>
+      </label>
+      <label class="panel-form-check" style="margin-top:26px">
+        {{ form.is_active }} Show in ticker
+      </label>
+    </div>
+
+    <hr class="panel-form-divider">
+    <p class="panel-form-subtitle">Full details page</p>
+    <p class="panel-form-subhelp">Turns this notification into a full article page (like a job/exam notice), linked from the popup above.</p>
+
+    <label><span class="panel-label-text">Headline</span>
+      {{ form.title }}
+      <p class="custom-help">{{ form.title.help_text }}</p>
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Cover image</span>
+      {{ form.cover_image }}
+      <p class="custom-help">{{ form.cover_image.help_text }}</p>
+      {% if form.cover_image.errors %}<ul class="panel-errors">{% for e in form.cover_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if notification.cover_image_display_url %}
+      <div class="notif-cover-preview">
+        <img src="{{ notification.cover_image_display_url }}" alt="Current cover image">
+        <span class="banner-preview-label">Current cover image</span>
+      </div>
+    {% endif %}
+
+    <label><span class="panel-label-text">Video link</span>
+      {{ form.video_url }}
+      <p class="custom-help">{{ form.video_url.help_text }}</p>
+      {% if form.video_url.errors %}<ul class="panel-errors">{% for e in form.video_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Article body</span>
+      {{ form.body }}
+      <p class="custom-help">{{ form.body.help_text }}</p>
+      {% if form.body.errors %}<ul class="panel-errors">{% for e in form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add notification{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_notification_list' %}">Cancel</a>
+      {% if not is_new %}<a class="btn btn-ghost" href="{% url 'notification_detail' notification.pk %}" target="_blank" rel="noopener">Preview details page →</a>{% endif %}
+    </div>
+  </form>
+
+  {% if not is_new %}
+    <hr class="panel-form-divider">
+    <p class="panel-form-subtitle">Photo gallery</p>
+    <p class="panel-form-subhelp">Extra photos shown in a gallery grid on the details page.</p>
+
+    {% if notification.gallery_images.all %}
+      <div class="notif-gallery-grid">
+        {% for photo in notification.gallery_images.all %}
+        <div class="notif-gallery-item">
+          <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+          <form method="post" action="{% url 'panel_notification_image_delete' notification.pk photo.pk %}" onsubmit="return confirm('Remove this photo?');">
+            {% csrf_token %}
+            <button type="submit" aria-label="Remove photo">✕</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form class="notif-gallery-add" method="post" action="{% url 'panel_notification_image_add' notification.pk %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <label>Photo
+        {{ image_form.image }}
+      </label>
+      <label>Caption (optional)
+        {{ image_form.caption }}
+      </label>
+      <button type="submit" class="btn btn-ghost btn-sm">+ Add photo</button>
+    </form>
+
+    <hr class="panel-form-divider">
+    <p class="panel-form-subtitle">Exam / important dates table</p>
+    <p class="panel-form-subhelp">Shown as a table (e.g. Application Start, Exam Date, Fee) on the details page, above the article body.</p>
+
+    {% if notification.table_rows.all %}
+      <table class="notif-table-rows">
+        <thead><tr><th>Label</th><th>Value</th><th></th></tr></thead>
+        <tbody>
+          {% for row in notification.table_rows.all %}
+          <tr>
+            <td>{{ row.label }}</td>
+            <td>{{ row.value }}</td>
+            <td>
+              <form method="post" action="{% url 'panel_notification_table_row_delete' notification.pk row.pk %}" onsubmit="return confirm('Remove this row?');">
+                {% csrf_token %}
+                <button type="submit" aria-label="Remove row">✕</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    <form class="notif-gallery-add" method="post" action="{% url 'panel_notification_table_row_add' notification.pk %}">
+      {% csrf_token %}
+      <label>Label
+        {{ table_row_form.label }}
+      </label>
+      <label>Value
+        {{ table_row_form.value }}
+      </label>
+      <label>Order
+        {{ table_row_form.order }}
+      </label>
+      <button type="submit" class="btn btn-ghost btn-sm">+ Add row</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

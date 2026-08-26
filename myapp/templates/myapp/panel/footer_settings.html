@@ -1,0 +1,142 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Footer{% endblock %}
+{% block page_title %}Footer{% endblock %}
+{% block page_sub %}Contact details, copyright text and social media links shown in the site footer{% endblock %}
+{% block nav_footer_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:26px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:24px 0}
+.custom-field{margin-bottom:16px;max-width:420px}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input,.custom-field textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;color:var(--ink);width:100%}
+.custom-field input:focus,.custom-field textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px}
+@media (max-width:560px){.custom-row{grid-template-columns:1fr}}
+
+/* ---------- live footer preview ---------- */
+.hp-card{margin-bottom:24px}
+.hp-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.hp-label::before{content:"";width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.ftr-mock{background:#14110F;color:#E7E3DF;border-radius:14px;padding:24px 26px 18px;display:grid;grid-template-columns:1.3fr 1fr;gap:24px}
+.ftr-mock-word{color:#fff;font-family:"Archivo",sans-serif;font-weight:800;font-size:13px;margin:0 0 8px}
+.ftr-mock-word span{color:var(--orange)}
+.ftr-mock-about{color:#A9A29C;font-size:11.5px;line-height:1.55;margin:0 0 12px;max-width:34ch}
+.ftr-mock-social{display:flex;gap:7px;flex-wrap:wrap}
+.ftr-ico{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);display:none;place-items:center;font-size:11px}
+.ftr-ico.is-visible{display:grid}
+.ftr-mock-h4{font-family:"Archivo",sans-serif;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin:0 0 10px}
+.ftr-mock-reach ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ftr-mock-reach li{font-size:11.5px;color:#A9A29C;word-break:break-word}
+.ftr-mock-base{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);font-size:10.5px;color:#8A837D}
+@media (max-width:620px){.ftr-mock{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card hp-card">
+  <p class="hp-label">Live preview — updates as you type</p>
+  <div class="ftr-mock">
+    <div>
+      <p class="ftr-mock-word">MANJUNATH <span>ACADEMY</span></p>
+      <p class="ftr-mock-about" id="pvFooterAbout">{{ site_settings.footer_about }}</p>
+      <div class="ftr-mock-social">
+        <span class="ftr-ico {% if site_settings.facebook_url %}is-visible{% endif %}" id="pvIcoFacebook">📘</span>
+        <span class="ftr-ico {% if site_settings.instagram_url %}is-visible{% endif %}" id="pvIcoInstagram">📷</span>
+        <span class="ftr-ico {% if site_settings.twitter_url %}is-visible{% endif %}" id="pvIcoTwitter">✖️</span>
+        <span class="ftr-ico {% if site_settings.telegram_url %}is-visible{% endif %}" id="pvIcoTelegram">✈️</span>
+        <span class="ftr-ico {% if site_settings.linkedin_url %}is-visible{% endif %}" id="pvIcoLinkedin">in</span>
+      </div>
+    </div>
+    <div class="ftr-mock-reach">
+      <p class="ftr-mock-h4">Reach us</p>
+      <ul>
+        <li id="pvFooterPhone">{{ site_settings.footer_phone }}</li>
+        <li id="pvFooterEmail">{{ site_settings.footer_email }}</li>
+        <li id="pvFooterAddress">{{ site_settings.footer_address }}</li>
+        <li>Mon–Sat, 8 am – 8 pm</li>
+      </ul>
+    </div>
+  </div>
+  <p class="ftr-mock-base">© <span id="pvYear"></span> <span id="pvCopyright">{{ site_settings.copyright_text }}</span></p>
+</div>
+
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <h3>About &amp; contact</h3>
+      <p class="custom-section-sub">Shown in the footer's first column and "Reach us" list.</p>
+      <div class="custom-field"><label>Short description</label>{{ form.footer_about }}</div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Address</label>{{ form.footer_address }}</div>
+        <div class="custom-field"><label>Phone</label>{{ form.footer_phone }}</div>
+      </div>
+      <div class="custom-field"><label>Email</label>{{ form.footer_email }}</div>
+      <div class="custom-field"><label>Copyright name</label>{{ form.copyright_text }}<p class="custom-help">Shown as "© {{ "now"|date:"Y" }} — your text" at the bottom of the footer.</p></div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Social media links</h3>
+      <p class="custom-section-sub">Each icon only appears in the footer once its link is filled in.</p>
+      <div class="custom-row">
+        <div class="custom-field"><label>Facebook</label>{{ form.facebook_url }}</div>
+        <div class="custom-field"><label>Instagram</label>{{ form.instagram_url }}</div>
+        <div class="custom-field"><label>Twitter / X</label>{{ form.twitter_url }}</div>
+        <div class="custom-field"><label>Telegram</label>{{ form.telegram_url }}</div>
+        <div class="custom-field"><label>LinkedIn</label>{{ form.linkedin_url }}</div>
+      </div>
+      <p class="custom-help">YouTube and WhatsApp links are managed under Customization → Navbar.</p>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var yearEl = document.getElementById('pvYear');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  function bind(id, targetId) {
+    var el = document.getElementById(id);
+    var target = document.getElementById(targetId);
+    if (!el || !target) return;
+    el.addEventListener('input', function () { target.textContent = el.value; });
+  }
+
+  bind('id_footer_about', 'pvFooterAbout');
+  bind('id_footer_phone', 'pvFooterPhone');
+  bind('id_footer_email', 'pvFooterEmail');
+  bind('id_footer_address', 'pvFooterAddress');
+  bind('id_copyright_text', 'pvCopyright');
+
+  function bindSocial(id, iconId) {
+    var el = document.getElementById(id);
+    var icon = document.getElementById(iconId);
+    if (!el || !icon) return;
+    el.addEventListener('input', function () { icon.classList.toggle('is-visible', el.value.trim() !== ''); });
+  }
+
+  bindSocial('id_facebook_url', 'pvIcoFacebook');
+  bindSocial('id_instagram_url', 'pvIcoInstagram');
+  bindSocial('id_twitter_url', 'pvIcoTwitter');
+  bindSocial('id_telegram_url', 'pvIcoTelegram');
+  bindSocial('id_linkedin_url', 'pvIcoLinkedin');
+})();
+{% endblock %}

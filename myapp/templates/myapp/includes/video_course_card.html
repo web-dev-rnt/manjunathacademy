@@ -1,0 +1,24 @@
+<article class="pc-card">
+  {% if course.thumbnail %}
+    <img class="pc-thumb" src="{{ course.thumbnail.url }}" alt="">
+  {% else %}
+    <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span></div>
+  {% endif %}
+  <h3>{{ course.name }}</h3>
+  {% if course.about %}<p>{{ course.about|truncatechars:110 }}</p>{% endif %}
+  {% if course.highlight_list %}
+  <ul class="pc-highlights">
+    {% for highlight in course.highlight_list|slice:":3" %}<li>{{ highlight }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <div class="pc-tags">
+    {% if course.category %}<span>{{ course.category.name }}</span>{% endif %}
+    <span>▶ {{ course.published_video_count }} video{{ course.published_video_count|pluralize }}</span>
+    {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
+  </div>
+  <div class="pc-meta">
+    <span>{% if course.is_free %}Free{% else %}₹{{ course.current_price }}{% endif %}</span>
+    {% if course.original_price and course.original_price != course.current_price %}<span><s>₹{{ course.original_price }}</s></span>{% endif %}
+  </div>
+  <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' course.pk %}">View Course →</a>
+</article>

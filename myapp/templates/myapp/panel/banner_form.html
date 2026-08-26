@@ -1,0 +1,167 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Banner Slide{% endblock %}
+{% block page_title %}{% if is_new %}Add banner slide{% else %}Edit banner slide{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_banner_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.banner-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.banner-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.banner-preview img{max-height:80px;max-width:220px;border-radius:8px;object-fit:cover}
+.banner-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.banner-form-row{grid-template-columns:1fr}}
+
+/* ---------- live slide preview ---------- */
+.hp-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.hp-label::before{content:"";width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.bn-mock{
+  position:relative;overflow:hidden;border-radius:16px 16px 16px 60px;min-height:220px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  text-align:center;padding:26px 30px;background-color:#FCEBE0;background-size:cover;background-position:center;
+  box-shadow:0 8px 22px rgba(16,16,18,.12);margin-bottom:24px;
+}
+.bn-mock::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,255,255,.93) 0%,rgba(255,255,255,.78) 45%,rgba(255,255,255,.35) 100%)}
+.bn-mock-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bn-mock-kicker{margin:0;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
+.bn-mock-title{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(18px,3vw,26px);margin:0;color:var(--ink);max-width:18ch}
+.bn-mock-sub{margin:0;color:var(--muted);font-size:12.5px;max-width:44ch}
+.bn-mock-btn{display:inline-flex;margin-top:6px;padding:8px 16px;border-radius:999px;background:var(--orange);color:#fff;font-size:12px;font-weight:700}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new slide{% else %}Editing: {{ slide.title }}{% endif %}</h2>
+      <p>Both text and image are fully editable.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_banner_list' %}">← Back to slides</a>
+  </div>
+
+  <p class="hp-label">Live preview — updates as you type</p>
+  <div class="bn-mock" id="pvBannerMock"{% if slide.display_image_url %} style="background-image:url('{{ slide.display_image_url }}')"{% endif %}>
+    <div class="bn-mock-inner">
+      <p class="bn-mock-kicker" id="pvKicker">{{ slide.kicker }}</p>
+      <h4 class="bn-mock-title" id="pvTitle">{{ slide.title|default:"Slide title" }}</h4>
+      <p class="bn-mock-sub" id="pvSubtitle">{{ slide.subtitle }}</p>
+      <span class="bn-mock-btn" id="pvButtonText">{{ slide.button_text }}</span>
+    </div>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Kicker (small label)</span>
+      {{ form.kicker }}
+      {% if form.kicker.errors %}<ul class="panel-errors">{% for e in form.kicker.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Title <span class="req">*</span></span>
+      {{ form.title }}
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Subtitle</span>
+      {{ form.subtitle }}
+      {% if form.subtitle.errors %}<ul class="panel-errors">{% for e in form.subtitle.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row banner-form-row">
+      <label><span class="panel-label-text">Button text</span>
+        {{ form.button_text }}
+      </label>
+      <label><span class="panel-label-text">Button link</span>
+        {{ form.button_link }}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Upload image</span>
+      {{ form.image }}
+      <p class="custom-help">{{ form.image.help_text }}</p>
+      {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Or image URL</span>
+      {{ form.image_url }}
+      <p class="custom-help">{{ form.image_url.help_text }}</p>
+      {% if form.image_url.errors %}<ul class="panel-errors">{% for e in form.image_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if slide.display_image_url %}
+      <div class="banner-preview">
+        <img src="{{ slide.display_image_url }}" alt="Current slide image">
+        <span class="banner-preview-label">Current image</span>
+      </div>
+    {% endif %}
+
+    <div class="panel-form-row banner-form-row">
+      <label><span class="panel-label-text">Order</span>
+        {{ form.order }}
+        <p class="custom-help">{{ form.order.help_text }}</p>
+      </label>
+      <label class="panel-form-check" style="margin-top:26px">
+        {{ form.is_active }} Show on homepage
+      </label>
+    </div>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add slide{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_banner_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  function bindText(id, targetId, hideIfEmpty) {
+    var el = document.getElementById(id);
+    var target = document.getElementById(targetId);
+    if (!el || !target) return;
+    el.addEventListener('input', function () {
+      target.textContent = el.value;
+      if (hideIfEmpty) target.style.display = el.value.trim() ? '' : 'none';
+    });
+    if (hideIfEmpty) target.style.display = el.value.trim() ? '' : 'none';
+  }
+
+  bindText('id_kicker', 'pvKicker', true);
+  bindText('id_title', 'pvTitle', false);
+  bindText('id_subtitle', 'pvSubtitle', true);
+  bindText('id_button_text', 'pvButtonText', true);
+
+  var mock = document.getElementById('pvBannerMock');
+  var fileInput = document.getElementById('id_image');
+  var urlInput = document.getElementById('id_image_url');
+
+  function applyUrl(url) {
+    if (mock) mock.style.backgroundImage = url ? "url('" + url + "')" : 'none';
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', function () {
+      if (fileInput.files && fileInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) { applyUrl(e.target.result); };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else if (urlInput) {
+        applyUrl(urlInput.value);
+      }
+    });
+  }
+  if (urlInput) {
+    urlInput.addEventListener('input', function () {
+      if (!(fileInput && fileInput.files && fileInput.files[0])) applyUrl(urlInput.value);
+    });
+  }
+})();
+{% endblock %}

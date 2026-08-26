@@ -1,0 +1,119 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{{ student.name|default:student.email }} — Fee ledger{% endblock %}
+{% block page_title %}Fee ledger: {{ student.name|default:student.email }}{% endblock %}
+{% block page_sub %}Every invoice raised for this student, with running totals{% endblock %}
+{% block nav_erp %}is-active{% endblock %}
+{% block nav_erp_open %}is-open{% endblock %}
+{% block nav_erp_fees %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.fee-overdue{color:#DC2626;font-weight:800}
+.ledger-student-card{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+.ledger-student-avatar{width:46px;height:46px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;font-weight:800;font-size:17px;flex:0 0 auto}
+.ledger-student-name{font-weight:800;color:var(--ink);margin:0 0 3px}
+.ledger-student-meta{font-size:13px;color:var(--muted);margin:0}
+.ledger-balance{margin-left:auto;text-align:right}
+.ledger-balance-label{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ledger-balance-num{font-size:21px;font-weight:800;color:#DC2626}
+{% endblock %}
+
+{% block content %}
+<div class="ledger-student-card">
+  <span class="ledger-student-avatar">{{ student.name|default:student.email|first|upper }}</span>
+  <div>
+    <p class="ledger-student-name">{{ student.name|default:student.email }}</p>
+    <p class="ledger-student-meta">{{ student.email }}{% if student.number %} · {{ student.number }}{% endif %}</p>
+  </div>
+  <div class="ledger-balance">
+    <div class="ledger-balance-label">Balance due</div>
+    <div class="ledger-balance-num">₹{{ stats.pending_total }}</div>
+  </div>
+</div>
+
+<div class="panel-stats">
+  <div class="panel-stat panel-stat-3">
+    <span class="panel-stat-ico">🧾</span>
+    <div><div class="panel-stat-num">{{ stats.pending_count }}</div><div class="panel-stat-label">Pending invoices</div></div>
+  </div>
+  <div class="panel-stat panel-stat-1">
+    <span class="panel-stat-ico">⏳</span>
+    <div><div class="panel-stat-num">₹{{ stats.pending_total }}</div><div class="panel-stat-label">Pending amount</div></div>
+  </div>
+  <div class="panel-stat panel-stat-2">
+    <span class="panel-stat-ico">✅</span>
+    <div><div class="panel-stat-num">₹{{ stats.paid_total }}</div><div class="panel-stat-label">Collected from this student</div></div>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Invoices</h2>
+      <p>{{ invoices|length }} invoice{{ invoices|length|pluralize }}</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a class="btn btn-ghost" href="{% url 'panel_signups' %}">← Back to signups</a>
+      <a class="btn btn-primary" href="{% url 'panel_fee_add' %}?student={{ student.pk }}&next={% url 'panel_student_fee_ledger' student.pk %}">+ Create invoice</a>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if invoices %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Amount</th>
+            <th>Due date</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for invoice in invoices %}
+          <tr>
+            <td>{{ invoice.title }}</td>
+            <td>₹{{ invoice.amount }}</td>
+            <td class="{% if invoice.is_overdue %}fee-overdue{% endif %}">{{ invoice.due_date|date:"d M Y" }}{% if invoice.is_overdue %} (overdue){% endif %}</td>
+            <td>
+              {% if invoice.status == 'paid' %}<span class="panel-badge">Paid</span>
+              {% elif invoice.is_overdue %}<span class="panel-badge" style="background:#FEF2F2;color:#DC2626">Overdue</span>
+              {% else %}<span class="panel-badge panel-badge-muted">Pending</span>{% endif %}
+            </td>
+            <td>
+              <div class="gallery-actions">
+                {% if invoice.status == 'pending' %}
+                <form method="post" action="{% url 'panel_fee_mark_paid' invoice.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="payment_mode" value="cash">
+                  <input type="hidden" name="next" value="{% url 'panel_student_fee_ledger' student.pk %}">
+                  <button type="submit" class="btn btn-primary btn-sm">Mark paid</button>
+                </form>
+                {% endif %}
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_fee_edit' invoice.pk %}?next={% url 'panel_student_fee_ledger' student.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_fee_delete' invoice.pk %}" onsubmit="return confirm('Delete this invoice?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{% url 'panel_student_fee_ledger' student.pk %}">
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🧾</span>No fee invoices for this student yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

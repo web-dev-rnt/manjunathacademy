@@ -1,0 +1,119 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ post.title }} — Manjunath Academy{% endblock %}
+{% block meta_description %}{{ post.body|truncatechars:150 }}{% endblock %}
+
+{% block extra_style %}
+.ca-detail-hero{padding:40px 0 0}
+.ca-detail-back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;color:var(--muted);margin-bottom:18px}
+.ca-detail-back:hover{color:var(--orange)}
+.ca-detail-page{padding:20px 0 90px}
+.ca-detail-wrap{max-width:900px}
+.ca-detail-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.ca-detail-date{font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.ca-detail-cat{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--orange-deep);background:var(--orange-soft);padding:5px 12px;border-radius:var(--r-pill)}
+.ca-detail-title{font-size:clamp(24px,3.4vw,34px);margin:0 0 20px;line-height:1.25}
+.ca-detail-img{width:100%;max-height:400px;object-fit:cover;border-radius:18px;margin-bottom:24px}
+.ca-detail-video{width:100%;aspect-ratio:16/9;border:0;border-radius:18px;background:var(--ink);margin:0 0 24px;display:block}.ca-detail-video-link{display:inline-flex;align-items:center;gap:8px;margin:0 0 24px;padding:11px 16px;border-radius:11px;background:#EFF6FF;color:#1D4ED8;font-size:13.5px;font-weight:800}
+.ca-detail-share{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--orange-deep);font:inherit;font-size:12.5px;font-weight:800;cursor:pointer}.ca-detail-share:hover{background:var(--orange-soft);border-color:#FDBA74}.ca-detail-share svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9}
+.ca-detail-body{color:var(--text-secondary);font-size:16px;line-height:1.8;white-space:pre-line}
+.ca-detail-table-title{font-size:16px;margin:26px 0 14px}
+.ca-detail-table{width:100%;border-collapse:collapse;margin:0 0 26px;font-size:14.5px;box-shadow:var(--shadow-sm);border-radius:12px;overflow:hidden}
+.ca-detail-table th,.ca-detail-table td{border:1px solid var(--line);padding:12px 16px;text-align:left}
+.ca-detail-table th{background:var(--peach);font-weight:700;width:45%}
+.ca-detail-table td{color:var(--text-secondary);font-weight:600}
+.ca-share-status{position:fixed;left:50%;bottom:28px;z-index:120;transform:translateX(-50%) translateY(18px);padding:10px 16px;border-radius:999px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;opacity:0;pointer-events:none;transition:.2s}.ca-share-status.is-visible{opacity:1;transform:translateX(-50%) translateY(0)}
+{% endblock %}
+
+{% block content %}
+<section class="ca-detail-hero">
+  <div class="wrap ca-detail-wrap">
+    <a class="ca-detail-back" href="{% url 'current_affairs_page' %}">← Back to Current Affairs</a>
+  </div>
+</section>
+
+<section class="ca-detail-page">
+  <div class="wrap ca-detail-wrap">
+    <div class="ca-detail-meta">
+      <span class="ca-detail-date">{{ post.event_date|date:"d M Y" }}</span>
+      {% if post.news_category %}<span class="ca-detail-cat" data-ca-cat="{{ post.news_category }}">{{ post.news_category }}</span>{% endif %}
+      <button type="button" class="ca-detail-share" id="caDetailShare" data-share-title="{{ post.title }}"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4m-6.8 7 6.8 4"/></svg>Share</button>
+    </div>
+    <h1 class="ca-detail-title" data-ca-id="{{ post.pk }}" data-ca-field="title">{{ post.title }}</h1>
+    {% if post.image %}<img class="ca-detail-img" src="{{ post.image.url }}" alt="{{ post.title }}">{% elif post.thumbnail %}<img class="ca-detail-img" src="{{ post.thumbnail.url }}" alt="{{ post.title }}">{% endif %}
+    {% if post.youtube_embed_url %}<iframe class="ca-detail-video" src="{{ post.youtube_embed_url }}" title="{{ post.title }} video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>{% endif %}
+    {% if post.video_url %}{% if post.video_url_is_direct_file %}<video class="ca-detail-video" controls preload="metadata"{% if post.display_thumbnail %} poster="{{ post.display_thumbnail.url }}"{% endif %}><source src="{{ post.video_url }}">Your browser does not support this video.</video>{% else %}<a class="ca-detail-video-link" href="{{ post.video_url }}" target="_blank" rel="noopener">▶ Open related video</a>{% endif %}{% endif %}
+    {% if post.table_rows.all %}
+      <h3 class="ca-detail-table-title">Key facts</h3>
+      <table class="ca-detail-table">
+        <tbody>
+          {% for row in post.table_rows.all %}
+          <tr><th>{{ row.label }}</th><td>{{ row.value }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+    <p class="ca-detail-body" data-ca-id="{{ post.pk }}" data-ca-field="body">{{ post.body }}</p>
+  </div>
+</section>
+<span class="ca-share-status" id="caShareStatus" role="status">Link copied</span>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var CA_I18N = {{ ca_i18n_json|safe }};
+  var CA_CATS = {
+    hi: { National: 'राष्ट्रीय', International: 'अंतरराष्ट्रीय', State: 'राज्य', Sports: 'खेल' },
+    kn: { National: 'ರಾಷ್ಟ್ರೀಯ', International: 'ಅಂತರರಾಷ್ಟ್ರೀಯ', State: 'ರಾಜ್ಯ', Sports: 'ಕ್ರೀಡೆ' },
+  };
+
+  function applyCaTranslations(lang) {
+    document.querySelectorAll('[data-ca-id]').forEach(function (el) {
+      if (!el.dataset.caDefault) el.dataset.caDefault = el.innerHTML;
+      var entry = CA_I18N[el.dataset.caId];
+      var field = el.dataset.caField;
+      if (lang !== 'en' && entry && entry[lang] && entry[lang][field]) {
+        el.textContent = entry[lang][field];
+      } else {
+        el.innerHTML = el.dataset.caDefault;
+      }
+    });
+    document.querySelectorAll('[data-ca-cat]').forEach(function (el) {
+      if (!el.dataset.caDefault) el.dataset.caDefault = el.innerHTML;
+      var cat = el.dataset.caCat;
+      if (lang !== 'en' && CA_CATS[lang] && CA_CATS[lang][cat]) {
+        el.textContent = CA_CATS[lang][cat];
+      } else {
+        el.innerHTML = el.dataset.caDefault;
+      }
+    });
+  }
+
+  var baseSetLanguage = window.setSiteLanguage;
+  window.setSiteLanguage = function (lang) {
+    if (baseSetLanguage) baseSetLanguage(lang);
+    applyCaTranslations(lang);
+  };
+  applyCaTranslations(localStorage.getItem('site_lang') || 'en');
+})();
+
+(function () {
+  var button = document.getElementById('caDetailShare');
+  var status = document.getElementById('caShareStatus');
+  if (!button) return;
+  button.addEventListener('click', function () {
+    var data = {title: button.dataset.shareTitle || document.title, url: window.location.href};
+    if (navigator.share) {
+      navigator.share(data).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href).then(function () {
+        if (!status) return;
+        status.classList.add('is-visible');
+        window.setTimeout(function () { status.classList.remove('is-visible'); }, 1800);
+      });
+    } else {
+      window.prompt('Copy this link', window.location.href);
+    }
+  });
+})();
+{% endblock %}

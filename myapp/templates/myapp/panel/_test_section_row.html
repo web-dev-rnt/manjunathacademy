@@ -1,0 +1,16 @@
+<div class="video-admin-item test-section-row">
+  {{ section_form.id }}
+  <div class="video-admin-item-head">
+    <span class="video-admin-item-num">Section {{ section_number }}</span>
+    <div class="video-admin-item-head-actions">
+      {% if section_form.instance.pk %}<label class="video-admin-remove">{{ section_form.DELETE }} Delete section</label>{% else %}<button class="video-admin-remove-new" type="button" data-remove-row>✕ Remove</button>{% endif %}
+    </div>
+  </div>
+  <div class="test-section-fields">
+    <label><span class="panel-label-text">Section name</span>{{ section_form.name }}{% if section_form.name.errors %}<ul class="panel-errors">{% for e in section_form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</label>
+    <label><span class="panel-label-text">Negative marks</span>{{ section_form.negative_marks }}</label>
+    <label><span class="panel-label-text">Order</span>{{ section_form.order }}</label>
+    <label class="panel-form-check test-section-optional">{{ section_form.is_optional }} Optional section</label>
+  </div>
+  {% if section_form.non_field_errors %}<ul class="panel-errors">{% for e in section_form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+</div>

@@ -1,0 +1,167 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Current Affairs{% endblock %}
+{% block page_title %}{% if is_new %}Add Current Affairs{% else %}Edit Current Affairs{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_daily_updates %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+.panel-form select,.panel-form textarea{
+  border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+  font-size:14px;font-family:inherit;color:var(--ink);resize:vertical;
+}
+.media-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.media-preview{display:block;width:170px;max-height:100px;object-fit:cover;border-radius:10px;margin-top:6px;border:1px solid var(--line)}
+@media(max-width:760px){.media-fields{grid-template-columns:1fr}}
+.panel-form-divider{border:0;border-top:1px solid var(--line);margin:26px 0 20px}
+.panel-form-subtitle{font-size:15px;font-weight:800;color:var(--ink);margin:0 0 4px}
+.panel-form-subhelp{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+.table-row-add{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.table-row-add label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted);font-weight:600}
+.post-table-rows{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13.5px}
+.post-table-rows th,.post-table-rows td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+.post-table-rows th{background:var(--peach);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.post-table-rows td:last-child{width:44px;text-align:center}
+.post-table-rows button{border:0;background:none;color:#DC2626;font-size:15px;cursor:pointer;font-family:inherit}
+.btn-sm{padding:8px 14px;font-size:13px}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new post{% else %}Editing: {{ post.title }}{% endif %}</h2>
+      <p>Add the article text, listing thumbnail, main image and optional video sources.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_daily_updates' %}">← Back to Daily Updates</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">News category</span>
+      {{ form.news_category }}
+      <p class="custom-help">{{ form.news_category.help_text }}</p>
+      {% if form.news_category.errors %}<ul class="panel-errors">{% for e in form.news_category.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Date <span class="req">*</span></span>
+      {{ form.event_date }}
+      <p class="custom-help">{{ form.event_date.help_text }}</p>
+      {% if form.event_date.errors %}<ul class="panel-errors">{% for e in form.event_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Title <span class="req">*</span></span>
+      {{ form.title }}
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Body <span class="req">*</span></span>
+      {{ form.body }}
+      {% if form.body.errors %}<ul class="panel-errors">{% for e in form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Title (Hindi)</span>
+      {{ form.title_hi }}
+      {% if form.title_hi.errors %}<ul class="panel-errors">{% for e in form.title_hi.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Body (Hindi)</span>
+      {{ form.body_hi }}
+      {% if form.body_hi.errors %}<ul class="panel-errors">{% for e in form.body_hi.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Title (Kannada)</span>
+      {{ form.title_kn }}
+      {% if form.title_kn.errors %}<ul class="panel-errors">{% for e in form.title_kn.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Body (Kannada)</span>
+      {{ form.body_kn }}
+      {% if form.body_kn.errors %}<ul class="panel-errors">{% for e in form.body_kn.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="media-fields">
+      <label><span class="panel-label-text">Thumbnail</span>
+        {{ form.thumbnail }}
+        <p class="custom-help">{{ form.thumbnail.help_text }}</p>
+        {% if post.thumbnail %}<img class="media-preview" src="{{ post.thumbnail.url }}" alt="Current thumbnail">{% endif %}
+        {% if form.thumbnail.errors %}<ul class="panel-errors">{% for e in form.thumbnail.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+
+      <label><span class="panel-label-text">Main image</span>
+        {{ form.image }}
+        <p class="custom-help">{{ form.image.help_text }}</p>
+        {% if post.image %}<img class="media-preview" src="{{ post.image.url }}" alt="Current image">{% endif %}
+        {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Video link</span>
+      {{ form.video_url }}
+      <p class="custom-help">{{ form.video_url.help_text }}</p>
+      {% if form.video_url.errors %}<ul class="panel-errors">{% for e in form.video_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">YouTube link</span>
+      {{ form.youtube_url }}
+      <p class="custom-help">{{ form.youtube_url.help_text }}</p>
+      {% if form.youtube_url.errors %}<ul class="panel-errors">{% for e in form.youtube_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label class="panel-form-check">
+      {{ form.is_active }} Show on the site
+    </label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add post{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_daily_updates' %}">Cancel</a>
+    </div>
+  </form>
+
+  {% if not is_new %}
+    <hr class="panel-form-divider">
+    <p class="panel-form-subtitle">Key facts table</p>
+    <p class="panel-form-subhelp">Shown as a table (e.g. Repo Rate, Series Result, Mission Name) on the article page, above the body text.</p>
+
+    {% if post.table_rows.all %}
+      <table class="post-table-rows">
+        <thead><tr><th>Label</th><th>Value</th><th></th></tr></thead>
+        <tbody>
+          {% for row in post.table_rows.all %}
+          <tr>
+            <td>{{ row.label }}</td>
+            <td>{{ row.value }}</td>
+            <td>
+              <form method="post" action="{% url 'panel_daily_post_table_row_delete' post.pk row.pk %}" onsubmit="return confirm('Remove this row?');">
+                {% csrf_token %}
+                <button type="submit" aria-label="Remove row">✕</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    <form class="table-row-add" method="post" action="{% url 'panel_daily_post_table_row_add' post.pk %}">
+      {% csrf_token %}
+      <label>Label
+        {{ table_row_form.label }}
+      </label>
+      <label>Value
+        {{ table_row_form.value }}
+      </label>
+      <label>Order
+        {{ table_row_form.order }}
+      </label>
+      <button type="submit" class="btn btn-ghost btn-sm">+ Add row</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Bundle{% endblock %}
+{% block page_title %}{% if is_new %}Add bundle{% else %}Edit bundle{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_bundles %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+.course-picker{
+  max-height:280px;overflow-y:auto;border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;background:#FAFAF9;
+}
+.course-picker ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.course-picker li label{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+.course-picker input[type="checkbox"]{accent-color:var(--orange)}
+.bundle-image-field{padding:14px;border:1px solid var(--line);border-radius:12px;background:#FAFAF9}
+.bundle-image-preview{display:flex;align-items:center;gap:12px;margin-top:12px}.bundle-image-preview img{width:180px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new bundle{% else %}Editing: {{ bundle.name }}{% endif %}</h2>
+      <p>Shown as a card in "Our Popular Courses" on the homepage.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_bundle_list' %}">← Back to bundles</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Bundle name <span class="req">*</span></span>
+      {{ form.name }}
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Description</span>
+      {{ form.description }}
+    </label>
+
+    <label class="bundle-image-field"><span class="panel-label-text">Bundle image (optional)</span>
+      {{ form.image }}
+      <p class="custom-help">{{ form.image.help_text }}</p>
+      {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      {% if bundle.image %}<span class="bundle-image-preview"><img src="{{ bundle.image.url }}" alt=""><span>Current bundle image</span></span>{% endif %}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Fallback icon (emoji)</span>{{ form.icon }}<p class="custom-help">Used only when no bundle image is uploaded.</p></label>
+      <label><span class="panel-label-text">Badge label / tags</span>{{ form.badge_label }}<p class="custom-help">{{ form.badge_label.help_text }}</p></label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Students label</span>{{ form.students_label }}<p class="custom-help">{{ form.students_label.help_text }}</p></label>
+      <label><span class="panel-label-text">Access label</span>{{ form.access_label }}<p class="custom-help">{{ form.access_label.help_text }}</p></label>
+    </div>
+
+    <label><span class="panel-label-text">Included courses</span>
+      <div class="course-picker">{{ form.courses }}</div>
+      <p class="custom-help">{{ form.courses.help_text }}</p>
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Original price (₹)</span>{{ form.original_price }}</label>
+      <label><span class="panel-label-text">Current price (₹)</span>
+        {{ form.current_price }}
+        {% if form.current_price.errors %}<ul class="panel-errors">{% for e in form.current_price.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Rating</span>{{ form.rating }}</label>
+      <label><span class="panel-label-text">Order</span>{{ form.order }}<p class="custom-help">{{ form.order.help_text }}</p></label>
+    </div>
+
+    <label class="panel-form-check">{{ form.is_active }} Show on homepage</label>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add bundle{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_bundle_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

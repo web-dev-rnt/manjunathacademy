@@ -1,0 +1,62 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Edit Payslip{% endblock %}
+{% block page_title %}Edit payslip{% endblock %}
+{% block page_sub %}{{ payslip.staff.name }} — {{ payslip.month|date:"F Y" }}{% endblock %}
+{% block nav_erp %}is-active{% endblock %}
+{% block nav_erp_open %}is-open{% endblock %}
+{% block nav_erp_payroll %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+.payroll-summary{display:flex;gap:22px;flex-wrap:wrap;background:#FAFAF9;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:13.5px}
+.payroll-summary strong{color:var(--ink)}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Editing payslip: {{ payslip.staff.name }}</h2>
+      <p>{{ payslip.month|date:"F Y" }}</p>
+    </div>
+    <a class="btn btn-ghost" href="{% if next %}{{ next }}{% else %}{% url 'panel_payroll_list' %}?month={{ payslip.month|date:'Y-m' }}{% endif %}">← Back</a>
+  </div>
+
+  <div class="payroll-summary">
+    <span>Basic salary: <strong>₹{{ payslip.basic_salary }}</strong></span>
+    <span>Absent days: <strong>{{ payslip.absent_days }}</strong></span>
+    <span>Current net payable: <strong>₹{{ payslip.net_amount }}</strong></span>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Deductions (₹)</span>
+        {{ form.deductions }}
+        {% if form.deductions.errors %}<ul class="panel-errors">{% for e in form.deductions.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+      <label><span class="panel-label-text">Bonus (₹)</span>
+        {{ form.bonus }}
+        {% if form.bonus.errors %}<ul class="panel-errors">{% for e in form.bonus.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Status</span>{{ form.status }}</label>
+      <label><span class="panel-label-text">Payment mode</span>{{ form.payment_mode }}</label>
+    </div>
+
+    <label><span class="panel-label-text">Paid on</span>{{ form.paid_on }}</label>
+    <label><span class="panel-label-text">Notes</span>{{ form.notes }}</label>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+      <a class="btn btn-ghost" href="{% if next %}{{ next }}{% else %}{% url 'panel_payroll_list' %}?month={{ payslip.month|date:'Y-m' }}{% endif %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

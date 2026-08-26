@@ -1,0 +1,184 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Navbar Customization{% endblock %}
+{% block page_title %}Navbar Customization{% endblock %}
+{% block page_sub %}Control the logo, favicon and social links shown in the site header{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_navbar_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:28px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-radio-row{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.custom-radio{
+  display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 16px;cursor:pointer;font-size:13.5px;font-weight:600;transition:.15s ease;
+}
+.custom-radio:has(input:checked){border-color:var(--orange);background:var(--orange-soft);color:var(--orange-deep)}
+.custom-radio input{accent-color:var(--orange)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-preview{display:flex;align-items:center;gap:14px;margin-top:12px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.custom-preview img{max-height:48px;max-width:160px;display:block}
+.custom-preview-fav img{max-height:32px;max-width:32px;border-radius:6px}
+.custom-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:26px 0}
+.custom-field{margin-bottom:16px}
+.custom-field:last-child{margin-bottom:0}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input[type="file"],.custom-field input[type="text"],.custom-field input[type="url"]{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  color:var(--ink);width:100%;max-width:420px;
+}
+.custom-field input:focus{outline:2px solid var(--orange);outline-offset:1px}
+#logoImageField{display:none}
+#logoImageField.is-visible{display:block}
+
+/* ---------- live header chip preview ---------- */
+.hp-card{margin-bottom:24px}
+.hp-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.hp-label::before{content:"";width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.nb-mock{display:flex;gap:10px;flex-wrap:wrap;padding:16px 18px;background:#FAFAF9;border-radius:14px}
+.nb-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--ink);opacity:.35;transition:opacity .2s ease}
+.nb-chip.is-visible{opacity:1}
+.nb-chip svg{width:16px;height:16px}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card hp-card">
+  <p class="hp-label">Live preview — updates as you type</p>
+  <div class="nb-mock">
+    <span class="nb-chip {% if site_settings.facebook_url %}is-visible{% endif %}" id="pvChipFacebook">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12.07C24 5.4 18.6 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07"/></svg>
+      Facebook
+    </span>
+    <span class="nb-chip {% if site_settings.instagram_url %}is-visible{% endif %}" id="pvChipInstagram">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="igGradPv" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FDF497"/><stop offset=".45" stop-color="#FD5949"/><stop offset=".6" stop-color="#D6249F"/><stop offset="1" stop-color="#285AEB"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#igGradPv)"/><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="17" cy="7" r="1.1" fill="#fff"/></svg>
+      Instagram
+    </span>
+    <span class="nb-chip {% if site_settings.youtube_url %}is-visible{% endif %}" id="pvChipYoutube">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF0000" d="M23 12s0-3.4-.4-5a2.7 2.7 0 0 0-1.9-1.9C19 4.7 12 4.7 12 4.7s-7 0-8.7.4A2.7 2.7 0 0 0 1.4 7C1 8.6 1 12 1 12s0 3.4.4 5a2.7 2.7 0 0 0 1.9 1.9c1.7.4 8.7.4 8.7.4s7 0 8.7-.4A2.7 2.7 0 0 0 22.6 17c.4-1.6.4-5 .4-5Z"/><path fill="#fff" d="M9.8 15.3 15.5 12 9.8 8.7v6.6Z"/></svg>
+      YouTube
+    </span>
+  </div>
+  <p class="custom-help">Chips appear in the header once their link is filled in below — Facebook and Instagram are shared with the footer.</p>
+</div>
+
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <h3>Logo</h3>
+      <p class="custom-section-sub">Choose whether the header shows a text wordmark or an uploaded image logo.</p>
+
+      <div class="custom-radio-row" id="logoTypeRow">
+        {% for radio in form.logo_type %}
+          <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+      </div>
+
+      <div id="logoImageField" class="custom-field">
+        <label>Logo image</label>
+        {{ form.logo_image }}
+        <p class="custom-help">{{ form.logo_image.help_text }}</p>
+        {% if form.logo_image.errors %}<ul class="panel-errors">{% for e in form.logo_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if site_settings.logo_image %}
+          <div class="custom-preview">
+            <img src="{{ site_settings.logo_image.url }}" alt="Current logo">
+            <span class="custom-preview-label">Current logo</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Favicon</h3>
+      <p class="custom-section-sub">The small icon shown in the browser tab.</p>
+      <div class="custom-field">
+        {{ form.favicon }}
+        <p class="custom-help">{{ form.favicon.help_text }}</p>
+        {% if form.favicon.errors %}<ul class="panel-errors">{% for e in form.favicon.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if site_settings.favicon %}
+          <div class="custom-preview custom-preview-fav">
+            <img src="{{ site_settings.favicon.url }}" alt="Current favicon">
+            <span class="custom-preview-label">Current favicon</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Social links</h3>
+      <p class="custom-section-sub">Update the Facebook, Instagram, YouTube and WhatsApp links shown as chips in the header.</p>
+
+      <div class="custom-field">
+        <label>Facebook page link</label>
+        {{ form.facebook_url }}
+        <p class="custom-help">Also shown in the footer's social row.</p>
+        {% if form.facebook_url.errors %}<ul class="panel-errors">{% for e in form.facebook_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="custom-field">
+        <label>Instagram link</label>
+        {{ form.instagram_url }}
+        <p class="custom-help">Also shown in the footer's social row.</p>
+        {% if form.instagram_url.errors %}<ul class="panel-errors">{% for e in form.instagram_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="custom-field">
+        <label>YouTube channel link</label>
+        {{ form.youtube_url }}
+        {% if form.youtube_url.errors %}<ul class="panel-errors">{% for e in form.youtube_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="custom-field">
+        <label>WhatsApp number</label>
+        {{ form.whatsapp_number }}
+        <p class="custom-help">{{ form.whatsapp_number.help_text }}</p>
+        {% if form.whatsapp_number.errors %}<ul class="panel-errors">{% for e in form.whatsapp_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var radios = document.querySelectorAll('#logoTypeRow input[type="radio"]');
+  var imageField = document.getElementById('logoImageField');
+
+  function syncVisibility() {
+    var checked = document.querySelector('#logoTypeRow input[type="radio"]:checked');
+    imageField.classList.toggle('is-visible', !!checked && checked.value === 'image');
+  }
+
+  radios.forEach(function (r) { r.addEventListener('change', syncVisibility); });
+  syncVisibility();
+
+  function bindChip(id, chipId) {
+    var el = document.getElementById(id);
+    var chip = document.getElementById(chipId);
+    if (!el || !chip) return;
+    el.addEventListener('input', function () { chip.classList.toggle('is-visible', el.value.trim() !== ''); });
+  }
+
+  bindChip('id_facebook_url', 'pvChipFacebook');
+  bindChip('id_instagram_url', 'pvChipInstagram');
+  bindChip('id_youtube_url', 'pvChipYoutube');
+})();
+{% endblock %}

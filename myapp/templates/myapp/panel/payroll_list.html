@@ -1,0 +1,123 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Payroll{% endblock %}
+{% block page_title %}Staff payroll{% endblock %}
+{% block page_sub %}Generate monthly salary slips, using attendance to compute deductions{% endblock %}
+{% block nav_erp %}is-active{% endblock %}
+{% block nav_erp_open %}is-open{% endblock %}
+{% block nav_erp_payroll %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.payroll-month-form{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.payroll-month-form input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit}
+{% endblock %}
+
+{% block content %}
+<form class="payroll-month-form" method="get">
+  <label style="font-size:13px;font-weight:700;color:#374151">Month</label>
+  <input type="month" name="month" value="{{ selected_month|date:'Y-m' }}" onchange="this.form.submit()">
+</form>
+
+<div class="panel-stats">
+  <div class="panel-stat panel-stat-3">
+    <span class="panel-stat-ico">🧾</span>
+    <div><div class="panel-stat-num">{{ stats.generated_count }}</div><div class="panel-stat-label">Payslips generated</div></div>
+  </div>
+  <div class="panel-stat panel-stat-1">
+    <span class="panel-stat-ico">⏳</span>
+    <div><div class="panel-stat-num">{{ stats.pending_count }}</div><div class="panel-stat-label">Pending payment</div></div>
+  </div>
+  <div class="panel-stat panel-stat-2">
+    <span class="panel-stat-ico">💰</span>
+    <div><div class="panel-stat-num">₹{{ stats.total_net }}</div><div class="panel-stat-label">Total net payable</div></div>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Payroll — {{ selected_month|date:"F Y" }}</h2>
+      <p>{{ rows|length }} active staff member{{ rows|length|pluralize }}</p>
+    </div>
+    <form method="post" action="{% url 'panel_payroll_generate' %}">
+      {% csrf_token %}
+      <input type="hidden" name="month" value="{{ selected_month|date:'Y-m' }}">
+      <button type="submit" class="btn btn-primary">⚙ Generate all for this month</button>
+    </form>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if rows %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Staff</th>
+            <th>Basic salary</th>
+            <th>Absent days</th>
+            <th>Deductions</th>
+            <th>Bonus</th>
+            <th>Net payable</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td class="panel-row-name">{{ row.staff.name }}</td>
+            <td>₹{{ row.staff.salary }}</td>
+            <td>{{ row.absent_days }}</td>
+            {% if row.payslip %}
+            <td>₹{{ row.payslip.deductions }}</td>
+            <td>₹{{ row.payslip.bonus }}</td>
+            <td><strong>₹{{ row.payslip.net_amount }}</strong></td>
+            <td>
+              {% if row.payslip.status == 'paid' %}<span class="panel-badge">Paid</span>
+              {% else %}<span class="panel-badge panel-badge-muted">Pending</span>{% endif %}
+            </td>
+            <td>
+              <div class="gallery-actions">
+                {% if row.payslip.status == 'pending' %}
+                <form method="post" action="{% url 'panel_payroll_mark_paid' row.payslip.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="payment_mode" value="cash">
+                  <button type="submit" class="btn btn-primary btn-sm">Mark paid</button>
+                </form>
+                {% endif %}
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_payroll_edit' row.payslip.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_payroll_delete' row.payslip.pk %}" onsubmit="return confirm('Delete this payslip?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+            {% else %}
+            <td colspan="3" style="color:var(--muted)">Not generated yet</td>
+            <td></td>
+            <td>
+              <form method="post" action="{% url 'panel_payroll_generate' %}">
+                {% csrf_token %}
+                <input type="hidden" name="month" value="{{ selected_month|date:'Y-m' }}">
+                <input type="hidden" name="staff_id" value="{{ row.staff.pk }}">
+                <button type="submit" class="btn btn-ghost btn-sm">Generate</button>
+              </form>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🧾</span>No active staff to run payroll for — add staff first.</p>
+  {% endif %}
+</div>
+{% endblock %}

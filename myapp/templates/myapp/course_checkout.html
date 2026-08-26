@@ -1,0 +1,304 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Checkout — {{ course.name }} — Manjunath Academy{% endblock %}
+{% block meta_description %}Complete your purchase of {{ course.name }}.{% endblock %}
+
+{% block extra_style %}
+.checkout-section{padding:48px 0 100px;background:var(--page-gradient);min-height:60vh}
+.checkout-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;align-items:start;max-width:1040px;margin:0 auto}
+.checkout-preview{background:var(--white);border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow-sm)}
+.checkout-thumb{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:22px}
+.checkout-preview h1{font-size:clamp(22px,3vw,28px);margin:0 0 8px}
+.checkout-type{font-size:12.5px;font-weight:800;color:var(--orange-deep);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px}
+.checkout-preview-meta{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.checkout-preview-meta span{background:var(--orange-soft);color:var(--orange-deep);padding:6px 14px;border-radius:var(--r-pill);font-size:12.5px;font-weight:700}
+.checkout-about-full{color:var(--text-secondary);font-size:14.5px;line-height:1.8;white-space:pre-line}
+.locked-media{
+  margin-top:24px;border-radius:16px;background:#F3F1EE;border:1px dashed var(--line);
+  min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  text-align:center;padding:30px;position:relative;overflow:hidden;
+}
+.locked-media-icon{width:56px;height:56px;border-radius:16px;background:var(--white);box-shadow:var(--shadow-sm);display:grid;place-items:center;font-size:24px}
+.locked-media h3{font-size:15px;margin:0;color:var(--ink)}
+.locked-media p{font-size:13px;color:var(--muted);margin:0;max-width:36ch}
+.checkout-card{position:sticky;top:20px;background:var(--white);border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow-md)}
+.checkout-price-row{display:flex;align-items:baseline;gap:10px;margin:0 0 18px}
+.checkout-price{font-size:30px;font-weight:800;color:var(--ink)}
+.checkout-price-old{font-size:16px;color:var(--muted);text-decoration:line-through}
+.checkout-pay-btn{width:100%;justify-content:center;padding:15px;font-size:15.5px}
+.checkout-error{background:#FEF2F2;color:#DC2626;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:600;margin-top:14px;display:none}
+.checkout-error.is-visible{display:block}
+.checkout-secure{display:flex;align-items:center;gap:6px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
+.coupon-box{margin:0 0 18px}
+.coupon-row{display:flex;gap:8px}
+.coupon-row input{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:13.5px;font-family:inherit;text-transform:uppercase}
+.coupon-row input:focus{outline:2px solid var(--orange);outline-offset:1px}
+.coupon-msg{font-size:12.5px;margin:8px 0 0;font-weight:600;min-height:16px}
+.coupon-msg.is-success{color:#15803D}
+.coupon-msg.is-error{color:#DC2626}
+.checkout-includes{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-secondary)}
+.checkout-includes li{display:flex;align-items:center;gap:8px}
+.vp-section{padding:34px 0 72px;background:transparent;min-height:70vh}.vp-wrap{max-width:1440px}.vp-shell{display:grid;grid-template-columns:minmax(310px,390px) minmax(0,1fr);gap:28px;background:transparent}
+.vp-sidebar{display:flex;min-width:0;flex-direction:column;padding:0 27px 0 0;border-right:1px solid var(--line)}.vp-cover{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:11px;background:var(--surface-2)}.vp-cover-empty{display:grid;place-items:center;color:var(--orange);font-size:40px}.vp-sidebar h1{font-size:24px;line-height:1.2;margin:12px 0 8px}.vp-count{display:inline-flex;width:max-content;padding:5px 9px;border-radius:6px;background:#FEF3C7;color:#92400E;font-size:12px;font-weight:800}.vp-validity{font-size:12px;color:var(--text-tertiary);margin:10px 0 0}.vp-about{font-size:12.5px;line-height:1.5;color:var(--muted);margin:12px 0 0}.vp-highlights{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}.vp-highlights h2{font-size:14px;margin:0 0 9px}.vp-highlights ul{display:grid;gap:8px;list-style:none;padding:0;margin:0}.vp-highlights li{display:flex;gap:7px;color:var(--text-tertiary);font-size:12px;line-height:1.4}.vp-highlights li::before{content:"★";color:var(--ink);font-size:9px;margin-top:3px}
+.vp-buy-box{margin-top:auto;padding-top:20px}.vp-buy-box .checkout-price-row{margin-bottom:12px}.vp-buy-box .checkout-price{font-size:24px}.vp-buy-box .checkout-pay-btn{padding:12px}.vp-buy-box .coupon-box{margin:0 0 12px!important}.vp-buy-box .coupon-row input{min-width:0}.vp-secure{margin-bottom:0}
+.vp-main{min-width:0;background:transparent}
+.vp-folder{margin:0 0 12px;overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--white)}.vp-folder[hidden]{display:none}.vp-folder>summary{display:flex;align-items:center;gap:12px;min-height:64px;padding:11px 16px;cursor:pointer;list-style:none}.vp-folder>summary::-webkit-details-marker{display:none}.vp-folder[open]>summary{border-bottom:1px solid var(--line)}.vp-folder-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;background:var(--orange-soft);border-radius:8px;color:var(--orange-deep);font-weight:700}.vp-folder-name{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}.vp-folder-name strong{overflow:hidden;text-overflow:ellipsis;font-size:14.5px;font-weight:700;white-space:nowrap}.vp-folder-name small{width:max-content;padding:3px 10px;background:var(--orange-soft);color:var(--orange-deep);font-size:10px;font-weight:700;border-radius:var(--r-pill)}.vp-chevron{width:11px;height:11px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s ease}.vp-folder[open]>summary .vp-chevron{transform:rotate(225deg)}
+.vp-folder-body{background:var(--surface-2)}.vp-folder-body>.vp-folder{margin:10px 12px}.vp-video-row{display:grid;grid-template-columns:78px minmax(0,1fr) 34px;align-items:center;gap:13px;min-height:60px;padding:8px 14px;border-bottom:1px solid var(--line);transition:background .15s ease}.vp-video-row:last-child{border-bottom:0}.vp-video-row:hover{background:var(--orange-soft)}.vp-video-row img,.vp-video-thumb{width:78px;height:44px;border-radius:5px;object-fit:cover;background:var(--line)}.vp-video-thumb{display:grid;place-items:center;color:var(--orange-deep)}.vp-video-copy{display:flex;min-width:0;flex-direction:column;gap:5px}.vp-video-copy strong{overflow:hidden;text-overflow:ellipsis;font-size:13.5px;font-weight:600;white-space:nowrap}.vp-video-copy small{color:var(--muted);font-size:12px}.vp-lock{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;background:var(--white);font-size:12px;filter:grayscale(1)}.vp-empty{padding:45px 20px;text-align:center;color:var(--muted)}
+@media(max-width:900px){.vp-shell{grid-template-columns:1fr}.vp-sidebar{padding:0 0 24px;border-right:0;border-bottom:1px solid var(--line)}.vp-buy-box{margin-top:0}}
+@media(max-width:560px){.vp-section{padding:18px 0 48px}.vp-wrap{padding-inline:12px!important}.vp-video-row{grid-template-columns:60px minmax(0,1fr) 30px;gap:9px;padding:8px 9px}.vp-video-row img,.vp-video-thumb{width:60px;height:38px}.vp-folder>summary{padding:10px 11px}}
+@media (max-width:860px){.checkout-grid{grid-template-columns:1fr}.checkout-card{position:static}}
+{% endblock %}
+
+{% block content %}
+{% if course.course_type == 'video_course' or course.course_type == 'elibrary' %}
+<section class="vp-section">
+  <div class="wrap vp-wrap">
+    <div class="vp-shell">
+      <aside class="vp-sidebar">
+        {% if course.thumbnail %}<img class="vp-cover" src="{{ course.thumbnail.url }}" alt="{{ course.name }}">{% else %}<div class="vp-cover vp-cover-empty">{% if course.course_type == 'elibrary' %}📖{% else %}▶{% endif %}</div>{% endif %}
+        <h1>{{ course.name }}</h1>
+        {% if course.course_type == 'elibrary' %}
+        <span class="vp-count">▣ {{ course.published_document_count }} PDF{{ course.published_document_count|pluralize }}</span>
+        {% else %}
+        <span class="vp-count">▣ {{ course.published_video_count }} Video{{ course.published_video_count|pluralize }}</span>
+        {% endif %}
+        {% if course.enable_validity and course.validity_value %}<p class="vp-validity"><strong>Validity:</strong> {{ course.validity_value }} {{ course.get_validity_unit_display }}</p>{% endif %}
+        {% if course.about %}<p class="vp-about">{{ course.about|truncatechars:190 }}</p>{% endif %}
+        {% if course.highlight_list %}<div class="vp-highlights"><h2>Course Highlights</h2><ul>{% for highlight in course.highlight_list %}<li>{{ highlight }}</li>{% endfor %}</ul></div>{% endif %}
+        <div class="vp-buy-box">
+          <div class="checkout-price-row"><span class="checkout-price">₹{{ course.current_price }}</span>{% if course.original_price and course.original_price != course.current_price %}<span class="checkout-price-old">₹{{ course.original_price }}</span>{% endif %}</div>
+          {% csrf_token %}
+          <div class="coupon-box"><div class="coupon-row"><input type="text" id="couponInput" placeholder="Have a coupon code?" autocomplete="off"><button type="button" class="btn btn-ghost" id="couponApplyBtn">Apply</button></div><p class="coupon-msg" id="couponMsg"></p></div>
+          <button type="button" class="btn btn-primary checkout-pay-btn" id="payBtn" data-content-type="course" data-object-id="{{ course.pk }}" data-coupon-code="">Buy Now</button>
+          <p class="checkout-error" id="payError"></p><p class="checkout-secure vp-secure">🔒 Secured by Razorpay</p>
+        </div>
+      </aside>
+      <main class="vp-main">
+        {% if course.course_type == 'elibrary' %}
+        <div id="vpCourseOutline">
+          {% if course.enable_folders %}
+            {% if root_content %}<details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>{{ root_content|length }} PDF{{ root_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for document in root_content %}<div class="vp-video-row" data-search-text="{{ document.title|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ document.title }}</strong><small>▣ {% if document.pages %}{{ document.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>{% endif %}
+            {% include "myapp/includes/video_course_locked_outline_tree.html" with content_tree=content_tree content_type="document" %}
+          {% elif visible_content %}
+            <details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>{{ visible_content|length }} PDF{{ visible_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for document in visible_content %}<div class="vp-video-row" data-search-text="{{ document.title|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ document.title }}</strong><small>▣ {% if document.pages %}{{ document.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>
+          {% elif course.pdf_file %}<details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>1 PDF</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body"><div class="vp-video-row" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ course.name }}</strong><small>▣ {% if course.pages %}{{ course.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div></div></details>
+          {% else %}<p class="vp-empty">The library contents will be available soon.</p>{% endif %}
+        </div>
+        {% else %}
+        <div id="vpCourseOutline">
+          {% if course.enable_folders %}
+            {% if root_content %}<details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>{{ root_content|length }} video{{ root_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for video in root_content %}<div class="vp-video-row" data-search-text="{{ video.title|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>{% endif %}
+            {% include "myapp/includes/video_course_locked_outline_tree.html" with content_tree=content_tree content_type="video" %}
+          {% elif visible_content %}
+            <details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>{{ visible_content|length }} video{{ visible_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for video in visible_content %}<div class="vp-video-row" data-search-text="{{ video.title|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>
+          {% elif course.video_file %}<details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>1 video</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body"><div class="vp-video-row" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ course.name }}</strong><small>▣ {% if course.duration_minutes %}{{ course.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div></div></details>
+          {% else %}<p class="vp-empty">The course syllabus will be available soon.</p>{% endif %}
+        </div>
+        {% endif %}
+      </main>
+    </div>
+  </div>
+</section>
+{% else %}
+<section class="checkout-section">
+  <div class="wrap checkout-grid">
+    <div class="checkout-preview">
+      {% if course.thumbnail %}<img class="checkout-thumb" src="{{ course.thumbnail.url }}" alt="">{% endif %}
+      <p class="checkout-type">{{ course.get_course_type_display }}{% if course.category %} · {{ course.category.name }}{% endif %}</p>
+      <h1>{{ course.name }}</h1>
+      <div class="checkout-preview-meta">
+        {% if course.author %}<span>✍️ {{ course.author }}</span>{% endif %}
+        {% if course.pages %}<span>📄 {{ course.pages }} pages</span>{% endif %}
+        {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
+      </div>
+      {% if course.about %}<p class="checkout-about-full">{{ course.about }}</p>{% endif %}
+
+      <div class="locked-media">
+        <span class="locked-media-icon">🔒</span>
+        <h3>Content locked</h3>
+        <p>Unlock to get full access.</p>
+      </div>
+    </div>
+
+    <div class="checkout-card">
+      <div class="checkout-price-row">
+        <span class="checkout-price">₹{{ course.current_price }}</span>
+        {% if course.original_price and course.original_price != course.current_price %}<span class="checkout-price-old">₹{{ course.original_price }}</span>{% endif %}
+      </div>
+
+      <ul class="checkout-includes">
+        <li>📱 Works on mobile, tablet and desktop</li>
+      </ul>
+
+      {% csrf_token %}
+      <div class="coupon-box" style="margin-top:18px">
+        <div class="coupon-row">
+          <input type="text" id="couponInput" placeholder="Have a coupon code?" autocomplete="off">
+          <button type="button" class="btn btn-ghost" id="couponApplyBtn">Apply</button>
+        </div>
+        <p class="coupon-msg" id="couponMsg"></p>
+      </div>
+      <button type="button" class="btn btn-primary btn-lg checkout-pay-btn" id="payBtn" data-content-type="course" data-object-id="{{ course.pk }}" data-coupon-code="">Pay ₹{{ course.current_price }} &amp; Get Access</button>
+      <p class="checkout-error" id="payError"></p>
+      <p class="checkout-secure">🔒 Secured by Razorpay</p>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var razorpayScript = document.createElement('script');
+  razorpayScript.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  document.head.appendChild(razorpayScript);
+})();
+(function () {
+  var payBtn = document.getElementById('payBtn');
+  var errorBox = document.getElementById('payError');
+  if (!payBtn) return;
+  var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  var priceEl = document.querySelector('.checkout-price');
+  var couponInput = document.getElementById('couponInput');
+  var couponApplyBtn = document.getElementById('couponApplyBtn');
+  var couponMsg = document.getElementById('couponMsg');
+  var baseAmount = '{{ course.current_price }}';
+  var usesSidebarLayout = '{{ course.course_type }}' === 'video_course' || '{{ course.course_type }}' === 'elibrary';
+
+  function payLabel(amount) {
+    return usesSidebarLayout ? 'Buy Now — ₹' + amount : 'Pay ₹' + amount + ' & Get Access';
+  }
+  payBtn.textContent = payLabel(baseAmount);
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('is-visible');
+  }
+
+  couponApplyBtn.addEventListener('click', function () {
+    var code = couponInput.value.trim();
+    if (!code) return;
+    couponApplyBtn.disabled = true;
+    couponMsg.className = 'coupon-msg';
+    couponMsg.textContent = '';
+
+    fetch('{% url "apply_coupon" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      body: new URLSearchParams({ content_type: payBtn.dataset.contentType, object_id: payBtn.dataset.objectId, code: code }),
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        couponApplyBtn.disabled = false;
+        if (!data.ok) {
+          payBtn.dataset.couponCode = '';
+          priceEl.textContent = '₹' + baseAmount;
+          payBtn.textContent = payLabel(baseAmount);
+          couponMsg.textContent = data.error || 'Could not apply coupon.';
+          couponMsg.classList.add('is-error');
+          return;
+        }
+        payBtn.dataset.couponCode = data.code;
+        priceEl.textContent = '₹' + data.final_amount;
+        payBtn.textContent = payLabel(data.final_amount);
+        couponMsg.textContent = 'Coupon applied! You saved ₹' + data.discount + '.';
+        couponMsg.classList.add('is-success');
+      })
+      .catch(function () {
+        couponApplyBtn.disabled = false;
+        couponMsg.textContent = 'Could not connect. Please try again.';
+        couponMsg.classList.add('is-error');
+      });
+  });
+
+  payBtn.addEventListener('click', function () {
+    var currentLabel = payBtn.textContent;
+    payBtn.disabled = true;
+    payBtn.textContent = 'Please wait…';
+    errorBox.classList.remove('is-visible');
+
+    var body = new URLSearchParams({
+      content_type: payBtn.dataset.contentType,
+      object_id: payBtn.dataset.objectId,
+      coupon_code: payBtn.dataset.couponCode || '',
+    });
+
+    fetch('{% url "razorpay_create_order" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      body: body,
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.ok) {
+          showError(data.error || 'Something went wrong. Please try again.');
+          payBtn.disabled = false;
+          payBtn.textContent = currentLabel;
+          return;
+        }
+
+        if (typeof Razorpay === 'undefined') {
+          showError('Payment is still loading. Please wait a moment and try again.');
+          payBtn.disabled = false;
+          payBtn.textContent = currentLabel;
+          return;
+        }
+
+        var rzp = new Razorpay({
+          key: data.key_id,
+          amount: data.amount,
+          currency: data.currency,
+          order_id: data.order_id,
+          name: 'Manjunath Academy',
+          description: data.name,
+          prefill: {
+            name: data.prefill_name,
+            email: data.prefill_email,
+            contact: data.prefill_contact,
+          },
+          theme: { color: '#F97316' },
+          handler: function (response) {
+            var verifyBody = new URLSearchParams({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              content_type: payBtn.dataset.contentType,
+              object_id: payBtn.dataset.objectId,
+              coupon_code: payBtn.dataset.couponCode || '',
+            });
+            fetch('{% url "razorpay_verify_payment" %}', {
+              method: 'POST',
+              headers: { 'X-CSRFToken': csrfToken },
+              body: verifyBody,
+            })
+              .then(function (res) { return res.json(); })
+              .then(function (verifyData) {
+                if (verifyData.ok) {
+                  window.location.href = verifyData.redirect_url;
+                } else {
+                  showError(verifyData.error || 'Payment verification failed.');
+                }
+              });
+          },
+          modal: {
+            ondismiss: function () {
+              payBtn.disabled = false;
+              payBtn.textContent = currentLabel;
+            },
+          },
+        });
+        rzp.on('payment.failed', function () {
+          showError('Payment failed. Please try again.');
+          payBtn.disabled = false;
+          payBtn.textContent = currentLabel;
+        });
+        rzp.open();
+      })
+      .catch(function () {
+        showError('Could not connect. Please try again.');
+        payBtn.disabled = false;
+        payBtn.textContent = currentLabel;
+      });
+  });
+})();
+{% endblock %}

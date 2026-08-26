@@ -1,0 +1,19 @@
+{% for node in content_tree %}
+<details class="vp-folder" data-folder-name="{{ node.folder.name|lower }}" {% if forloop.first %}open{% endif %}>
+  <summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>{{ node.folder.name }}</strong><small>{{ node.item_count }} {% if content_type == 'document' %}PDF{% else %}video{% endif %}{{ node.item_count|pluralize }}</small></span><span class="vp-chevron"></span></summary>
+  <div class="vp-folder-body">
+    {% for item in node.items %}
+    <div class="vp-video-row" data-search-text="{{ item.title|lower }}">
+      {% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% elif content_type == 'document' %}<span class="vp-video-thumb">📄</span>{% else %}<span class="vp-video-thumb">▶</span>{% endif %}
+      {% if content_type == 'document' %}
+      <span class="vp-video-copy"><strong>{{ item.title }}</strong><small>▣ {% if item.pages %}{{ item.pages }} pages{% else %}Document{% endif %}</small></span>
+      {% else %}
+      <span class="vp-video-copy"><strong>{{ item.title }}</strong><small>▣ {% if item.duration_minutes %}{{ item.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span>
+      {% endif %}
+      <span class="vp-lock" aria-label="Locked">🔒</span>
+    </div>
+    {% endfor %}
+    {% if node.children %}{% include "myapp/includes/video_course_locked_outline_tree.html" with content_tree=node.children content_type=content_type %}{% endif %}
+  </div>
+</details>
+{% endfor %}

@@ -1,0 +1,171 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Log In — Manjunath Academy{% endblock %}
+{% block meta_description %}Log in to your Manjunath Academy account.{% endblock %}
+{% block preloader %}{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:80px 0 120px;background:var(--page-gradient);min-height:60vh}
+.auth-card{
+  position:relative;overflow:hidden;max-width:420px;margin:0 auto;background:var(--white);border:1px solid var(--line);
+  border-radius:24px;padding:38px 34px 34px;box-shadow:var(--shadow-md);
+}
+.auth-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--orange),#FBBF24);
+}
+.auth-icon{
+  width:46px;height:46px;border-radius:14px;background:var(--orange-soft);color:var(--orange-deep);
+  display:grid;place-items:center;font-size:21px;margin-bottom:16px;
+}
+.auth-card h1{font-size:clamp(23px,3vw,28px);font-weight:800;margin:0 0 6px}
+.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px}
+.auth-form{display:flex;flex-direction:column;gap:16px}
+.auth-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700;color:var(--text-secondary)}
+.auth-form input{
+  border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+  font-size:14px;font-family:inherit;color:var(--ink);background:var(--white);
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+.auth-form input:focus{
+  outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.14);
+}
+.auth-errors{color:#DC2626;font-size:12.5px;margin:2px 0 0;padding:0;list-style:none}
+.auth-form label:has(.auth-errors) input{border-color:#DC2626}
+.auth-footer{text-align:center;margin-top:20px;font-size:13.5px;color:var(--muted)}
+.auth-footer a{color:var(--orange);font-weight:700}
+.sso-row{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.sso-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  border:1px solid var(--line);border-radius:10px;padding:11px;font-size:14px;font-weight:700;
+  color:var(--ink);background:var(--white);transition:.15s ease;
+}
+.sso-btn:hover{border-color:rgba(249,115,22,.5);background:#FFFAF6}
+.sso-btn svg{width:18px;height:18px;flex:0 0 auto}
+.sso-divider{display:flex;align-items:center;gap:12px;margin:0 0 20px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.sso-divider::before,.sso-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* ---------- decorative background ---------- */
+.auth-section{position:relative;overflow:hidden}
+.auth-blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none;z-index:0}
+.auth-blob-1{width:340px;height:340px;top:-90px;left:-110px;background:radial-gradient(circle,var(--orange-soft),transparent 70%);animation:authBlobDrift 15s ease-in-out infinite}
+.auth-blob-2{width:280px;height:280px;bottom:-100px;right:-90px;background:radial-gradient(circle,var(--peach),transparent 70%);animation:authBlobDrift 19s ease-in-out infinite reverse}
+@keyframes authBlobDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(28px,-22px)}}
+.auth-section .wrap{position:relative;z-index:1}
+
+/* ---------- entrance animation ---------- */
+@keyframes authCardIn{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes authFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes authPop{0%{opacity:0;transform:scale(.5) rotate(-12deg)}70%{transform:scale(1.08) rotate(3deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.auth-card{animation:authCardIn .6s cubic-bezier(.2,.75,.25,1) both}
+.auth-icon{animation:authPop .55s cubic-bezier(.34,1.56,.64,1) .12s both;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease}
+.auth-icon:hover{transform:scale(1.1) rotate(-6deg);box-shadow:0 8px 18px rgba(249,115,22,.28)}
+.auth-card h1{animation:authFadeUp .5s ease .2s both}
+.auth-sub{animation:authFadeUp .5s ease .26s both}
+.sso-row{animation:authFadeUp .5s ease .32s both}
+.sso-divider{animation:authFadeUp .5s ease .36s both}
+.auth-form label:nth-of-type(1){animation:authFadeUp .5s ease .4s both}
+.auth-form label:nth-of-type(2){animation:authFadeUp .5s ease .46s both}
+.auth-form button{animation:authFadeUp .5s ease .52s both}
+.auth-footer{animation:authFadeUp .5s ease .58s both}
+@media (prefers-reduced-motion:reduce){
+  .auth-card,.auth-icon,.auth-card h1,.auth-sub,.sso-row,.sso-divider,.auth-form label,.auth-form button,.auth-footer{animation:none}
+  .auth-blob{animation:none}
+}
+
+/* ---------- input icons + password toggle ---------- */
+.auth-input-wrap{position:relative;display:flex;align-items:center}
+.auth-input-wrap input{padding-left:40px;width:100%}
+.auth-input-ico{position:absolute;left:12px;width:18px;height:18px;color:var(--muted);pointer-events:none;transition:color .15s ease}
+.auth-input-wrap:has(input:focus) .auth-input-ico{color:var(--orange)}
+.auth-input-wrap input[name="password"]{padding-right:40px}
+.auth-toggle-pass{position:absolute;right:10px;width:26px;height:26px;display:grid;place-items:center;color:var(--muted);border-radius:6px;transition:color .15s ease,background .15s ease}
+.auth-toggle-pass:hover{color:var(--orange);background:var(--orange-soft)}
+.auth-toggle-pass svg{width:18px;height:18px}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <span class="auth-blob auth-blob-1" aria-hidden="true"></span>
+  <span class="auth-blob auth-blob-2" aria-hidden="true"></span>
+  <div class="wrap">
+    <div class="auth-card">
+      <span class="auth-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 3h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 17l5-5-5-5M15 12H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <h1>Welcome back</h1>
+      <p class="auth-sub">Log in to continue your preparation.</p>
+
+      {% if sso_settings.google_active or sso_settings.facebook_active %}
+        <div class="sso-row">
+          {% if sso_settings.google_active %}
+            <a class="sso-btn" href="{% url 'sso_start' 'google' %}">
+              <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.4 0-13.8 4.1-17.1 10.2z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 35 26.9 36 24 36c-5.2 0-9.6-3.3-11.2-7.9l-6.6 5c3.2 6.4 9.9 10.9 17.8 10.9z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4 5.6l6.6 5.6C41.5 36 44 30.4 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+              Continue with Google
+            </a>
+          {% endif %}
+          {% if sso_settings.facebook_active %}
+            <a class="sso-btn" href="{% url 'sso_start' 'facebook' %}">
+              <svg viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.32l-.53 3.49h-2.79V24C19.61 23.09 24 18.1 24 12.07"/></svg>
+              Continue with Facebook
+            </a>
+          {% endif %}
+        </div>
+        <div class="sso-divider">or log in with email</div>
+      {% endif %}
+
+      <form class="auth-form" id="loginForm" method="post" novalidate>
+        {% csrf_token %}
+
+        <label>Email
+          <div class="auth-input-wrap">
+            <svg class="auth-input-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ form.username }}
+          </div>
+          {% if form.username.errors %}<ul class="auth-errors">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+
+        <label>Password
+          <div class="auth-input-wrap">
+            <svg class="auth-input-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            {{ form.password }}
+            <button type="button" class="auth-toggle-pass" id="togglePass" aria-label="Show password" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+            </button>
+          </div>
+          {% if form.password.errors %}<ul class="auth-errors">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+
+        {% if form.non_field_errors %}
+          <ul class="auth-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary btn-lg" id="loginSubmit">Log in</button>
+      </form>
+
+      <p class="auth-footer">New here? <a href="{% url 'signup' %}">Create an account</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+document.getElementById('loginForm').addEventListener('submit', function () {
+  document.getElementById('loginSubmit').classList.add('btn-loading');
+});
+
+(function () {
+  var toggle = document.getElementById('togglePass');
+  var eyeOpen = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>';
+  var eyeClosed = '<path d="M3 3l18 18M10.6 10.7a3 3 0 0 0 4.2 4.2M6.6 6.7C4 8.4 1 12 1 12s4 7 11 7c1.9 0 3.6-.5 5-1.2M17.4 17.4C20 15.6 23 12 23 12s-1.5-2.6-4-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+  if (!toggle) return;
+  var input = toggle.closest('.auth-input-wrap').querySelector('input');
+  toggle.addEventListener('click', function () {
+    var showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    toggle.setAttribute('aria-pressed', String(!showing));
+    toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    toggle.querySelector('svg').innerHTML = showing ? eyeOpen : eyeClosed;
+  });
+})();
+{% endblock %}
