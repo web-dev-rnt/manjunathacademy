@@ -28,6 +28,30 @@ def _clean_name(name):
     return name.replace('\\', '/').lstrip('/')
 
 
+def _safe_cache_get(key, default):
+    try:
+        return cache.get(key, default)
+    except Exception:
+        return default
+
+
+def _safe_cache_set(key, value, timeout):
+    # The cache lives in the database (see settings.CACHES) so a write here can fail for reasons
+    # that have nothing to do with Dropbox — e.g. a read-only database on the host. That should
+    # never take down an upload or an image render; it should just mean this result isn't cached.
+    try:
+        cache.set(key, value, timeout)
+    except Exception:
+        pass
+
+
+def _safe_cache_delete(key):
+    try:
+        cache.delete(key)
+    except Exception:
+        pass
+
+
 def _to_webp_bytes(raw):
     """Re-encodes image bytes as WebP, capped to MAX_DIMENSION. Returns None if `raw` isn't a
     decodable image (caller should fall back to uploading it unchanged)."""
@@ -79,13 +103,15 @@ class DropboxStorage(Storage):
             raw = _to_webp_bytes(raw) or raw
         full_path = self._full_path(name)
         dropbox_utils.upload_bytes(full_path, raw)
-        cache.set(self._exists_cache_key(name), True, EXISTS_CACHE_SECONDS)
+        _safe_cache_set(self._exists_cache_key(name), True, EXISTS_CACHE_SECONDS)
         # Resolve the shared link now, while the admin's upload request is already in flight,
         # instead of leaving it for the first site visitor who views this file to pay for.
         try:
-            cache.set(self._cache_key(name), dropbox_utils.get_direct_link(full_path), LINK_CACHE_SECONDS)
+            url = dropbox_utils.get_direct_link(full_path)
         except dropbox_utils.DropboxError:
-            pass
+            url = None
+        if url:
+            _safe_cache_set(self._cache_key(name), url, LINK_CACHE_SECONDS)
         return name
 
     def _open(self, name, mode='rb'):
@@ -93,16 +119,16 @@ class DropboxStorage(Storage):
 
     def delete(self, name):
         dropbox_utils.delete_path(self._full_path(name))
-        cache.delete(self._cache_key(name))
-        cache.set(self._exists_cache_key(name), False, EXISTS_CACHE_SECONDS)
+        _safe_cache_delete(self._cache_key(name))
+        _safe_cache_set(self._exists_cache_key(name), False, EXISTS_CACHE_SECONDS)
 
     def exists(self, name):
         cache_key = self._exists_cache_key(name)
-        cached = cache.get(cache_key, _MISS)
+        cached = _safe_cache_get(cache_key, _MISS)
         if cached is not _MISS:
             return cached
         result = dropbox_utils.get_metadata(self._full_path(name)) is not None
-        cache.set(cache_key, result, EXISTS_CACHE_SECONDS)
+        _safe_cache_set(cache_key, result, EXISTS_CACHE_SECONDS)
         return result
 
     def size(self, name):
@@ -111,7 +137,7 @@ class DropboxStorage(Storage):
 
     def url(self, name):
         cache_key = self._cache_key(name)
-        cached = cache.get(cache_key, _MISS)
+        cached = _safe_cache_get(cache_key, _MISS)
         if cached is not _MISS:
             return cached
         try:
@@ -119,9 +145,9 @@ class DropboxStorage(Storage):
         except dropbox_utils.DropboxError:
             # Cache the failure too, briefly — otherwise a broken/misconfigured Dropbox app makes
             # every image on every page make 2 doomed API calls on every single request.
-            cache.set(cache_key, '', FAILURE_CACHE_SECONDS)
+            _safe_cache_set(cache_key, '', FAILURE_CACHE_SECONDS)
             return ''
-        cache.set(cache_key, url, LINK_CACHE_SECONDS)
+        _safe_cache_set(cache_key, url, LINK_CACHE_SECONDS)
         return url
 
     def get_accessed_time(self, name):
