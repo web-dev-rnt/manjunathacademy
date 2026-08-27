@@ -157,7 +157,7 @@ a.btn:active,button.btn:active{transform:translateY(0)}
 }
 .top-loader.is-active{opacity:1;width:80%}
 
-.site-messages{position:fixed;top:100px;right:22px;z-index:150;width:360px;max-width:calc(100% - 32px);display:flex;flex-direction:column;gap:10px}
+.site-messages{position:fixed;top:100px;left:50%;transform:translateX(-50%);z-index:150;width:360px;max-width:calc(100% - 32px);display:flex;flex-direction:column;align-items:center;gap:10px}
 .site-message{
   position:relative;display:flex;align-items:flex-start;gap:11px;padding:14px 40px 14px 16px;border-radius:14px;
   background:var(--glass-bg);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
@@ -178,8 +178,8 @@ a.btn:active,button.btn:active{transform:translateY(0)}
 .site-message button{position:absolute;top:9px;right:9px;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:5px;border-radius:7px;transition:background .15s ease,color .15s ease}
 .site-message button:hover{background:rgba(127,127,127,.14);color:var(--ink)}
 .site-message.is-leaving{animation:siteMsgOut .3s ease forwards}
-@keyframes siteMsgIn{from{opacity:0;transform:translateX(26px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
-@keyframes siteMsgOut{from{opacity:1;transform:translateX(0) scale(1)}to{opacity:0;transform:translateX(26px) scale(.92)}}
+@keyframes siteMsgIn{from{opacity:0;transform:translateY(-18px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes siteMsgOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-14px) scale(.92)}}
 @media(prefers-reduced-motion:reduce){.site-message{animation:none}.site-message.is-leaving{animation:none}}
 
 /* ============================================================
@@ -1488,7 +1488,7 @@ input,select,textarea,button{max-width:100%}
   .result-actions,.course-actions-row,.panel-form-actions{flex-direction:column}.result-actions .btn,.course-actions-row .btn{width:100%;justify-content:center}
   .quiz-carousel-title{font-size:30px}.quiz-carousel-sub{font-size:14px}.quiz-carousel-card{flex-basis:88%!important;min-width:230px!important}
   .store-toolbar{align-items:stretch}.store-search{min-width:0;width:100%;max-width:none}
-  .site-messages{top:76px;right:12px;width:auto;max-width:calc(100% - 24px)}.site-message{font-size:13px}
+  .site-messages{top:76px;width:calc(100% - 24px);max-width:360px}.site-message{font-size:13px}
   .chatbot-panel{right:12px;bottom:76px;max-width:calc(100vw - 24px)}
 }
 @media (max-width:420px){
