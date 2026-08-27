@@ -26,7 +26,7 @@
     {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
   {% endif %}
 
-  <form method="post" action="{% url 'panel_quiz_music_update' %}" enctype="multipart/form-data">
+  <form method="post" action="{% url 'panel_quiz_music_update' %}" enctype="multipart/form-data" data-loading-text="Uploading music file…">
     {% csrf_token %}
     {% if music_form.instance.background_music %}
       <p style="margin:0 0 10px;font-size:13.5px;color:#374151">Current file: <strong>{{ music_form.instance.background_music.name|cut:"quiz_game/" }}</strong></p>

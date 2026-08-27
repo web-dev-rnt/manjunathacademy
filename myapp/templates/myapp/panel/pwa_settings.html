@@ -37,7 +37,7 @@
     {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
   {% endif %}
 
-  <form method="post" enctype="multipart/form-data" novalidate>
+  <form method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading app icons…">
     {% csrf_token %}
 
     <div class="custom-section">

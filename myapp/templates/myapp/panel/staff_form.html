@@ -24,7 +24,7 @@
     <a class="btn btn-ghost" href="{% url 'panel_staff_list' %}">← Back to staff</a>
   </div>
 
-  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading staff photo…">
     {% csrf_token %}
 
     <label><span class="panel-label-text">Full name <span class="req">*</span></span>

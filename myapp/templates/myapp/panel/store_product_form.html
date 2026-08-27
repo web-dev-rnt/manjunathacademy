@@ -27,7 +27,7 @@
     <a class="btn btn-ghost" href="{% url 'panel_store_product_list' %}">← Back to products</a>
   </div>
 
-  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading product image…">
     {% csrf_token %}
 
     <label><span class="panel-label-text">Category</span>

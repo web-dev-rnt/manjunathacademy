@@ -64,7 +64,7 @@
       <h3>Current Affairs card</h3>
       <p class="custom-section-sub">Controls the Current Affairs feature card shown on the homepage.</p>
     </div>
-    <form method="post" enctype="multipart/form-data" novalidate>
+    <form method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading image…">
       {% csrf_token %}
       <input type="hidden" name="card" value="current_affairs">
       <div class="custom-field"><label>Title</label>{{ current_form.title }}</div>

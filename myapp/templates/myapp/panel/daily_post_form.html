@@ -37,7 +37,7 @@
     <a class="btn btn-ghost" href="{% url 'panel_daily_updates' %}">← Back to Daily Updates</a>
   </div>
 
-  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading your post…">
     {% csrf_token %}
 
     <label><span class="panel-label-text">News category</span>

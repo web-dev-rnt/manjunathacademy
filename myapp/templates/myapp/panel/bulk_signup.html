@@ -35,7 +35,7 @@
     Rows with a missing name/email/number, or an email that's already registered, are skipped.
   </div>
 
-  <form method="post" enctype="multipart/form-data" class="bulk-upload-row">
+  <form method="post" enctype="multipart/form-data" class="bulk-upload-row" data-loading-text="Uploading and processing your file…">
     {% csrf_token %}
     <input type="file" name="csv_file" accept=".csv" required>
     <button type="submit" class="btn btn-primary">Upload &amp; import</button>

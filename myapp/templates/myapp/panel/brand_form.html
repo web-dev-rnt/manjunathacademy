@@ -26,7 +26,7 @@
     <a class="btn btn-ghost" href="{% url 'panel_brand_list' %}">← Back to brands</a>
   </div>
 
-  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading brand logo…">
     {% csrf_token %}
 
     <label><span class="panel-label-text">Name <span class="req">*</span></span>

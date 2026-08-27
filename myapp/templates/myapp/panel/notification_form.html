@@ -49,7 +49,7 @@
     <a class="btn btn-ghost" href="{% url 'panel_notification_list' %}">← Back to notifications</a>
   </div>
 
-  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading notification image…">
     {% csrf_token %}
 
     <label><span class="panel-label-text">Notification text <span class="req">*</span></span>
@@ -144,7 +144,7 @@
       </div>
     {% endif %}
 
-    <form class="notif-gallery-add" method="post" action="{% url 'panel_notification_image_add' notification.pk %}" enctype="multipart/form-data">
+    <form class="notif-gallery-add" method="post" action="{% url 'panel_notification_image_add' notification.pk %}" enctype="multipart/form-data" data-loading-text="Uploading gallery photo…">
       {% csrf_token %}
       <label>Photo
         {{ image_form.image }}

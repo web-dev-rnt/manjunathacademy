@@ -25,7 +25,7 @@
     <a class="btn btn-ghost" href="{% url 'panel_gallery_list' %}">← Back to gallery</a>
   </div>
 
-  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading gallery photo…">
     {% csrf_token %}
 
     <label><span class="panel-label-text">Title</span>
