@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 
 class CustomUserManager(BaseUserManager):
@@ -134,7 +135,7 @@ class BannerSlide(models.Model):
     class Meta:
         ordering = ['order', 'id']
 
-    @property
+    @cached_property
     def display_image_url(self):
         if self.image and self.image.storage.exists(self.image.name):
             return self.image.url

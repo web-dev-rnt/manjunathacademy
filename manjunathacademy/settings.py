@@ -111,6 +111,17 @@ DATABASES = {
     )
 }
 
+# Resolved Dropbox direct-download links are cached here (see myapp/dropbox_storage.py). A
+# database-backed cache — instead of the default in-memory one — survives process restarts and
+# redeploys (it lives in the same SQLite file the Dropbox backup/restore feature already covers),
+# so a link is only ever resolved once per file instead of on every cold worker/redeploy.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'dropbox_url_cache',
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -167,7 +178,7 @@ WHITENOISE_MAX_AGE = 31536000
 DROPBOX_APP_KEY = os.environ.get('DROPBOX_APP_KEY', 'wgg2fsw5pf16x8q')
 DROPBOX_APP_SECRET = os.environ.get('DROPBOX_APP_SECRET', '38dg9gi6djz3zuu')
 DROPBOX_REFRESH_TOKEN = os.environ.get(
-    'DROPBOX_REFRESH_TOKEN', 'Si57f7yXuB0AAAAAAAAAAZGrsYbd1YLQpvGHxlJES4DRvKr7mDfZo8xqLaJBTY_s'
+    'DROPBOX_REFRESH_TOKEN', 'utr4qCLZJGAAAAAAAAAAARb_pgs-qMKiPHti--AfXzdseBkqBkbeZ8ipb8XM-pDz'
 )
 
 # Default primary key field type

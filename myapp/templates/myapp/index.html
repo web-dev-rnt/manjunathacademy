@@ -416,9 +416,9 @@
         <article class="daily-card daily-current">
           <div class="daily-card-top">
             {% if latest_current_affair and latest_current_affair.display_thumbnail %}
-              <img class="daily-illus daily-latest-thumb" src="{{ latest_current_affair.display_thumbnail.url }}" alt="">
+              <img class="daily-illus daily-latest-thumb" src="{{ latest_current_affair.display_thumbnail.url }}" alt="" loading="lazy">
             {% elif daily_current_card.visual_type == 'image' and daily_current_card.image %}
-              <img class="daily-illus" src="{{ daily_current_card.image.url }}" alt="">
+              <img class="daily-illus" src="{{ daily_current_card.image.url }}" alt="" loading="lazy">
             {% elif daily_current_card.illustration_style == 'quiz' %}
               <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person on a video call">
                 <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
@@ -523,7 +523,7 @@
     <div class="pc-grid video-course-grid">
       {% for course in video_courses %}
       <article class="pc-card">
-        {% if course.thumbnail %}<img class="pc-thumb" src="{{ course.thumbnail.url }}" alt="{{ course.name }}">{% else %}<div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span></div>{% endif %}
+        {% if course.thumbnail %}<img class="pc-thumb" src="{{ course.thumbnail.url }}" alt="{{ course.name }}" loading="lazy">{% else %}<div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span></div>{% endif %}
         <h3>{{ course.name }}</h3>
         {% if course.about %}<p>{{ course.about|truncatechars:105 }}</p>{% endif %}
         <div class="pc-tags"><span>▶ {{ course.published_video_count }} video{{ course.published_video_count|pluralize }}</span>{% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}</div>
@@ -547,7 +547,7 @@
     <div class="pc-grid">
       {% for item in elibrary_items %}
       <article class="pc-card">
-        {% if item.thumbnail %}<img class="pc-thumb" src="{{ item.thumbnail.url }}" alt="{{ item.name }}">{% else %}<div class="pc-top"><span class="pc-icon pc-icon-grey">📖</span></div>{% endif %}
+        {% if item.thumbnail %}<img class="pc-thumb" src="{{ item.thumbnail.url }}" alt="{{ item.name }}" loading="lazy">{% else %}<div class="pc-top"><span class="pc-icon pc-icon-grey">📖</span></div>{% endif %}
         <h3>{{ item.name }}</h3>
         {% if item.author %}<p style="font-weight:600;color:var(--text-secondary)">by {{ item.author }}</p>{% endif %}
         {% if item.about %}<p>{{ item.about|truncatechars:100 }}</p>{% endif %}
@@ -583,7 +583,7 @@
         <div class="ts-grid" id="tsGrid">
           {% for course in test_series_courses %}
           <article class="ts-card" data-cat="{{ course.category_id|default:'' }}">
-            {% if course.thumbnail %}<img class="ts-card-thumb" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="ts-course-logo">{% include "myapp/includes/category_logo.html" with icon_key=course.category.logo_key %}</span>{% endif %}
+            {% if course.thumbnail %}<img class="ts-card-thumb" src="{{ course.thumbnail.url }}" alt="" loading="lazy">{% else %}<span class="ts-course-logo">{% include "myapp/includes/category_logo.html" with icon_key=course.category.logo_key %}</span>{% endif %}
             {% if course.test_type %}<span class="ts-type-tag">{{ course.get_test_type_display }}</span>{% endif %}
             <h4>{{ course.name }}</h4>
             <span class="ts-count">📝 {{ course.questions.count }} question{{ course.questions.count|pluralize }}{% if course.duration_minutes %} · ⏱ {{ course.duration_minutes }}m{% endif %}</span>
@@ -645,10 +645,10 @@
       {% if result_highlights %}
       <div class="ae-track">
         {% for photo in result_highlights %}
-        <figure class="ae-card"><img src="{{ photo.image.url }}" alt="{{ photo.caption }}"><figcaption>{{ photo.caption }}</figcaption></figure>
+        <figure class="ae-card"><img src="{{ photo.image.url }}" alt="{{ photo.caption }}" loading="lazy"><figcaption>{{ photo.caption }}</figcaption></figure>
         {% endfor %}
         {% for photo in result_highlights %}
-        <figure class="ae-card" aria-hidden="true"><img src="{{ photo.image.url }}" alt=""><figcaption>{{ photo.caption }}</figcaption></figure>
+        <figure class="ae-card" aria-hidden="true"><img src="{{ photo.image.url }}" alt="" loading="lazy"><figcaption>{{ photo.caption }}</figcaption></figure>
         {% endfor %}
       </div>
       {% else %}
@@ -666,7 +666,7 @@
     <p class="section-sub">{{ homepage_content.gallery_subtitle }}</p>
     <div class="gal-grid">
       {% for photo in gallery_preview %}
-      <figure class="gal-item{% if forloop.first %} gal-big{% endif %}"><img src="{{ photo.image.url }}" alt="{{ photo.title }}"></figure>
+      <figure class="gal-item{% if forloop.first %} gal-big{% endif %}"><img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy"></figure>
       {% empty %}
       <p class="panel-empty">No gallery photos added yet — check back soon.</p>
       {% endfor %}
@@ -680,9 +680,9 @@
 
     <div class="au-media">
       {% if homepage_content.about_image %}
-        <img src="{{ homepage_content.about_image.url }}" alt="">
+        <img src="{{ homepage_content.about_image.url }}" alt="" loading="lazy">
       {% else %}
-        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=760&h=560&q=70" alt="Students studying together at night">
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=760&h=560&q=70" alt="Students studying together at night" loading="lazy">
       {% endif %}
       <div class="au-badge"><span class="au-badge-ico">🎓</span><div><strong>Trusted by</strong><span>{{ homepage_content.about_badge_value }} {{ homepage_content.about_badge_label }}</span></div></div>
     </div>
