@@ -1407,7 +1407,9 @@ html[data-theme="dark"] .theme-toggle-thumb{transform:translateX(16px);backgroun
 
 /* Final responsive safety layer — intentionally after page-specific styles. */
 html{max-width:100%;overflow-x:hidden}
-body{max-width:100%;overflow-x:hidden}
+/* overflow-x:clip (not hidden) — hidden forces overflow-y to compute to auto too, turning body
+   into its own scroll container, which breaks position:sticky on the navbar inside it. */
+body{max-width:100%;overflow-x:clip}
 img,svg,video,iframe{max-width:100%}
 input,select,textarea,button{max-width:100%}
 @media (max-width:1024px){
