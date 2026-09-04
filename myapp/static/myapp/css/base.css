@@ -335,10 +335,11 @@ a.btn:active,button.btn:active{transform:translateY(0)}
 .header-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 .chip{
   display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:0 0 auto;
-  font-size:13px;font-weight:700;padding:8px 12px;border-radius:var(--r-pill);
+  font-size:13px;font-weight:700;padding:8px;border-radius:var(--r-pill);
   transition:transform .18s ease;
 }
 .chip svg{width:16px;height:16px}
+.chip .chip-label{display:none}
 .chip:hover{transform:translateY(-1px)}
 .chip-yt{background:#FDECEC;color:#1a1a1a}
 .chip-wa{background:#E9F9EF;color:#1a1a1a}
