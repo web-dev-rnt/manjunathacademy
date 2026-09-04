@@ -402,91 +402,64 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ---------- 2a. "More" nav dropdown ---------- */
+  /* ---------- 2a/2a-2/2b. Nav dropdowns ("More", language, user) — only one open at a time ---------- */
+  const navDropdowns = [];
+
   const navMore = document.getElementById('navMore');
   const navMoreToggle = document.getElementById('navMoreToggle');
+  if (navMore && navMoreToggle) navDropdowns.push({ box: navMore, toggle: navMoreToggle });
 
-  if (navMore && navMoreToggle) {
-    navMoreToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const open = navMore.classList.toggle('is-open');
-      navMoreToggle.setAttribute('aria-expanded', String(open));
-    });
+  document.querySelectorAll('.nav-lang').forEach((langBox) => {
+    const toggle = langBox.querySelector('.nav-lang-toggle');
+    if (toggle) navDropdowns.push({ box: langBox, toggle });
+  });
 
-    document.addEventListener('click', (e) => {
-      if (!navMore.contains(e.target)) {
-        navMore.classList.remove('is-open');
-        navMoreToggle.setAttribute('aria-expanded', 'false');
-      }
-    });
+  const userMenu = document.getElementById('navUserMenu');
+  const userTrigger = document.getElementById('navUserTrigger');
+  if (userMenu && userTrigger) navDropdowns.push({ box: userMenu, toggle: userTrigger });
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        navMore.classList.remove('is-open');
-        navMoreToggle.setAttribute('aria-expanded', 'false');
-      }
+  function closeNavDropdowns(except) {
+    navDropdowns.forEach(({ box, toggle }) => {
+      if (box === except) return;
+      box.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
     });
   }
 
-  /* ---------- 2a-2. Language dropdown(s) — every .nav-lang instance on the page ---------- */
-  document.querySelectorAll('.nav-lang').forEach((langBox) => {
-    const toggle = langBox.querySelector('.nav-lang-toggle');
-    if (!toggle) return;
-
+  navDropdowns.forEach(({ box, toggle }) => {
     toggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      const open = langBox.classList.toggle('is-open');
-      toggle.setAttribute('aria-expanded', String(open));
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!langBox.contains(e.target)) {
-        langBox.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        langBox.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-
-    langBox.querySelectorAll('[data-lang]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        window.setSiteLanguage(btn.dataset.lang);
-        langBox.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
-      });
+      const willOpen = !box.classList.contains('is-open');
+      closeNavDropdowns(box);
+      box.classList.toggle('is-open', willOpen);
+      toggle.setAttribute('aria-expanded', String(willOpen));
     });
   });
 
-  /* ---------- 2b. Logged-in user dropdown ---------- */
-  const userMenu = document.getElementById('navUserMenu');
-  const userTrigger = document.getElementById('navUserTrigger');
-
-  if (userMenu && userTrigger) {
-    userTrigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const open = userMenu.classList.toggle('is-open');
-      userTrigger.setAttribute('aria-expanded', String(open));
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!userMenu.contains(e.target)) {
-        userMenu.classList.remove('is-open');
-        userTrigger.setAttribute('aria-expanded', 'false');
+  document.addEventListener('click', (e) => {
+    navDropdowns.forEach(({ box, toggle }) => {
+      if (!box.contains(e.target)) {
+        box.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
       }
     });
+  });
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        userMenu.classList.remove('is-open');
-        userTrigger.setAttribute('aria-expanded', 'false');
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeNavDropdowns(null);
+  });
+
+  document.querySelectorAll('.nav-lang [data-lang]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const langBox = btn.closest('.nav-lang');
+      const toggle = langBox && langBox.querySelector('.nav-lang-toggle');
+      window.setSiteLanguage(btn.dataset.lang);
+      if (langBox && toggle) {
+        langBox.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
       }
     });
-  }
+  });
 
   /* ---------- 3. Header shadow + active link ---------- */
   const header = document.querySelector('.site-header');
