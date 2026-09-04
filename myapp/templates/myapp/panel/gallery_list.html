@@ -47,7 +47,7 @@
             <td>{{ image.order }}</td>
             <td>
               <div class="gallery-cell">
-                <img class="gallery-thumb" src="{{ image.image.url }}" alt="">
+                <img loading="lazy" decoding="async" class="gallery-thumb" src="{{ image.image.url }}" alt="">
                 <div>
                   {% if image.title %}<div class="gallery-title-text">{{ image.title }}</div>{% endif %}
                   {% if image.caption %}<div class="gallery-caption-text">{{ image.caption }}</div>{% endif %}

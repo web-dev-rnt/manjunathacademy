@@ -97,7 +97,7 @@
 
     {% if notification.cover_image_display_url %}
       <div class="notif-cover-preview">
-        <img src="{{ notification.cover_image_display_url }}" alt="Current cover image">
+        <img loading="lazy" decoding="async" src="{{ notification.cover_image_display_url }}" alt="Current cover image">
         <span class="banner-preview-label">Current cover image</span>
       </div>
     {% endif %}
@@ -134,7 +134,7 @@
       <div class="notif-gallery-grid">
         {% for photo in notification.gallery_images.all %}
         <div class="notif-gallery-item">
-          <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+          <img loading="lazy" decoding="async" src="{{ photo.image.url }}" alt="{{ photo.caption }}">
           <form method="post" action="{% url 'panel_notification_image_delete' notification.pk photo.pk %}" onsubmit="return confirm('Remove this photo?');">
             {% csrf_token %}
             <button type="submit" aria-label="Remove photo">✕</button>
@@ -148,6 +148,7 @@
       {% csrf_token %}
       <label>Photo
         {{ image_form.image }}
+        <span class="custom-help">{{ image_form.image.help_text }}</span>
       </label>
       <label>Caption (optional)
         {{ image_form.caption }}

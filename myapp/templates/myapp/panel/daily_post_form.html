@@ -86,14 +86,14 @@
       <label><span class="panel-label-text">Thumbnail</span>
         {{ form.thumbnail }}
         <p class="custom-help">{{ form.thumbnail.help_text }}</p>
-        {% if post.thumbnail %}<img class="media-preview" src="{{ post.thumbnail.url }}" alt="Current thumbnail">{% endif %}
+        {% if post.thumbnail %}<img loading="lazy" decoding="async" class="media-preview" src="{{ post.thumbnail.url }}" alt="Current thumbnail">{% endif %}
         {% if form.thumbnail.errors %}<ul class="panel-errors">{% for e in form.thumbnail.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
       </label>
 
       <label><span class="panel-label-text">Main image</span>
         {{ form.image }}
         <p class="custom-help">{{ form.image.help_text }}</p>
-        {% if post.image %}<img class="media-preview" src="{{ post.image.url }}" alt="Current image">{% endif %}
+        {% if post.image %}<img loading="lazy" decoding="async" class="media-preview" src="{{ post.image.url }}" alt="Current image">{% endif %}
         {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
       </label>
     </div>

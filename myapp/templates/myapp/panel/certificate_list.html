@@ -48,7 +48,7 @@
           <tr>
             <td>
               <div class="gallery-cell">
-                {% if certificate.image %}<img class="gallery-thumb" src="{{ certificate.image.url }}" alt="">{% endif %}
+                {% if certificate.image %}<img loading="lazy" decoding="async" class="gallery-thumb" src="{{ certificate.image.url }}" alt="">{% endif %}
                 <div>
                   <div class="gallery-title-text">{{ certificate.recipient_name }}</div>
                   <div class="cert-number">{{ certificate.certificate_number }}</div>

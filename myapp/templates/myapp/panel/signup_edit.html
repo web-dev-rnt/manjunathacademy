@@ -10,6 +10,7 @@
 .signup-edit-preview img{width:54px;height:54px;border-radius:50%;object-fit:cover}.signup-edit-avatar{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--orange);color:#fff;font-weight:900;font-size:20px}
 .signup-edit-preview strong,.signup-edit-preview span{display:block}.signup-edit-preview span{font-size:12.5px;color:var(--muted);margin-top:2px}
 .panel-form-check{display:flex!important;align-items:center;gap:9px;min-height:42px}.panel-form-check input{width:auto!important}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
 {% endblock %}
 
 {% block content %}
@@ -20,13 +21,13 @@
   </div>
 
   <div class="signup-edit-preview">
-    {% if student.profile_picture %}<img src="{{ student.profile_picture.url }}" alt="">{% else %}<span class="signup-edit-avatar">{{ student.name|default:student.email|first|upper }}</span>{% endif %}
+    {% if student.profile_picture %}<img loading="lazy" decoding="async" src="{{ student.profile_picture.url }}" alt="">{% else %}<span class="signup-edit-avatar">{{ student.name|default:student.email|first|upper }}</span>{% endif %}
     <div><strong>{{ student.name|default:"Unnamed student" }}</strong><span>{{ student.email }}</span></div>
   </div>
 
   <form class="panel-form" method="post" enctype="multipart/form-data" novalidate data-loading-text="Uploading profile picture…">
     {% csrf_token %}
-    <label><span class="panel-label-text">Profile picture</span>{{ form.profile_picture }}{% if form.profile_picture.errors %}<ul class="panel-errors">{% for error in form.profile_picture.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
+    <label><span class="panel-label-text">Profile picture</span>{{ form.profile_picture }}<p class="custom-help">{{ form.profile_picture.help_text }}</p>{% if form.profile_picture.errors %}<ul class="panel-errors">{% for error in form.profile_picture.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
     <label><span class="panel-label-text">Name <span class="req">*</span></span>{{ form.name }}{% if form.name.errors %}<ul class="panel-errors">{% for error in form.name.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>
     <div class="panel-form-row">
       <label><span class="panel-label-text">Email <span class="req">*</span></span>{{ form.email }}{% if form.email.errors %}<ul class="panel-errors">{% for error in form.email.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</label>

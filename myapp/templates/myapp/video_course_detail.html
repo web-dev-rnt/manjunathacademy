@@ -45,7 +45,7 @@
   <div class="wrap vc-page-wrap">
     <div class="vc-shell">
       <aside class="vc-sidebar">
-        {% if course.thumbnail %}<img class="vc-cover" src="{{ course.thumbnail.url }}" alt="{{ course.name }}">{% else %}<div class="vc-cover vc-cover-empty">▶</div>{% endif %}
+        {% if course.thumbnail %}<img loading="lazy" decoding="async" class="vc-cover" src="{{ course.thumbnail.url }}" alt="{{ course.name }}">{% else %}<div class="vc-cover vc-cover-empty">▶</div>{% endif %}
         <h1>{{ course.name }}</h1>
         <div class="vc-summary-meta">
           <span class="vc-count">▣ {{ course.published_video_count }} Video{{ course.published_video_count|pluralize }}</span>
@@ -80,7 +80,7 @@
               <div class="vc-folder-body">
                 {% for video in root_content %}
                 <button type="button" class="vc-video-row" data-src="{{ video.video_file.url }}" data-title="{{ video.title }}" data-search-text="{{ video.title|lower }}">
-                  {% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}
+                  {% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}
                   <span class="vc-video-info"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vc-video-play" aria-hidden="true">▶</span>
                 </button>
                 {% endfor %}
@@ -94,7 +94,7 @@
               <div class="vc-folder-body">
                 {% for video in visible_content %}
                 <button type="button" class="vc-video-row" data-src="{{ video.video_file.url }}" data-title="{{ video.title }}" data-search-text="{{ video.title|lower }}">
-                  {% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}
+                  {% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}
                   <span class="vc-video-info"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vc-video-play" aria-hidden="true">▶</span>
                 </button>
                 {% endfor %}
@@ -103,7 +103,7 @@
           {% elif course.video_file %}
             <details class="vc-folder" data-folder-name="course videos" open>
               <summary><span class="vc-folder-icon">▻</span><span class="vc-folder-heading"><strong>Course Videos</strong><small>1 video</small></span><span class="vc-folder-arrow" aria-hidden="true"></span></summary>
-              <div class="vc-folder-body"><button type="button" class="vc-video-row" data-src="{{ course.video_file.url }}" data-title="{{ course.name }}" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}<span class="vc-video-info"><strong>{{ course.name }}</strong><small>▣ {% if course.duration_minutes %}{{ course.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vc-video-play">▶</span></button></div>
+              <div class="vc-folder-body"><button type="button" class="vc-video-row" data-src="{{ course.video_file.url }}" data-title="{{ course.name }}" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vc-video-placeholder">▶</span>{% endif %}<span class="vc-video-info"><strong>{{ course.name }}</strong><small>▣ {% if course.duration_minutes %}{{ course.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vc-video-play">▶</span></button></div>
             </details>
           {% else %}<p class="vc-empty">Videos for this course haven't been uploaded yet.</p>{% endif %}
         </div>

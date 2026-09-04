@@ -60,7 +60,7 @@
         <p class="notif-article-meta">Posted {{ notification.created_at|date:"d M Y" }}</p>
 
         {% if notification.cover_image_display_url %}
-          <img class="notif-article-cover" src="{{ notification.cover_image_display_url }}" alt="{{ notification.display_title }}">
+          <img loading="lazy" decoding="async" class="notif-article-cover" src="{{ notification.cover_image_display_url }}" alt="{{ notification.display_title }}">
         {% endif %}
 
         {% if notification.detail %}<p class="notif-article-lead">{{ notification.detail }}</p>{% endif %}

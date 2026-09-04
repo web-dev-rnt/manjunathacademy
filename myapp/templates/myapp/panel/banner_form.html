@@ -94,7 +94,7 @@
 
     {% if slide.display_image_url %}
       <div class="banner-preview">
-        <img src="{{ slide.display_image_url }}" alt="Current slide image">
+        <img loading="lazy" decoding="async" src="{{ slide.display_image_url }}" alt="Current slide image">
         <span class="banner-preview-label">Current image</span>
       </div>
     {% endif %}

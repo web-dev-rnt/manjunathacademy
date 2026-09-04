@@ -1,7 +1,10 @@
 import io
+import os
 
 from django.core.files.base import ContentFile
 from PIL import Image
+
+from .dropbox_storage import CONVERTIBLE_EXTENSIONS
 
 MAX_DIMENSION = 1600
 JPEG_QUALITY = 82
@@ -12,9 +15,14 @@ def optimize_image_field(field_file, max_dimension=MAX_DIMENSION, quality=JPEG_Q
 
     No-ops for empty fields or files that are already committed to storage
     (i.e. unchanged existing images), so editing unrelated fields never
-    re-compresses an image that was already optimized.
+    re-compresses an image that was already optimized. Also no-ops for
+    extensions DropboxStorage re-encodes to WebP itself (jpg/png/etc.) —
+    doing a resize+recompress pass here first would just double the lossy
+    compression (and the upload CPU time) for no size/quality benefit.
     """
     if not field_file or getattr(field_file, '_committed', True):
+        return
+    if os.path.splitext(field_file.name)[1].lower() in CONVERTIBLE_EXTENSIONS:
         return
     try:
         field_file.seek(0)

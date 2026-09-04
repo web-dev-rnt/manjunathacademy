@@ -1,0 +1,127 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Bulk upload questions — {{ course.name }}{% endblock %}
+{% block page_title %}Bulk upload questions{% endblock %}
+{% block page_sub %}{{ course.name }}{% endblock %}
+{% block nav_test_series %}is-active{% endblock %}
+
+{% block extra_style %}
+.bulk-upload-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
+.bulk-upload-form input[type="file"]{display:block;margin-top:8px;font-size:13.5px}
+.bulk-upload-form select{display:block;width:100%;margin-top:8px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff}
+.bulk-upload-form select:focus{outline:2px solid var(--orange);outline-offset:1px}
+.bulk-results{margin-top:18px;padding:16px 18px;border-radius:12px;background:#F0FDF4;border:1px solid #BBF7D0}
+.bulk-results h4{margin:0 0 8px;font-size:14px;color:#166534}
+.bulk-results ul{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
+.bulk-results .bulk-warnings{color:#92400E}
+.bulk-results .bulk-errors{color:#B91C1C}
+.format-guide{margin-top:28px}
+.format-guide h3{margin:0 0 4px;font-size:16px}
+.format-guide p{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+table.format-table{width:100%;border-collapse:collapse;font-size:13px}
+table.format-table th,table.format-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.format-table th{background:var(--surface-2);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+table.format-table code{background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:12.5px}
+.type-guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:16px}
+.type-guide-card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff}
+.type-guide-card h5{margin:0 0 6px;font-size:13.5px;color:var(--ink)}
+.type-guide-card p{margin:0 0 8px;font-size:12.5px;color:var(--muted)}
+.type-guide-card code{display:block;background:var(--surface-2);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Bulk upload questions</h2>
+      <p>{{ course.name }}</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_question_list' course.pk %}">← Back to questions</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form class="bulk-upload-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label style="flex:1;min-width:240px">
+      <span class="panel-label-text">CSV file</span>
+      <input type="file" name="file" accept=".csv,text/csv" required>
+    </label>
+    <label style="min-width:220px">
+      <span class="panel-label-text">Upload into section</span>
+      <select name="target_section">
+        <option value="">Use the CSV's "section" column</option>
+        <option value="unassigned">General / unassigned (ignore CSV)</option>
+        {% for s in sections %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="btn btn-primary">Upload questions</button>
+    <a class="btn btn-ghost" href="{% url 'panel_question_bulk_template' course.pk %}">⬇ Download sample CSV</a>
+  </form>
+  <p class="custom-help" style="margin-top:10px">Pick a section here to put every question in this file into that one section — this overrides the CSV's own <code>section</code> column. Leave it on the first option to use whatever each row's <code>section</code> column says.</p>
+
+  {% if results %}
+  <div class="bulk-results">
+    <h4>{{ results.created }} question{{ results.created|pluralize }} imported</h4>
+    {% if results.warnings %}
+      <ul class="bulk-warnings">{% for w in results.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if results.errors %}
+      <ul class="bulk-errors">{% for e in results.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="format-guide">
+    <h3>File format</h3>
+    <p>Save your questions as a CSV file with a header row using these column names (any order). Only <code>text</code> is required — everything else has a sensible default. {% if sections %}Sections created for this test: {% for s in sections %}<code>{{ s.name }}</code>{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p>
+
+    <div class="panel-table-wrap">
+      <table class="format-table">
+        <thead>
+          <tr><th>Column</th><th>Required</th><th>What to put</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>question_type</code></td><td>No — defaults to Single</td><td>One of: <code>single</code>, <code>multiple</code>, <code>numeric</code>, <code>true_false</code>, <code>fill_blank</code></td></tr>
+          <tr><td><code>text</code></td><td>Yes</td><td>The full question text</td></tr>
+          <tr><td><code>option_a</code> … <code>option_d</code></td><td>For single/multiple only</td><td>The four answer choices</td></tr>
+          <tr><td><code>correct_answer</code></td><td>No, but recommended</td><td>Format depends on the question type — see below</td></tr>
+          <tr><td><code>marks</code></td><td>No — defaults to 1</td><td>Whole number of marks for the question</td></tr>
+          <tr><td><code>section</code></td><td>No — defaults to unassigned</td><td>Must exactly match an existing section name for this test</td></tr>
+          <tr><td><code>order</code></td><td>No — auto-numbered</td><td>Whole number controlling display order</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="type-guide-grid">
+      <div class="type-guide-card">
+        <h5>Single Correct Answer</h5>
+        <p>Fill options A–D. <code>correct_answer</code> is one letter.</p>
+        <code>single, What is 2+2?, 3, 4, 5, 6, B</code>
+      </div>
+      <div class="type-guide-card">
+        <h5>Multiple Correct Answers</h5>
+        <p>Fill options A–D. <code>correct_answer</code> is comma-separated letters.</p>
+        <code>multiple, Which are prime?, 2, 3, 4, 9, "A,B"</code>
+      </div>
+      <div class="type-guide-card">
+        <h5>True / False</h5>
+        <p>Leave options blank. <code>correct_answer</code> is True or False.</p>
+        <code>true_false, The sun rises in the east., , , , , True</code>
+      </div>
+      <div class="type-guide-card">
+        <h5>Numeric Answer</h5>
+        <p>Leave options blank. <code>correct_answer</code> is the exact number.</p>
+        <code>numeric, What is 12 x 12?, , , , , 144</code>
+      </div>
+      <div class="type-guide-card">
+        <h5>Fill in the Blank</h5>
+        <p>Leave options blank. <code>correct_answer</code> is the exact expected text.</p>
+        <code>fill_blank, The largest planet is ____., , , , , Jupiter</code>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

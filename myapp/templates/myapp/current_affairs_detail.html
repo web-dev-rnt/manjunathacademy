@@ -40,7 +40,7 @@
       <button type="button" class="ca-detail-share" id="caDetailShare" data-share-title="{{ post.title }}"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4m-6.8 7 6.8 4"/></svg>Share</button>
     </div>
     <h1 class="ca-detail-title" data-ca-id="{{ post.pk }}" data-ca-field="title">{{ post.title }}</h1>
-    {% if post.image %}<img class="ca-detail-img" src="{{ post.image.url }}" alt="{{ post.title }}">{% elif post.thumbnail %}<img class="ca-detail-img" src="{{ post.thumbnail.url }}" alt="{{ post.title }}">{% endif %}
+    {% if post.image %}<img loading="lazy" decoding="async" class="ca-detail-img" src="{{ post.image.url }}" alt="{{ post.title }}">{% elif post.thumbnail %}<img loading="lazy" decoding="async" class="ca-detail-img" src="{{ post.thumbnail.url }}" alt="{{ post.title }}">{% endif %}
     {% if post.youtube_embed_url %}<iframe class="ca-detail-video" src="{{ post.youtube_embed_url }}" title="{{ post.title }} video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>{% endif %}
     {% if post.video_url %}{% if post.video_url_is_direct_file %}<video class="ca-detail-video" controls preload="metadata"{% if post.display_thumbnail %} poster="{{ post.display_thumbnail.url }}"{% endif %}><source src="{{ post.video_url }}">Your browser does not support this video.</video>{% else %}<a class="ca-detail-video-link" href="{{ post.video_url }}" target="_blank" rel="noopener">▶ Open related video</a>{% endif %}{% endif %}
     {% if post.table_rows.all %}

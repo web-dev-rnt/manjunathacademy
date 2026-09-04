@@ -42,7 +42,7 @@
 
     {% if brand.logo %}
       <div class="brand-preview">
-        <img src="{{ brand.logo.url }}" alt="Current logo">
+        <img loading="lazy" decoding="async" src="{{ brand.logo.url }}" alt="Current logo">
         <span class="banner-preview-label">Current logo</span>
       </div>
     {% endif %}

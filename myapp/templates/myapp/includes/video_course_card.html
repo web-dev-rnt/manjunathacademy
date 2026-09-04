@@ -1,6 +1,6 @@
 <article class="pc-card">
   {% if course.thumbnail %}
-    <img class="pc-thumb" src="{{ course.thumbnail.url }}" alt="">
+    <img loading="lazy" decoding="async" class="pc-thumb" src="{{ course.thumbnail.url }}" alt="">
   {% else %}
     <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span></div>
   {% endif %}

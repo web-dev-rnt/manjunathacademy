@@ -1,0 +1,117 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Exam categories{% endblock %}
+{% block page_title %}Exam categories{% endblock %}
+{% block page_sub %}Test Series exam hierarchy — Exam → Sub-exam → Subject → Topic{% endblock %}
+
+{% block extra_style %}
+.taxonomy-tree{display:flex;flex-direction:column;gap:10px}
+.taxonomy-node{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.taxonomy-node-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;flex-wrap:wrap}
+.taxonomy-node-row.level-0{background:#FFF7ED}
+.taxonomy-node-row.level-1{background:#F8FAFC}
+.taxonomy-node-row.level-2{background:#fff}
+.taxonomy-node-row.level-3{background:#F8FAFC}
+.taxonomy-node-name{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--ink)}
+.taxonomy-node-name .category-logo{width:34px;height:34px}
+.taxonomy-node-level{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:var(--surface-2);padding:3px 8px;border-radius:6px;margin-right:2px}
+.taxonomy-node-actions{display:flex;gap:8px;flex-wrap:wrap}
+.taxonomy-children{padding:0 16px 14px 32px;display:flex;flex-direction:column;gap:8px}
+.taxonomy-grandchildren{padding:0 0 6px 32px;display:flex;flex-direction:column;gap:8px}
+.taxonomy-greatgrandchildren{padding:0 0 6px 32px;display:flex;flex-direction:column;gap:6px}
+.btn-sm{padding:7px 12px;font-size:12.5px;white-space:nowrap}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Exam categories</h2>
+      <p>Organize Test Series into an Exam → Sub-exam → Subject → Topic tree, e.g. CUET → CUET UG → CUET UG Mathematics → Algebra. Shown on the homepage and inside every test series as a breadcrumb and sidebar.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_test_series_category_add' %}">+ Add exam (Level 0)</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if roots %}
+    <div class="taxonomy-tree">
+      {% for root in roots %}
+      <div class="taxonomy-node">
+        <div class="taxonomy-node-row level-0">
+          <span class="taxonomy-node-name"><span class="taxonomy-node-level">Exam</span>{% include "myapp/includes/category_logo.html" with icon_key=root.logo_key %}{{ root.name }}</span>
+          <div class="taxonomy-node-actions">
+            <a class="btn btn-ghost btn-sm" href="{% url 'panel_test_series_category_add' %}?parent={{ root.pk }}">+ Add sub-exam</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'panel_test_series_category_edit' root.pk %}">Edit</a>
+            <form method="post" action="{% url 'panel_test_series_category_delete' root.pk %}" onsubmit="return confirm('Delete this exam? All sub-exams and subjects under it will also be deleted.');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </div>
+        </div>
+        {% if root.children.all %}
+        <div class="taxonomy-children">
+          {% for child in root.children.all %}
+          <div class="taxonomy-node">
+            <div class="taxonomy-node-row level-1">
+              <span class="taxonomy-node-name"><span class="taxonomy-node-level">Sub-exam</span>{% include "myapp/includes/category_logo.html" with icon_key=child.logo_key %}{{ child.name }}</span>
+              <div class="taxonomy-node-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_test_series_category_add' %}?parent={{ child.pk }}">+ Add subject</a>
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_test_series_category_edit' child.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_test_series_category_delete' child.pk %}" onsubmit="return confirm('Delete this sub-exam? All subjects under it will also be deleted.');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </div>
+            {% if child.children.all %}
+            <div class="taxonomy-grandchildren">
+              {% for grandchild in child.children.all %}
+              <div class="taxonomy-node">
+                <div class="taxonomy-node-row level-2">
+                  <span class="taxonomy-node-name"><span class="taxonomy-node-level">Subject</span>{% include "myapp/includes/category_logo.html" with icon_key=grandchild.logo_key %}{{ grandchild.name }}</span>
+                  <div class="taxonomy-node-actions">
+                    <a class="btn btn-ghost btn-sm" href="{% url 'panel_test_series_category_add' %}?parent={{ grandchild.pk }}">+ Add topic</a>
+                    <a class="btn btn-ghost btn-sm" href="{% url 'panel_test_series_category_edit' grandchild.pk %}">Edit</a>
+                    <form method="post" action="{% url 'panel_test_series_category_delete' grandchild.pk %}" onsubmit="return confirm('Delete this subject? All topics under it will also be deleted.');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                  </div>
+                </div>
+                {% if grandchild.children.all %}
+                <div class="taxonomy-greatgrandchildren">
+                  {% for topic in grandchild.children.all %}
+                  <div class="taxonomy-node-row level-3">
+                    <span class="taxonomy-node-name"><span class="taxonomy-node-level">Topic</span>{% include "myapp/includes/category_logo.html" with icon_key=topic.logo_key %}{{ topic.name }}</span>
+                    <div class="taxonomy-node-actions">
+                      <a class="btn btn-ghost btn-sm" href="{% url 'panel_test_series_category_edit' topic.pk %}">Edit</a>
+                      <form method="post" action="{% url 'panel_test_series_category_delete' topic.pk %}" onsubmit="return confirm('Delete this topic?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                      </form>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🏷️</span>No exam categories yet — add your first exam to get started.</p>
+  {% endif %}
+</div>
+{% endblock %}

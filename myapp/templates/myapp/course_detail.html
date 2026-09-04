@@ -88,7 +88,7 @@
 <section class="course-detail-section">
   <div class="wrap course-detail-wrap">
     <div class="course-detail-card">
-      {% if course.thumbnail %}<img class="course-detail-thumb" src="{{ course.thumbnail.url }}" alt="">{% endif %}
+      {% if course.thumbnail %}<img loading="lazy" decoding="async" class="course-detail-thumb" src="{{ course.thumbnail.url }}" alt="">{% endif %}
 
       {% if enrollment.has_access %}
         <div class="course-access-banner course-access-ok">

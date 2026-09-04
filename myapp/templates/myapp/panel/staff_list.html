@@ -50,7 +50,7 @@
           <tr>
             <td>
               <div class="gallery-cell">
-                {% if member.photo %}<img class="gallery-thumb" src="{{ member.photo.url }}" alt="">{% else %}<span class="panel-row-avatar" style="background:var(--orange)">{{ member.name|first|upper }}</span>{% endif %}
+                {% if member.photo %}<img loading="lazy" decoding="async" class="gallery-thumb" src="{{ member.photo.url }}" alt="">{% else %}<span class="panel-row-avatar" style="background:var(--orange)">{{ member.name|first|upper }}</span>{% endif %}
                 <div class="gallery-title-text">{{ member.name }}</div>
               </div>
             </td>

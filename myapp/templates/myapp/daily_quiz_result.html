@@ -1,0 +1,120 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Quiz Result — {{ attempt.course.name }} — Manjunath Academy{% endblock %}
+
+{% block extra_style %}
+.qr-page{padding:32px 0 70px;background:var(--surface-2);min-height:70vh}
+.qr-wrap{max-width:1000px}
+.qr-crumb{font-size:12.5px;color:var(--muted);margin:0 0 18px}
+.qr-crumb a{color:var(--muted)}
+.qr-crumb a:hover{color:var(--orange-deep)}
+.qr-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:start}
+.qr-panel{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:26px 28px;box-shadow:var(--shadow-sm)}
+.qr-panel h1{font-size:19px;margin:0 0 4px;color:var(--orange-deep)}
+.qr-panel h2{font-size:17px;margin:0 0 16px;color:var(--orange-deep)}
+.qr-panel-sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.qr-trophy{width:96px;height:96px;margin:0 auto 20px;border-radius:50%;background:#FEE2E2;display:grid;place-items:center;font-size:42px}
+.qr-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;margin-bottom:8px}
+.qr-stats + .qr-stats{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+.qr-stat strong{display:block;font-size:20px;color:var(--ink)}
+.qr-stat strong small{font-size:12px;font-weight:600;color:var(--muted)}
+.qr-stat span{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;margin-top:4px}
+.qr-leader-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.qr-leader-row:last-child{border-bottom:0}
+.qr-leader-row.is-me strong{color:var(--orange-deep)}
+.qr-leader-name{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
+.qr-leader-score{font-size:12.5px;color:var(--muted)}
+.qr-leader-empty{color:var(--muted);font-size:13px}
+.qr-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:22px 0 0}
+.qr-solutions{margin-top:18px}
+.qr-solutions-toggle{
+  display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 20px;
+  border:1px solid var(--line);border-radius:14px;background:var(--white);font-weight:800;font-size:14.5px;
+  color:var(--ink);cursor:pointer;box-shadow:var(--shadow-sm);
+}
+.qr-solutions-toggle .chev{transition:transform .2s ease}
+.qr-solutions-toggle.is-open .chev{transform:rotate(180deg)}
+.qr-solutions-body{display:none;margin-top:12px}
+.qr-solutions-body.is-open{display:block}
+.qr-review-card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:10px;border-left:4px solid #DC2626}
+.qr-review-card.correct{border-left-color:#16A34A}
+.qr-review-card h3{font-size:13.5px;margin:0 0 8px}
+.qr-review-card p{font-size:12.5px;color:var(--text-secondary);margin:3px 0}
+@media (max-width:820px){.qr-grid{grid-template-columns:1fr}}
+@media (max-width:640px){.qr-panel{padding:20px}.qr-stats{grid-template-columns:1fr 1fr 1fr;gap:6px}}
+{% endblock %}
+
+{% block content %}
+<section class="qr-page">
+  <div class="wrap qr-wrap">
+    <p class="qr-crumb"><a href="{% url 'index' %}">Home</a> &gt; <a href="{% url 'account_results' %}">My Results</a> &gt; <a href="{% url 'test_series_detail' attempt.course.pk %}">{{ attempt.course.name }}</a> &gt; Quiz Result</p>
+
+    <div class="qr-grid">
+      <div class="qr-panel" style="text-align:center">
+        <h1>
+          {% if percentage >= 80 %}Excellent attempt, {{ user.name }}!
+          {% elif percentage >= 50 %}Good attempt, {{ user.name }}
+          {% else %}Keep going, {{ user.name }}
+          {% endif %}
+        </h1>
+        <p class="qr-panel-sub">Keep practicing, take more quizzes, and keep improving</p>
+        <div class="qr-trophy">🏆</div>
+        <div class="qr-stats">
+          <div class="qr-stat"><strong>{{ attempt.score }} <small>/ {{ attempt.total }}</small></strong><span>Score</span></div>
+          <div class="qr-stat"><strong>{{ rank }} <small>/ {{ participant_count }}</small></strong><span>Rank</span></div>
+          <div class="qr-stat"><strong>{{ time_label }}</strong><span>Time</span></div>
+        </div>
+        <div class="qr-stats">
+          <div class="qr-stat"><strong>{{ attempted_count }} <small>/ {{ total_questions }}</small></strong><span>Attempted</span></div>
+          <div class="qr-stat"><strong>{{ correct_count }} <small>/ {{ total_questions }}</small></strong><span>Correct</span></div>
+          <div class="qr-stat"><strong>{{ incorrect_count }} <small>/ {{ total_questions }}</small></strong><span>Incorrect</span></div>
+        </div>
+        <div class="qr-actions">
+          <a class="btn btn-primary" href="{% url 'daily_quiz_take' attempt.course.pk %}">Try Another Quiz</a>
+          <a class="btn btn-ghost" href="{% url 'test_series_detail' attempt.course.pk %}">Back to Test Series</a>
+        </div>
+      </div>
+
+      <div class="qr-panel">
+        <h2>See how others scored in this quiz</h2>
+        {% if leaderboard %}
+          {% for item in leaderboard %}
+          <div class="qr-leader-row{% if item.user_id == attempt.user_id %} is-me{% endif %}">
+            <span class="qr-leader-name">{% if forloop.first %}🏆{% endif %}{{ item.user.name }}</span>
+            <span class="qr-leader-score">Score: {{ item.score }}/{{ item.total }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="qr-leader-empty">No attempts recorded yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="qr-solutions">
+      <button class="qr-solutions-toggle" id="qrSolutionsToggle" type="button">Solutions <span class="chev">⌄</span></button>
+      <div class="qr-solutions-body" id="qrSolutionsBody">
+        {% for answer in attempt.answer_details %}
+        <article class="qr-review-card {% if answer.is_correct %}correct{% endif %}">
+          <h3>Q{{ forloop.counter }}. {{ answer.question_text }}</h3>
+          <p>Your answer: {{ answer.submitted_answer|default:"Not answered" }}</p>
+          <p>Correct answer: {{ answer.correct_answer }}</p>
+          <p>{% if answer.is_correct %}Correct · +{{ answer.marks_awarded }}{% else %}Incorrect{% endif %}</p>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var toggle = document.getElementById('qrSolutionsToggle');
+  var body = document.getElementById('qrSolutionsBody');
+  if (!toggle || !body) return;
+  toggle.addEventListener('click', function () {
+    var open = body.classList.toggle('is-open');
+    toggle.classList.toggle('is-open', open);
+  });
+})();
+{% endblock %}

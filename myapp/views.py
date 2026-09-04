@@ -4,6 +4,7 @@ import json
 import random
 import secrets
 import uuid
+from datetime import datetime
 
 from django.core import signing
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -12,9 +13,11 @@ from django.contrib.auth.views import LoginView
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Count, F, Q, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -49,6 +52,7 @@ from .forms import (
     EligibilityCriteriaForm,
     EmailAuthenticationForm,
     ExamCalendarEventForm,
+    ExamInstructionsSettingsForm,
     ExamTickerItemFormSet,
     ExamTickerSettingsForm,
     ExtraPageForm,
@@ -110,6 +114,7 @@ from .models import (
     EligibilityCriteria,
     EligibilitySubmission,
     ExamCalendarEvent,
+    ExamInstructionsSettings,
     ExamTickerItem,
     ExamTickerSettings,
     ExtraPage,
@@ -160,8 +165,12 @@ from .signals import detect_device
 def index(request):
     banner_slides = BannerSlide.objects.filter(is_active=True)
 
-    test_series_courses = Course.objects.filter(course_type=Course.TEST_SERIES, is_active=True)
-    test_series_categories = Category.objects.filter(courses__in=test_series_courses).distinct()
+    test_series_courses = Course.objects.filter(
+        course_type=Course.TEST_SERIES, is_active=True,
+    ).select_related('category').prefetch_related(
+        'categories', 'categories__parent', 'categories__parent__parent', 'categories__parent__parent__parent',
+    )
+    test_series_category_tree = _category_tree()
     video_courses = Course.objects.filter(
         course_type=Course.VIDEO_COURSE, is_active=True,
     ).prefetch_related('videos')[:4]
@@ -182,7 +191,8 @@ def index(request):
     return render(request, 'myapp/index.html', {
         'banner_slides': banner_slides,
         'test_series_courses': test_series_courses,
-        'test_series_categories': test_series_categories,
+        'test_series_category_tree': test_series_category_tree,
+        'test_series_category_tree_json': json.dumps(test_series_category_tree),
         'video_courses': video_courses,
         'elibrary_items': elibrary_items,
         'bundles': bundles,
@@ -375,7 +385,7 @@ def admission_register(request):
 
 def signup(request):
     if request.user.is_authenticated:
-        return redirect('index')
+        return redirect(_safe_next(request, 'index'))
 
     if request.method == 'POST':
         form = SignupForm(request.POST)
@@ -399,7 +409,7 @@ def signup(request):
                     )
             auth_login(request, user)
             messages.success(request, f'Welcome, {user.name}! Your account has been created and you are now logged in')
-            return redirect('index')
+            return redirect(_safe_next(request, 'index'))
     else:
         initial = {}
         ref_param = request.GET.get('ref', '').strip().upper()
@@ -407,7 +417,7 @@ def signup(request):
             initial['referral_code'] = ref_param
         form = SignupForm(initial=initial)
 
-    return render(request, 'myapp/signup.html', {'form': form})
+    return render(request, 'myapp/signup.html', {'form': form, 'next': request.GET.get('next', '')})
 
 
 class CustomLoginView(LoginView):
@@ -420,23 +430,25 @@ class CustomLoginView(LoginView):
         messages.success(self.request, f'Welcome back, {self.request.user.name}! You are now logged in')
         return response
 
-    def get_success_url(self):
+    def get_default_redirect_url(self):
         return reverse('index')
 
 
 def _sso_post_login_redirect(request, user):
     messages.success(request, f'Welcome, {user.name}! You are now logged in')
-    return redirect('index')
+    next_url = request.session.pop('sso_next', '') or 'index'
+    return redirect(next_url)
 
 
 def sso_start(request, provider):
     if request.user.is_authenticated:
-        return redirect('index')
+        return redirect(_safe_next(request, 'index'))
 
     settings_obj = SSOSettings.load()
     redirect_uri = request.build_absolute_uri(reverse('sso_callback', args=[provider]))
     state = uuid.uuid4().hex
     request.session['sso_state'] = state
+    request.session['sso_next'] = _safe_next(request, '')
 
     if provider == 'google' and settings_obj.google_active:
         return redirect(sso_utils.google_auth_url(settings_obj, redirect_uri, state))
@@ -761,6 +773,7 @@ def classroom_test_start(request, pk):
         'existing_attempt': existing_attempt,
         'section_rows': section_rows,
         'optional_section_rows': [row for row in section_rows if row['section'].is_optional],
+        'instructions_settings': ExamInstructionsSettings.load(),
         'hide_site_chrome': True,
     })
 
@@ -821,26 +834,41 @@ def _build_course_content_tree(course, public_only=True):
     return tree, items_by_folder.get(None, []), visible_items
 
 
-@login_required(login_url='login')
+def _course_preview_content(course):
+    preview_tree = []
+    preview_root_content = []
+    if course.course_type == Course.VIDEO_COURSE:
+        preview_content = list(course.published_videos)
+    elif course.course_type == Course.ELIBRARY:
+        preview_content = list(course.published_documents)
+    else:
+        preview_content = []
+    if course.enable_folders and course.course_type in (Course.VIDEO_COURSE, Course.ELIBRARY):
+        preview_tree, preview_root_content, preview_content = _build_course_content_tree(course)
+    return preview_tree, preview_root_content, preview_content
+
+
 def course_detail(request, pk):
     course = get_object_or_404(
         Course.objects.prefetch_related('videos', 'documents', 'content_folders'),
         pk=pk,
         is_active=True,
     )
+
+    if not request.user.is_authenticated:
+        preview_tree, preview_root_content, preview_content = _course_preview_content(course)
+        return render(request, 'myapp/course_checkout.html', {
+            'course': course,
+            'content_tree': preview_tree,
+            'root_content': preview_root_content,
+            'visible_content': preview_content,
+            'requires_login': True,
+        })
+
     enrollment = _get_or_create_free_enrollment(request.user, course)
 
     if not enrollment or not enrollment.is_paid:
-        preview_tree = []
-        preview_root_content = []
-        if course.course_type == Course.VIDEO_COURSE:
-            preview_content = list(course.published_videos)
-        elif course.course_type == Course.ELIBRARY:
-            preview_content = list(course.published_documents)
-        else:
-            preview_content = []
-        if course.enable_folders and course.course_type in (Course.VIDEO_COURSE, Course.ELIBRARY):
-            preview_tree, preview_root_content, preview_content = _build_course_content_tree(course)
+        preview_tree, preview_root_content, preview_content = _course_preview_content(course)
         return render(request, 'myapp/course_checkout.html', {
             'course': course,
             'content_tree': preview_tree,
@@ -897,15 +925,98 @@ def _grade_answer(question, submitted):
     return normalized_submitted == normalized_correct
 
 
-@login_required(login_url='login')
 def test_series_detail(request, pk):
+    course = get_object_or_404(
+        Course.objects.select_related(
+            'category', 'category__parent', 'category__parent__parent', 'category__parent__parent__parent',
+        ).prefetch_related(
+            'categories', 'categories__parent', 'categories__parent__parent', 'categories__parent__parent__parent',
+        ),
+        pk=pk, course_type=Course.TEST_SERIES, is_active=True,
+    )
+    if request.user.is_authenticated:
+        enrollment = _get_or_create_free_enrollment(request.user, course)
+    else:
+        enrollment = None
+    question_count = course.questions.count()
+
+    daily_quiz_available = question_count >= 5
+    daily_quiz_size = 5
+    if daily_quiz_available:
+        avg_marks = (course.questions.aggregate(total=Sum('marks'))['total'] or 0) / question_count
+        daily_quiz_total_marks = round(avg_marks * daily_quiz_size)
+    else:
+        daily_quiz_total_marks = 0
+    daily_quiz_minutes = max(5, daily_quiz_size * 2) if daily_quiz_available else 0
+
+    # Sibling tests grouped into a Mock Tests / Topic wise / Previous Year Papers sidebar.
+    sibling_tests = (
+        Course.objects.filter(course_type=Course.TEST_SERIES, is_active=True)
+        .exclude(test_type='daily_quiz')
+        .select_related('category')
+        .prefetch_related('categories')
+        .annotate(q_count=Count('questions', distinct=True), total_marks=Sum('questions__marks'))
+    )
+    paid_course_ids = set(
+        CourseEnrollment.objects.filter(user=request.user, is_paid=True).values_list('course_id', flat=True)
+    ) if request.user.is_authenticated else set()
+
+    test_type_order = ['mock_test', 'sectional_test', 'previous_year_paper', 'practice_test', 'sample_papers']
+    test_type_labels = {
+        'mock_test': 'Mock Tests',
+        'sectional_test': 'Topic Wise',
+        'previous_year_paper': 'Previous Year Papers',
+        'practice_test': 'Practice Tests',
+        'sample_papers': 'Sample Papers',
+    }
+    sections = []
+    for tt in test_type_order:
+        tests = [c for c in sibling_tests if c.test_type == tt]
+        if not tests:
+            continue
+        groups = {}
+        for c in tests:
+            for cat in c.effective_categories or [None]:
+                key = cat.name if cat else 'General'
+                groups.setdefault(key, []).append(c)
+        sections.append({
+            'key': tt,
+            'label': test_type_labels[tt],
+            'groups': [{'name': name, 'tests': group_tests} for name, group_tests in groups.items()],
+            'count': len(tests),
+            'free_count': sum(1 for c in tests if c.is_free),
+        })
+    untyped = [c for c in sibling_tests if not c.test_type]
+    if untyped:
+        sections.append({
+            'key': 'other', 'label': 'Other Tests',
+            'groups': [{'name': 'General', 'tests': untyped}],
+            'count': len(untyped),
+            'free_count': sum(1 for c in untyped if c.is_free),
+        })
+
+    return render(request, 'myapp/test_series_detail.html', {
+        'course': course, 'enrollment': enrollment,
+        'daily_quiz_available': daily_quiz_available,
+        'daily_quiz_size': daily_quiz_size,
+        'daily_quiz_total_marks': daily_quiz_total_marks,
+        'daily_quiz_minutes': daily_quiz_minutes,
+        'sections': sections,
+        'paid_course_ids': paid_course_ids,
+    })
+
+
+@login_required(login_url='login')
+def daily_quiz_take(request, pk):
     course = get_object_or_404(Course, pk=pk, course_type=Course.TEST_SERIES, is_active=True)
-    enrollment = _get_or_create_free_enrollment(request.user, course)
     all_questions = list(course.questions.all())
-    quiz_result = None
+    if len(all_questions) < 5:
+        messages.info(request, 'Add at least five questions to this test to unlock the practice quiz.')
+        return redirect('test_series_detail', pk=course.pk)
+
     quiz_error = None
 
-    if request.method == 'POST' and request.POST.get('action') == 'daily_quiz':
+    if request.method == 'POST':
         try:
             quiz_payload = signing.loads(
                 request.POST.get('quiz_token', ''),
@@ -925,7 +1036,7 @@ def test_series_detail(request, pk):
         valid_quiz = valid_quiz and len(question_map) == 5
 
         if not valid_quiz:
-            quiz_error = 'This quiz set is invalid or expired. A fresh five-question quiz is ready below.'
+            quiz_error = 'This quiz set expired. Please answer the fresh set below and submit again.'
         else:
             quiz_questions = [question_map[question_id] for question_id in expected_ids]
             score = 0
@@ -948,75 +1059,75 @@ def test_series_detail(request, pk):
                     'marks': question.marks,
                     'marks_awarded': marks_awarded,
                 })
-            DailyQuizAttempt.objects.create(
+            issued_at = quiz_payload.get('issued_at')
+            duration_seconds = 0
+            if issued_at:
+                try:
+                    elapsed = (timezone.now() - datetime.fromisoformat(issued_at)).total_seconds()
+                    duration_seconds = max(0, round(elapsed))
+                except ValueError:
+                    duration_seconds = 0
+            attempt = DailyQuizAttempt.objects.create(
                 user=request.user,
                 course=course,
                 score=score,
                 total=total,
                 answer_details=answer_details,
+                duration_seconds=duration_seconds,
             )
-            quiz_result = {'score': score, 'total': total}
+            return redirect('daily_quiz_result', pk=attempt.pk)
 
-    daily_quiz_questions = random.sample(all_questions, 5) if len(all_questions) >= 5 else []
-    daily_quiz_total_marks = sum(question.marks for question in daily_quiz_questions)
-    daily_quiz_minutes = max(5, len(daily_quiz_questions) * 2) if daily_quiz_questions else 0
-    daily_quiz_token = signing.dumps({
+    quiz_questions = random.sample(all_questions, 5)
+    quiz_token = signing.dumps({
         'course': course.pk,
-        'questions': [question.pk for question in daily_quiz_questions],
-    }, salt='test-series-daily-quiz') if daily_quiz_questions else ''
+        'questions': [question.pk for question in quiz_questions],
+        'issued_at': timezone.now().isoformat(),
+    }, salt='test-series-daily-quiz')
 
-    # Sibling tests grouped into a Mock Tests / Topic wise / Previous Year Papers sidebar.
-    sibling_tests = (
-        Course.objects.filter(course_type=Course.TEST_SERIES, is_active=True)
-        .exclude(test_type='daily_quiz')
-        .select_related('category')
-        .annotate(q_count=Count('questions', distinct=True), total_marks=Sum('questions__marks'))
+    return render(request, 'myapp/daily_quiz_take.html', {
+        'course': course,
+        'quiz_questions': quiz_questions,
+        'quiz_token': quiz_token,
+        'quiz_error': quiz_error,
+        'quiz_total_marks': sum(question.marks for question in quiz_questions),
+        'quiz_minutes': max(5, len(quiz_questions) * 2),
+        'hide_floating_widgets': True,
+    })
+
+
+@login_required(login_url='login')
+def daily_quiz_result(request, pk):
+    attempt = get_object_or_404(DailyQuizAttempt, pk=pk, user=request.user)
+    percentage = round((attempt.score / attempt.total) * 100) if attempt.total else 0
+    total_questions = len(attempt.answer_details)
+    correct_count = sum(1 for answer in attempt.answer_details if answer.get('is_correct'))
+    attempted_count = sum(1 for answer in attempt.answer_details if answer.get('submitted_answer'))
+    minutes, seconds = divmod(attempt.duration_seconds, 60)
+
+    course_attempts = list(DailyQuizAttempt.objects.filter(course=attempt.course).select_related('user'))
+    for item in course_attempts:
+        item.result_percentage = round((item.score / item.total) * 100) if item.total else 0
+    course_attempts.sort(key=lambda item: (-item.result_percentage, -item.score, item.taken_at))
+    best_by_user = {}
+    for item in course_attempts:
+        best_by_user.setdefault(item.user_id, item)
+    ranked_attempts = list(best_by_user.values())
+    rank = next(
+        (position for position, item in enumerate(ranked_attempts, start=1) if item.user_id == attempt.user_id),
+        len(ranked_attempts),
     )
-    paid_course_ids = set(
-        CourseEnrollment.objects.filter(user=request.user, is_paid=True).values_list('course_id', flat=True)
-    )
 
-    test_type_order = ['mock_test', 'sectional_test', 'previous_year_paper', 'practice_test', 'sample_papers']
-    test_type_labels = {
-        'mock_test': 'Mock Tests',
-        'sectional_test': 'Topic Wise',
-        'previous_year_paper': 'Previous Year Papers',
-        'practice_test': 'Practice Tests',
-        'sample_papers': 'Sample Papers',
-    }
-    sections = []
-    for tt in test_type_order:
-        tests = [c for c in sibling_tests if c.test_type == tt]
-        if not tests:
-            continue
-        groups = {}
-        for c in tests:
-            key = c.category.name if c.category else 'General'
-            groups.setdefault(key, []).append(c)
-        sections.append({
-            'key': tt,
-            'label': test_type_labels[tt],
-            'groups': [{'name': name, 'tests': group_tests} for name, group_tests in groups.items()],
-            'count': len(tests),
-            'free_count': sum(1 for c in tests if c.is_free),
-        })
-    untyped = [c for c in sibling_tests if not c.test_type]
-    if untyped:
-        sections.append({
-            'key': 'other', 'label': 'Other Tests',
-            'groups': [{'name': 'General', 'tests': untyped}],
-            'count': len(untyped),
-            'free_count': sum(1 for c in untyped if c.is_free),
-        })
-
-    return render(request, 'myapp/test_series_detail.html', {
-        'course': course, 'enrollment': enrollment,
-        'daily_quiz_questions': daily_quiz_questions, 'quiz_result': quiz_result,
-        'daily_quiz_token': daily_quiz_token, 'quiz_error': quiz_error,
-        'daily_quiz_total_marks': daily_quiz_total_marks,
-        'daily_quiz_minutes': daily_quiz_minutes,
-        'sections': sections,
-        'paid_course_ids': paid_course_ids,
+    return render(request, 'myapp/daily_quiz_result.html', {
+        'attempt': attempt,
+        'percentage': percentage,
+        'correct_count': correct_count,
+        'incorrect_count': total_questions - correct_count,
+        'attempted_count': attempted_count,
+        'total_questions': total_questions,
+        'time_label': f'{minutes:02d}:{seconds:02d}',
+        'rank': rank,
+        'participant_count': len(ranked_attempts),
+        'leaderboard': ranked_attempts[:5],
     })
 
 
@@ -1053,6 +1164,7 @@ def test_attempt_start(request, pk):
         'existing_attempt': existing_attempt,
         'section_rows': section_rows,
         'optional_section_rows': [row for row in section_rows if row['section'].is_optional],
+        'instructions_settings': ExamInstructionsSettings.load(),
         'hide_site_chrome': True,
     })
 
@@ -1110,10 +1222,12 @@ def test_attempt_take(request, pk):
         exam_sections.insert(0, {'section': None, 'name': 'General', 'questions': general_questions})
     if not exam_sections and question_list:
         exam_sections = [{'section': None, 'name': 'Section A', 'questions': question_list}]
+    messages.warning(request, 'Switching tabs or leaving this page will submit your test automatically — stay here until you submit.')
     return render(request, 'myapp/test_attempt_take.html', {
         'attempt': attempt,
         'questions': question_list,
         'exam_sections': exam_sections,
+        'instructions_settings': ExamInstructionsSettings.load(),
         'hide_site_chrome': True,
     })
 
@@ -2570,6 +2684,67 @@ def panel_category_delete(request, pk):
     return redirect('panel_category_list')
 
 
+TAXONOMY_MAX_LEVELS = 4  # Exam, Sub-exam, Subject, Topic
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_test_series_categories(request):
+    roots = Category.objects.filter(parent__isnull=True).prefetch_related('children__children__children').order_by('order', 'name')
+    return render(request, 'myapp/panel/test_series_category_list.html', {'roots': roots, 'course_type': Course.TEST_SERIES, 'test_series_nav': 'categories'})
+
+
+def _taxonomy_parent_or_404(parent_id):
+    if not parent_id:
+        return None
+    parent = get_object_or_404(Category, pk=parent_id)
+    if len(parent.get_ancestors()) >= TAXONOMY_MAX_LEVELS - 1:
+        raise Http404(f'Exam categories only support {TAXONOMY_MAX_LEVELS} levels.')
+    return parent
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_test_series_category_add(request):
+    parent = _taxonomy_parent_or_404(request.GET.get('parent') or request.POST.get('parent'))
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            category = form.save(commit=False)
+            category.parent = parent
+            category.save()
+            messages.success(request, 'Exam category added')
+            return redirect('panel_test_series_categories')
+    else:
+        form = CategoryForm(initial={'order': Category.objects.filter(parent=parent).count()})
+    return render(request, 'myapp/panel/test_series_category_form.html', {'form': form, 'is_new': True, 'parent': parent, 'course_type': Course.TEST_SERIES, 'test_series_nav': 'categories'})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_test_series_category_edit(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Exam category updated')
+            return redirect('panel_test_series_categories')
+    else:
+        form = CategoryForm(instance=category)
+    return render(request, 'myapp/panel/test_series_category_form.html', {'form': form, 'is_new': False, 'category': category, 'parent': category.parent, 'course_type': Course.TEST_SERIES, 'test_series_nav': 'categories'})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_test_series_category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        category.delete()
+        messages.success(request, 'Exam category deleted (along with any sub-categories)')
+    return redirect('panel_test_series_categories')
+
+
 COURSE_TYPE_LABELS = dict(Course.TYPE_CHOICES)
 
 
@@ -2578,11 +2753,30 @@ def _course_type_or_404(course_type):
         raise Http404
 
 
+def _category_tree(queryset=None):
+    if queryset is None:
+        queryset = Category.objects.all()
+    nodes = {
+        c.pk: {
+            'id': c.pk, 'name': c.name, 'logo_key': c.logo_key, 'parent_id': c.parent_id, 'children': [],
+            'icon_html': render_to_string('myapp/includes/category_logo.html', {'icon_key': c.logo_key}),
+        }
+        for c in queryset.order_by('order', 'name')
+    }
+    roots = []
+    for node in nodes.values():
+        if node['parent_id'] and node['parent_id'] in nodes:
+            nodes[node['parent_id']]['children'].append(node)
+        elif not node['parent_id']:
+            roots.append(node)
+    return roots
+
+
 @login_required(login_url='login')
 @user_passes_test(_is_staff, login_url='login')
 def panel_course_list(request, course_type):
     _course_type_or_404(course_type)
-    courses = Course.objects.filter(course_type=course_type).select_related('category')
+    courses = Course.objects.filter(course_type=course_type).select_related('category').prefetch_related('categories')
 
     stats = {'total': courses.count()}
     if course_type == Course.TEST_SERIES:
@@ -2598,6 +2792,27 @@ def panel_course_list(request, course_type):
         'course_type': course_type,
         'type_label': COURSE_TYPE_LABELS[course_type],
         'stats': stats,
+        'test_series_nav': 'manage',
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_test_series_customization(request):
+    instructions_settings = ExamInstructionsSettings.load()
+    if request.method == 'POST':
+        instructions_form = ExamInstructionsSettingsForm(request.POST, instance=instructions_settings)
+        if instructions_form.is_valid():
+            instructions_form.save()
+            messages.success(request, 'Exam instructions updated')
+            return redirect('panel_test_series_customization')
+    else:
+        instructions_form = ExamInstructionsSettingsForm(instance=instructions_settings)
+
+    return render(request, 'myapp/panel/test_series_customization.html', {
+        'instructions_form': instructions_form,
+        'course_type': Course.TEST_SERIES,
+        'test_series_nav': 'customization',
     })
 
 
@@ -2623,6 +2838,7 @@ def panel_course_add(request, course_type):
             course = form.save(commit=False)
             course.course_type = course_type
             course.save()
+            form.save_m2m()
             if video_formset is not None and not folders_enabled:
                 video_formset.instance = course
                 video_formset.save()
@@ -2946,6 +3162,135 @@ def panel_question_delete(request, course_pk, pk):
         question.delete()
         messages.success(request, 'Question deleted')
     return redirect('panel_question_list', course_pk=course.pk)
+
+
+BULK_UPLOAD_COLUMNS = ['question_type', 'text', 'option_a', 'option_b', 'option_c', 'option_d', 'correct_answer', 'marks', 'section', 'order']
+
+BULK_UPLOAD_TYPE_ALIASES = {
+    'single': Question.SINGLE, 'single correct answer': Question.SINGLE,
+    'multiple': Question.MULTIPLE, 'multiple correct answers': Question.MULTIPLE, 'multiple correct answer': Question.MULTIPLE,
+    'numeric': Question.NUMERIC, 'numeric answer': Question.NUMERIC,
+    'true_false': Question.TRUE_FALSE, 'true/false': Question.TRUE_FALSE, 'true false': Question.TRUE_FALSE,
+    'fill_blank': Question.FILL_BLANK, 'fill in the blank': Question.FILL_BLANK,
+}
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_question_bulk_upload(request, course_pk):
+    course = get_object_or_404(Course, pk=course_pk, course_type=Course.TEST_SERIES)
+    sections_by_name = {s.name.strip().lower(): s for s in course.test_sections.all()}
+    results = None
+
+    if request.method == 'POST':
+        upload = request.FILES.get('file')
+        target_section_choice = request.POST.get('target_section', '')
+        forced_section = 'unset'
+        if target_section_choice == 'unassigned':
+            forced_section = None
+        elif target_section_choice.isdigit():
+            forced_section = next((s for s in sections_by_name.values() if s.pk == int(target_section_choice)), None)
+        if not upload:
+            messages.error(request, 'Please choose a CSV file to upload.')
+        else:
+            try:
+                decoded = upload.read().decode('utf-8-sig')
+            except UnicodeDecodeError:
+                decoded = None
+                messages.error(request, 'Could not read that file — please save it as a CSV (UTF-8) file and try again.')
+
+            if decoded is not None:
+                reader = csv.DictReader(io.StringIO(decoded))
+                fieldnames = {(f or '').strip().lower().replace(' ', '_'): f for f in (reader.fieldnames or [])}
+                if 'text' not in fieldnames:
+                    messages.error(request, 'The file must have a "text" column with the question text.')
+                else:
+                    created = 0
+                    warnings = []
+                    errors = []
+                    next_order = course.questions.count()
+                    with transaction.atomic():
+                        for row_num, raw_row in enumerate(reader, start=2):
+                            row = {key: (raw_row.get(source_key) or '').strip() for key, source_key in fieldnames.items()}
+                            text = row.get('text', '')
+                            if not text:
+                                errors.append(f'Row {row_num}: skipped — question text is empty.')
+                                continue
+
+                            type_raw = row.get('question_type', '').strip().lower()
+                            if not type_raw:
+                                question_type = Question.SINGLE
+                            elif type_raw in BULK_UPLOAD_TYPE_ALIASES:
+                                question_type = BULK_UPLOAD_TYPE_ALIASES[type_raw]
+                            else:
+                                question_type = Question.SINGLE
+                                warnings.append(f'Row {row_num}: unknown question type "{row.get("question_type")}" — defaulted to Single Correct Answer.')
+
+                            marks_raw = row.get('marks', '')
+                            try:
+                                marks = int(marks_raw) if marks_raw else 1
+                            except ValueError:
+                                marks = 1
+                                warnings.append(f'Row {row_num}: invalid marks "{marks_raw}" — defaulted to 1.')
+
+                            order_raw = row.get('order', '')
+                            order = int(order_raw) if order_raw.isdigit() else next_order
+                            next_order = max(next_order, order) + 1
+
+                            if forced_section != 'unset':
+                                section = forced_section
+                            else:
+                                section = None
+                                section_raw = row.get('section', '')
+                                if section_raw:
+                                    section = sections_by_name.get(section_raw.lower())
+                                    if section is None:
+                                        warnings.append(f'Row {row_num}: section "{section_raw}" not found — left unassigned.')
+
+                            Question.objects.create(
+                                course=course,
+                                section=section,
+                                question_type=question_type,
+                                text=text,
+                                option_a=row.get('option_a', ''),
+                                option_b=row.get('option_b', ''),
+                                option_c=row.get('option_c', ''),
+                                option_d=row.get('option_d', ''),
+                                correct_answer=row.get('correct_answer', ''),
+                                marks=marks,
+                                order=order,
+                            )
+                            created += 1
+
+                    results = {'created': created, 'warnings': warnings, 'errors': errors}
+                    if created:
+                        messages.success(request, f'{created} question{"s" if created != 1 else ""} imported successfully.')
+                    elif not errors:
+                        messages.error(request, 'No questions were found in that file.')
+
+    return render(request, 'myapp/panel/question_bulk_upload.html', {
+        'course': course,
+        'course_type': course.course_type,
+        'results': results,
+        'sections': course.test_sections.all(),
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_question_bulk_template(request, course_pk):
+    get_object_or_404(Course, pk=course_pk, course_type=Course.TEST_SERIES)
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(BULK_UPLOAD_COLUMNS)
+    writer.writerow(['single', 'What is the capital of India?', 'Mumbai', 'New Delhi', 'Kolkata', 'Chennai', 'B', '1', '', ''])
+    writer.writerow(['multiple', 'Which of these are prime numbers?', '2', '3', '4', '9', 'A,B', '2', '', ''])
+    writer.writerow(['true_false', 'The sun rises in the east.', '', '', '', '', 'True', '1', '', ''])
+    writer.writerow(['numeric', 'What is 12 x 12?', '', '', '', '', '144', '1', '', ''])
+    writer.writerow(['fill_blank', 'The largest planet in our solar system is ____.', '', '', '', '', 'Jupiter', '1', '', ''])
+    response = HttpResponse(buffer.getvalue(), content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="question_upload_template.csv"'
+    return response
 
 
 @login_required(login_url='login')

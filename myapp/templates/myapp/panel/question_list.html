@@ -27,8 +27,9 @@ table.panel-table.question-table td.question-cell,table.panel-table.question-tab
       <h2>{{ course.name }}</h2>
       <p>{% if filter_active %}{{ filtered_question_count }} of {{ total_question_count }} questions{% else %}{{ total_question_count }} question{{ total_question_count|pluralize }}{% endif %}</p>
     </div>
-    <div style="display:flex;gap:10px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
       <a class="btn btn-ghost" href="{% url 'panel_course_list' 'test_series' %}">← Back to Test Series</a>
+      <a class="btn btn-ghost" href="{% url 'panel_question_bulk_upload' course.pk %}">⬆ Bulk upload</a>
       <a class="btn btn-primary" href="{% url 'panel_question_add' course.pk %}">+ Add question</a>
     </div>
   </div>

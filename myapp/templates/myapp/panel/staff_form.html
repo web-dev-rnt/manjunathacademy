@@ -12,6 +12,7 @@
 .panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
 .course-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
 .course-preview img{width:64px;height:64px;border-radius:50%;object-fit:cover}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
 @media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
 {% endblock %}
 
@@ -53,9 +54,9 @@
       </label>
     </div>
 
-    <label><span class="panel-label-text">Photo</span>{{ form.photo }}</label>
+    <label><span class="panel-label-text">Photo</span>{{ form.photo }}<p class="custom-help">{{ form.photo.help_text }}</p></label>
     {% if staff_member.photo %}
-      <div class="course-preview"><img src="{{ staff_member.photo.url }}" alt=""><span class="custom-help">Current photo</span></div>
+      <div class="course-preview"><img loading="lazy" decoding="async" src="{{ staff_member.photo.url }}" alt=""><span class="custom-help">Current photo</span></div>
     {% endif %}
 
     <label><span class="panel-label-text">Address</span>{{ form.address }}</label>

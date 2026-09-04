@@ -47,7 +47,7 @@
       {{ form.image }}
       <p class="custom-help">{{ form.image.help_text }}</p>
       {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-      {% if bundle.image %}<span class="bundle-image-preview"><img src="{{ bundle.image.url }}" alt=""><span>Current bundle image</span></span>{% endif %}
+      {% if bundle.image %}<span class="bundle-image-preview"><img loading="lazy" decoding="async" src="{{ bundle.image.url }}" alt=""><span>Current bundle image</span></span>{% endif %}
     </label>
 
     <div class="panel-form-row course-form-row">

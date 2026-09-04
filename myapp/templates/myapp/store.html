@@ -52,7 +52,7 @@
       {% for product in products %}
       <article class="store-card" data-cat="{{ product.category_id|default:'' }}" data-name="{{ product.name|lower }}">
         {% if product.image %}
-          <img class="store-card-thumb" src="{{ product.image.url }}" alt="">
+          <img loading="lazy" decoding="async" class="store-card-thumb" src="{{ product.image.url }}" alt="">
         {% else %}
           <div class="store-card-thumb-empty">📦</div>
         {% endif %}

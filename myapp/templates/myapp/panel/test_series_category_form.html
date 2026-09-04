@@ -1,0 +1,69 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} exam category{% endblock %}
+{% block page_title %}{% if is_new %}Add exam category{% else %}Edit exam category{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+
+{% block extra_style %}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.taxonomy-context{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#F8FAFC;font-size:13px;color:var(--muted);margin-bottom:18px}
+.taxonomy-context strong{color:var(--ink)}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>
+        {% if is_new %}
+          {% with parent_depth=parent.get_ancestors|length %}
+          {% if not parent %}Add a new exam (Level 0)
+          {% elif parent_depth == 0 %}Add a sub-exam under {{ parent.name }} (Level 1)
+          {% elif parent_depth == 1 %}Add a subject under {{ parent.name }} (Level 2)
+          {% else %}Add a topic under {{ parent.name }} (Level 3)
+          {% endif %}
+          {% endwith %}
+        {% else %}
+          Editing: {{ category.name }}
+        {% endif %}
+      </h2>
+      <p>Part of the Test Series exam hierarchy.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_test_series_categories' %}">← Back to exam categories</a>
+  </div>
+
+  {% if parent %}
+    <p class="taxonomy-context">Parent: <strong>{% for node in parent.get_breadcrumb %}{{ node.name }}{% if not forloop.last %} → {% endif %}{% endfor %}</strong></p>
+  {% endif %}
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+    {% if parent %}<input type="hidden" name="parent" value="{{ parent.pk }}">{% endif %}
+
+    <label><span class="panel-label-text">Name <span class="req">*</span></span>
+      {{ form.name }}
+      <p class="custom-help">{% if parent %}Use the full name including the parent, e.g. "{{ parent.name }} Mathematics".{% else %}e.g. CUET{% endif %}</p>
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Category logo</span>
+      {{ form.logo_key }}
+      <p class="custom-help">Choose the illustrated logo shown alongside this level in the breadcrumb and sidebar.</p>
+    </label>
+
+    <label><span class="panel-label-text">Order</span>
+      {{ form.order }}
+      <p class="custom-help">{{ form.order.help_text }}</p>
+    </label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add category{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_test_series_categories' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

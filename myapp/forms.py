@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory, modelformset_factory
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.db.models import Case, IntegerField, When
 from decimal import Decimal, InvalidOperation
 
 from .models import (
@@ -25,6 +26,7 @@ from .models import (
     DailyUpdatePostTableRow,
     EligibilityCriteria,
     ExamCalendarEvent,
+    ExamInstructionsSettings,
     ExamTickerItem,
     ExamTickerSettings,
     ExtraPage,
@@ -254,7 +256,7 @@ class NotificationForm(forms.ModelForm):
             'link': 'Optional. Opens as the "Official notification link" button in the popup and on the details page.',
             'order': 'Lower numbers show first.',
             'title': 'Optional — defaults to the ticker text above if left blank.',
-            'cover_image': 'Shown at the top of the full details page. JPG or PNG, under 2MB.',
+            'cover_image': 'Shown at the top of the full details page. Recommended size: 1200×630px. JPG or PNG, under 2MB.',
             'body': 'Optional. Leave blank to show only the popup detail text on the details page.',
         }
 
@@ -494,11 +496,33 @@ class CourseContentFolderForm(forms.ModelForm):
         return cleaned_data
 
 
+class CategoryMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, category):
+        return ' → '.join(node.name for node in category.get_breadcrumb())
+
+
+def hierarchical_category_queryset():
+    categories = list(Category.objects.select_related('parent', 'parent__parent', 'parent__parent__parent'))
+    categories.sort(key=lambda c: tuple(node.name for node in c.get_breadcrumb()))
+    ids_in_order = [c.pk for c in categories]
+    if not ids_in_order:
+        return Category.objects.none()
+    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids_in_order)], output_field=IntegerField())
+    return Category.objects.filter(pk__in=ids_in_order).order_by(preserved)
+
+
 class CourseForm(forms.ModelForm):
+    categories = CategoryMultipleChoiceField(
+        queryset=Category.objects.none(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        help_text='Tag this test with one, several, or every relevant exam/subject. Students will see it under each one you pick.',
+    )
+
     class Meta:
         model = Course
         fields = (
-            'category', 'name', 'test_type', 'original_price', 'current_price', 'force_free',
+            'category', 'categories', 'name', 'test_type', 'original_price', 'current_price', 'force_free',
             'enable_validity', 'validity_value', 'validity_unit', 'enable_folders',
             'about', 'highlights', 'thumbnail', 'pdf_file', 'video_file',
             'duration_minutes', 'max_optional_sections', 'author', 'pages',
@@ -536,6 +560,12 @@ class CourseForm(forms.ModelForm):
             del self.fields['highlights']
         if course_type != Course.TEST_SERIES:
             del self.fields['max_optional_sections']
+        if course_type == Course.TEST_SERIES:
+            del self.fields['category']
+            self.fields['categories'].queryset = hierarchical_category_queryset()
+        else:
+            del self.fields['categories']
+            self.fields['category'].queryset = Category.objects.filter(parent__isnull=True)
 
 
 class CourseVideoForm(forms.ModelForm):
@@ -1017,6 +1047,21 @@ class ExamTickerSettingsForm(forms.ModelForm):
         if not 8 <= duration <= 60:
             raise forms.ValidationError('Choose a movement duration between 8 and 60 seconds.')
         return duration
+
+
+class ExamInstructionsSettingsForm(forms.ModelForm):
+    class Meta:
+        model = ExamInstructionsSettings
+        fields = ('rules_text', 'agreement_text')
+        widgets = {
+            'rules_text': forms.Textarea(attrs={
+                'rows': 5, 'placeholder': 'One instruction per line', 'class': 'instructions-textarea',
+            }),
+            'agreement_text': forms.Textarea(attrs={
+                'rows': 4, 'placeholder': 'Declaration shown next to the agreement checkbox',
+                'class': 'instructions-textarea',
+            }),
+        }
 
 
 class ExamTickerItemForm(forms.ModelForm):

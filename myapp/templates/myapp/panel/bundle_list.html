@@ -43,7 +43,7 @@
         <tbody>
           {% for bundle in bundles %}
           <tr>
-            <td class="panel-row-name"><span class="bundle-list-identity">{% if bundle.image %}<img class="bundle-list-thumb" src="{{ bundle.image.url }}" alt="">{% else %}<span class="bundle-list-icon">{{ bundle.icon }}</span>{% endif %}<span>{{ bundle.name }}</span></span></td>
+            <td class="panel-row-name"><span class="bundle-list-identity">{% if bundle.image %}<img loading="lazy" decoding="async" class="bundle-list-thumb" src="{{ bundle.image.url }}" alt="">{% else %}<span class="bundle-list-icon">{{ bundle.icon }}</span>{% endif %}<span>{{ bundle.name }}</span></span></td>
             <td class="bundle-courses">{% for c in bundle.courses.all %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
             <td>₹{{ bundle.current_price }}{% if bundle.original_price and bundle.original_price != bundle.current_price %} <s>₹{{ bundle.original_price }}</s>{% endif %}</td>
             <td>{% if bundle.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>

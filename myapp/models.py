@@ -52,7 +52,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
     state = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True, help_text='Recommended size: 300×300px, square.')
     device_type = models.CharField(max_length=10, choices=DEVICE_CHOICES, blank=True, help_text='Detected from the signup device')
 
     active_session_key = models.CharField(max_length=40, blank=True, default='', help_text='Session key of this account\'s one currently-allowed login.')
@@ -81,8 +81,8 @@ class SiteSettings(models.Model):
     ]
 
     logo_type = models.CharField(max_length=10, choices=LOGO_TYPE_CHOICES, default=LOGO_TEXT)
-    logo_image = models.ImageField(upload_to='branding/', blank=True, null=True)
-    favicon = models.ImageField(upload_to='branding/', blank=True, null=True)
+    logo_image = models.ImageField(upload_to='branding/', blank=True, null=True, help_text='Recommended size: 200×60px, transparent PNG.')
+    favicon = models.ImageField(upload_to='branding/', blank=True, null=True, help_text='Recommended size: 512×512px, square PNG.')
     youtube_url = models.URLField(blank=True)
     whatsapp_number = models.CharField(max_length=15, blank=True, help_text='Digits only, with country code, e.g. 915220000000')
 
@@ -128,7 +128,7 @@ class BannerSlide(models.Model):
     subtitle = models.CharField(max_length=300, blank=True)
     button_text = models.CharField(max_length=50, blank=True)
     button_link = models.CharField(max_length=300, blank=True, help_text='e.g. #popular-courses or a full https:// URL')
-    image = models.ImageField(upload_to='banner/', blank=True, null=True)
+    image = models.ImageField(upload_to='banner/', blank=True, null=True, help_text='Recommended size: 1600×600px.')
     image_url = models.URLField(blank=True, help_text='Used only if no image is uploaded above')
     is_active = models.BooleanField(default=True)
 
@@ -151,7 +151,7 @@ class Notification(models.Model):
     detail = models.TextField(blank=True, help_text='Longer text shown in the popup when a student taps this notification')
     link = models.URLField(blank=True, help_text='Official link (apply page, PDF, etc). Shown as a button in the popup.')
     title = models.CharField(max_length=250, blank=True, help_text='Full headline for the details page. Leave blank to reuse the ticker text above.')
-    cover_image = models.ImageField(upload_to='notifications/', blank=True, null=True, help_text='Featured image shown at the top of the full details page.')
+    cover_image = models.ImageField(upload_to='notifications/', blank=True, null=True, help_text='Featured image shown at the top of the full details page. Recommended size: 1200×630px.')
     video_url = models.URLField(blank=True, help_text='Optional YouTube/Vimeo link embedded in the details page.')
     body = models.TextField(blank=True, help_text='Full article content shown on the details page. Basic HTML (e.g. <p>, <b>, <ul>, <table>) is allowed.')
     is_active = models.BooleanField(default=True)
@@ -189,7 +189,7 @@ class Notification(models.Model):
 
 class NotificationImage(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE, related_name='gallery_images')
-    image = models.ImageField(upload_to='notifications/gallery/')
+    image = models.ImageField(upload_to='notifications/gallery/', help_text='Recommended size: 1200×800px.')
     caption = models.CharField(max_length=200, blank=True)
     order = models.PositiveIntegerField(default=0)
 
@@ -455,11 +455,11 @@ class DailyUpdatePost(models.Model):
     body_kn = models.TextField('Body (Kannada)', blank=True, help_text='Optional. Leave blank to fall back to the English body.')
     image = models.ImageField(
         upload_to='daily_updates/posts/', blank=True, null=True,
-        help_text='Main image shown on the full Current Affairs article.',
+        help_text='Main image shown on the full Current Affairs article. Recommended size: 1200×675px.',
     )
     thumbnail = models.ImageField(
         upload_to='daily_updates/posts/thumbnails/', blank=True, null=True,
-        help_text='Compact image used on the homepage and Current Affairs listing. Falls back to the main image.',
+        help_text='Compact image used on the homepage and Current Affairs listing. Falls back to the main image. Recommended size: 400×225px.',
     )
     video_url = models.URLField(
         max_length=500, blank=True,
@@ -573,7 +573,7 @@ class GalleryImage(models.Model):
     order = models.PositiveIntegerField(default=0)
     title = models.CharField(max_length=150, blank=True)
     caption = models.CharField(max_length=300, blank=True)
-    image = models.ImageField(upload_to='gallery/')
+    image = models.ImageField(upload_to='gallery/', help_text='Recommended size: 1200×800px.')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -598,12 +598,25 @@ class Category(models.Model):
         ('teaching', 'Teaching'),
         ('state', 'State exams'),
         ('police', 'Police'),
+        ('judiciary', 'Judiciary'),
+        ('insurance', 'Insurance'),
+        ('agriculture', 'Agriculture'),
+        ('postal', 'Postal'),
+        ('entrance', 'Entrance exams'),
+        ('computer', 'Computer & IT'),
+        ('language', 'Language'),
+        ('maths', 'Mathematics'),
+        ('science', 'Science / EVS'),
     ]
 
     name = models.CharField(max_length=100, unique=True)
     icon = models.CharField(max_length=10, blank=True, help_text='Optional emoji icon, e.g. 📘')
     logo_key = models.CharField(max_length=20, choices=LOGO_CHOICES, default='general')
     order = models.PositiveIntegerField(default=0)
+    parent = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.CASCADE, related_name='children',
+        help_text='Used by the Test Series exam hierarchy (Exam → Sub-exam → Subject → Topic). Leave blank for a top-level category.',
+    )
 
     class Meta:
         ordering = ['order', 'name']
@@ -611,6 +624,26 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_ancestors(self):
+        chain = []
+        node = self.parent
+        while node is not None:
+            chain.append(node)
+            node = node.parent
+        chain.reverse()
+        return chain
+
+    def get_breadcrumb(self):
+        return self.get_ancestors() + [self]
+
+    def self_and_ancestor_ids(self):
+        ids = [self.pk]
+        node = self.parent
+        while node is not None:
+            ids.append(node.pk)
+            node = node.parent
+        return ids
 
 
 class Course(models.Model):
@@ -640,7 +673,14 @@ class Course(models.Model):
     ]
 
     course_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses')
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses',
+        help_text='Used for Video Courses and E-Library. Test Series use the Categories field below instead.',
+    )
+    categories = models.ManyToManyField(
+        Category, blank=True, related_name='tagged_test_series',
+        help_text='Used for Test Series. Tag with one, several, or every relevant exam/subject — students will see this test under each one.',
+    )
     name = models.CharField(max_length=200, verbose_name='Course name')
     test_type = models.CharField(max_length=20, choices=TEST_TYPE_CHOICES, blank=True, help_text='Used for Test Series only — e.g. Mock Test, Practice Test.')
     original_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
@@ -676,6 +716,23 @@ class Course(models.Model):
     @property
     def is_free(self):
         return self.force_free or not self.current_price or self.current_price <= 0
+
+    @property
+    def effective_categories(self):
+        """Test Series categories, falling back to the legacy single `category` field for older data."""
+        cats = list(self.categories.all())
+        if cats:
+            return cats
+        if self.category_id:
+            return [self.category]
+        return []
+
+    @property
+    def category_chain_ids(self):
+        ids = set()
+        for category in self.effective_categories:
+            ids.update(category.self_and_ancestor_ids())
+        return list(ids)
 
     @property
     def published_video_count(self):
@@ -961,6 +1018,7 @@ class DailyQuizAttempt(models.Model):
     score = models.PositiveIntegerField(default=0)
     total = models.PositiveIntegerField(default=5)
     answer_details = models.JSONField(default=list, blank=True)
+    duration_seconds = models.PositiveIntegerField(default=0)
     taken_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1172,7 +1230,7 @@ class HomepageContent(models.Model):
 
 
 class ResultHighlight(models.Model):
-    image = models.ImageField(upload_to='results/')
+    image = models.ImageField(upload_to='results/', help_text='Recommended size: 600×600px.')
     caption = models.CharField(max_length=100)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -1214,6 +1272,52 @@ class ExamTickerSettings(models.Model):
 
     def __str__(self):
         return 'Exam ticker settings'
+
+
+class ExamInstructionsSettings(models.Model):
+    rules_text = models.TextField(
+        default=(
+            "Your clock is synchronized with the server. The countdown at the top of the question page "
+            "shows the remaining time available for you to complete the examination. When the timer reaches "
+            "zero, the examination will submit itself automatically — you need not submit it manually.\n"
+            "The question palette on the right side of the test shows the status of every question using the "
+            "colors below."
+        ),
+        help_text='One instruction per line. Shown as a numbered list on the test instructions page and inside the exam.',
+    )
+    agreement_text = models.TextField(
+        default=(
+            "I have read and understood the instructions. All computer hardware allotted to me is in proper "
+            "working condition. I declare that I am not in possession of, not wearing, and not carrying any "
+            "prohibited gadget like a mobile phone, Bluetooth device, etc., or any prohibited material into the "
+            "examination. I agree that if I fail to adhere to the instructions, I shall be liable to be debarred "
+            "from this test and/or to disciplinary action, which may include a ban from future tests/examinations."
+        ),
+        help_text='Shown next to the agreement checkbox students must accept before starting a test.',
+    )
+
+    class Meta:
+        verbose_name = 'Exam instructions settings'
+        verbose_name_plural = 'Exam instructions settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def rules_list(self):
+        return [line.strip() for line in self.rules_text.splitlines() if line.strip()]
+
+    def __str__(self):
+        return 'Exam instructions settings'
 
 
 class ExamTickerItem(models.Model):
@@ -1435,7 +1539,7 @@ class StaffMember(models.Model):
     phone = models.CharField(max_length=15)
     salary = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Monthly salary in ₹')
     date_of_joining = models.DateField()
-    photo = models.ImageField(upload_to='staff/', blank=True, null=True)
+    photo = models.ImageField(upload_to='staff/', blank=True, null=True, help_text='Recommended size: 300×300px, square.')
     address = models.TextField(blank=True)
     is_active = models.BooleanField(default=True, help_text='Uncheck when a staff member leaves — keeps their history intact')
     created_at = models.DateTimeField(auto_now_add=True)

@@ -181,7 +181,7 @@
     <div class="hero-visual">
       <div class="visual-card">
         {% if hero.visual_type == 'image' and hero.visual_image %}
-          <img class="hero-visual-media" src="{{ hero.visual_image.url }}" alt="">
+          <img fetchpriority="high" decoding="async" class="hero-visual-media" src="{{ hero.visual_image.url }}" alt="">
         {% elif hero.visual_type == 'video' and hero.visual_video_url %}
           {% if hero.visual_video_is_direct_file %}
             <video class="hero-visual-media" src="{{ hero.visual_video_url }}" controls></video>
@@ -570,20 +570,22 @@
     <div class="ts-panel">
       <p class="ts-panel-title" data-i18n="idx_test_series_label">Test Series</p>
 
-      {% if test_series_categories %}
-      <div class="ts-tabs" id="tsTabs">
-        <button class="ts-tab is-active" data-cat="all"><span class="ts-tab-ico">{% include "myapp/includes/category_logo.html" with icon_key="general" %}</span><span data-i18n="ts_tab_all">All</span></button>
-        {% for cat in test_series_categories %}
-        <button class="ts-tab" data-cat="{{ cat.id }}"><span class="ts-tab-ico">{% include "myapp/includes/category_logo.html" with icon_key=cat.logo_key %}</span>{{ cat.name }}</button>
-        {% endfor %}
-      </div>
+      {% if test_series_category_tree %}
+      <nav class="ts-breadcrumb" id="tsBreadcrumb" aria-label="Browse test series by exam">
+        <button type="button" class="ts-breadcrumb-item is-current" data-depth="0">Home</button>
+      </nav>
+      <div class="ts-tabs" id="tsTabsLevel0"></div>
+      <div class="ts-tabs" id="tsTabsLevel1" hidden></div>
+      <div class="ts-tabs" id="tsTabsLevel2" hidden></div>
+      <div class="ts-tabs" id="tsTabsLevel3" hidden></div>
+      <script type="application/json" id="tsCategoryTreeData">{{ test_series_category_tree_json|default:"[]"|safe }}</script>
       {% endif %}
 
       <div class="ts-body ts-body-full">
         <div class="ts-grid" id="tsGrid">
           {% for course in test_series_courses %}
-          <article class="ts-card" data-cat="{{ course.category_id|default:'' }}">
-            {% if course.thumbnail %}<img class="ts-card-thumb" src="{{ course.thumbnail.url }}" alt="" loading="lazy">{% else %}<span class="ts-course-logo">{% include "myapp/includes/category_logo.html" with icon_key=course.category.logo_key %}</span>{% endif %}
+          <article class="ts-card" data-cat-chain="{{ course.category_chain_ids|join:',' }}">
+            {% if course.thumbnail %}<img class="ts-card-thumb" src="{{ course.thumbnail.url }}" alt="" loading="lazy">{% else %}<span class="ts-course-logo">{% include "myapp/includes/category_logo.html" with icon_key=course.effective_categories.0.logo_key|default:"general" %}</span>{% endif %}
             {% if course.test_type %}<span class="ts-type-tag">{{ course.get_test_type_display }}</span>{% endif %}
             <h4>{{ course.name }}</h4>
             <span class="ts-count">📝 {{ course.questions.count }} question{{ course.questions.count|pluralize }}{% if course.duration_minutes %} · ⏱ {{ course.duration_minutes }}m{% endif %}</span>
@@ -591,8 +593,17 @@
             <a class="btn-ts" href="{% url 'test_series_detail' course.pk %}" data-i18n="btn_view_details">View Details →</a>
           </article>
           {% empty %}
-          <p class="panel-empty">No test series added yet — check back soon.</p>
+          <div class="ts-empty">
+            <span class="ts-empty-ico">🗂️</span>
+            <p class="ts-empty-title">No test series added yet</p>
+            <p class="ts-empty-sub">Check back soon — new tests are added regularly.</p>
+          </div>
           {% endfor %}
+        </div>
+        <div class="ts-empty" id="tsEmptyState" hidden>
+          <span class="ts-empty-ico">🔍</span>
+          <p class="ts-empty-title">No test series in this category yet</p>
+          <p class="ts-empty-sub">We're adding more tests here soon — check back shortly.</p>
         </div>
       </div>
     </div>
@@ -679,11 +690,13 @@
   <div class="wrap about-us-grid">
 
     <div class="au-media">
-      {% if homepage_content.about_image %}
-        <img src="{{ homepage_content.about_image.url }}" alt="" loading="lazy">
-      {% else %}
-        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=760&h=560&q=70" alt="Students studying together at night" loading="lazy">
-      {% endif %}
+      <div class="au-media-frame">
+        {% if homepage_content.about_image %}
+          <img src="{{ homepage_content.about_image.url }}" alt="" loading="lazy">
+        {% else %}
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=760&h=560&q=70" alt="Students studying together at night" loading="lazy">
+        {% endif %}
+      </div>
       <div class="au-badge"><span class="au-badge-ico">🎓</span><div><strong>Trusted by</strong><span>{{ homepage_content.about_badge_value }} {{ homepage_content.about_badge_label }}</span></div></div>
     </div>
 
@@ -823,23 +836,6 @@
 
   stagger('#gallery .gal-item', document.getElementById('gallery'));
   stagger('#about .au-checks li, #about .au-badge', document.getElementById('about'));
-})();
-
-(function () {
-  var tabs = document.querySelectorAll('#tsTabs .ts-tab');
-  var cards = document.querySelectorAll('#tsGrid .ts-card');
-  if (!tabs.length || !cards.length) return;
-
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      tabs.forEach(function (t) { t.classList.remove('is-active'); });
-      tab.classList.add('is-active');
-      var cat = tab.dataset.cat;
-      cards.forEach(function (card) {
-        card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
-      });
-    });
-  });
 })();
 
 (function () {

@@ -57,7 +57,7 @@
             <td>
               <div class="banner-cell">
                 {% if slide.display_image_url %}
-                  <img class="banner-thumb" src="{{ slide.display_image_url }}" alt="">
+                  <img loading="lazy" decoding="async" class="banner-thumb" src="{{ slide.display_image_url }}" alt="">
                 {% else %}
                   <span class="banner-thumb-empty">No image</span>
                 {% endif %}

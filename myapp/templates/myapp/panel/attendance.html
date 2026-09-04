@@ -51,7 +51,7 @@ select.attendance-status{border:1px solid var(--line);border-radius:8px;padding:
             <tr>
               <td>
                 <div class="attendance-cell">
-                  {% if row.staff.photo %}<img class="attendance-avatar" src="{{ row.staff.photo.url }}" alt="">{% endif %}
+                  {% if row.staff.photo %}<img loading="lazy" decoding="async" class="attendance-avatar" src="{{ row.staff.photo.url }}" alt="">{% endif %}
                   <span class="panel-row-name">{{ row.staff.name }}</span>
                 </div>
               </td>

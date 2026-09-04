@@ -110,7 +110,7 @@
     </div>
     <div class="hp-mock-visual">
       <div class="hp-mock-visual-box" id="pvVisualBox">
-        {% if hero.visual_type == 'image' and hero.visual_image %}<img src="{{ hero.visual_image.url }}" alt="">
+        {% if hero.visual_type == 'image' and hero.visual_image %}<img loading="lazy" decoding="async" src="{{ hero.visual_image.url }}" alt="">
         {% elif hero.visual_type == 'video' %}<span class="hp-video-note">▶ Video<br>{{ hero.visual_video_url|default:"no link set yet" }}</span>
         {% else %}<span id="pvIllustrationEmoji">💻</span>{% endif %}
       </div>
@@ -233,7 +233,7 @@
         {% if form.visual_image.errors %}<ul class="panel-errors">{% for e in form.visual_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         {% if hero.visual_image %}
           <div class="custom-preview">
-            <img src="{{ hero.visual_image.url }}" alt="Current hero image">
+            <img loading="lazy" decoding="async" src="{{ hero.visual_image.url }}" alt="Current hero image">
             <span class="custom-preview-label">Current image</span>
           </div>
         {% endif %}
@@ -322,10 +322,10 @@
       var fileInput = document.getElementById('id_visual_image');
       if (fileInput && fileInput.files && fileInput.files[0]) {
         var reader = new FileReader();
-        reader.onload = function (e) { visualBox.innerHTML = '<img src="' + e.target.result + '" alt="">'; };
+        reader.onload = function (e) { visualBox.innerHTML = '<img loading="lazy" decoding="async" src="' + e.target.result + '" alt="">'; };
         reader.readAsDataURL(fileInput.files[0]);
       } else if (savedImageUrl) {
-        visualBox.innerHTML = '<img src="' + savedImageUrl + '" alt="">';
+        visualBox.innerHTML = '<img loading="lazy" decoding="async" src="' + savedImageUrl + '" alt="">';
       } else {
         visualBox.innerHTML = '<span class="hp-video-note">No image uploaded yet</span>';
       }

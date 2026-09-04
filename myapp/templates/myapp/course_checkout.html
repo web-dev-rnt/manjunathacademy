@@ -55,7 +55,7 @@
   <div class="wrap vp-wrap">
     <div class="vp-shell">
       <aside class="vp-sidebar">
-        {% if course.thumbnail %}<img class="vp-cover" src="{{ course.thumbnail.url }}" alt="{{ course.name }}">{% else %}<div class="vp-cover vp-cover-empty">{% if course.course_type == 'elibrary' %}📖{% else %}▶{% endif %}</div>{% endif %}
+        {% if course.thumbnail %}<img loading="lazy" decoding="async" class="vp-cover" src="{{ course.thumbnail.url }}" alt="{{ course.name }}">{% else %}<div class="vp-cover vp-cover-empty">{% if course.course_type == 'elibrary' %}📖{% else %}▶{% endif %}</div>{% endif %}
         <h1>{{ course.name }}</h1>
         {% if course.course_type == 'elibrary' %}
         <span class="vp-count">▣ {{ course.published_document_count }} PDF{{ course.published_document_count|pluralize }}</span>
@@ -66,32 +66,37 @@
         {% if course.about %}<p class="vp-about">{{ course.about|truncatechars:190 }}</p>{% endif %}
         {% if course.highlight_list %}<div class="vp-highlights"><h2>Course Highlights</h2><ul>{% for highlight in course.highlight_list %}<li>{{ highlight }}</li>{% endfor %}</ul></div>{% endif %}
         <div class="vp-buy-box">
+          {% if requires_login %}
+            <a class="btn btn-primary checkout-pay-btn" href="{% url 'login' %}?next={{ request.path|urlencode }}">{% if course.is_free %}▶ Start Now{% else %}🔒 Login to Purchase{% endif %}</a>
+            <p class="checkout-secure vp-secure">Log in or create a free account to continue</p>
+          {% else %}
           <div class="checkout-price-row"><span class="checkout-price">₹{{ course.current_price }}</span>{% if course.original_price and course.original_price != course.current_price %}<span class="checkout-price-old">₹{{ course.original_price }}</span>{% endif %}</div>
           {% csrf_token %}
           <div class="coupon-box"><div class="coupon-row"><input type="text" id="couponInput" placeholder="Have a coupon code?" autocomplete="off"><button type="button" class="btn btn-ghost" id="couponApplyBtn">Apply</button></div><p class="coupon-msg" id="couponMsg"></p></div>
           <button type="button" class="btn btn-primary checkout-pay-btn" id="payBtn" data-content-type="course" data-object-id="{{ course.pk }}" data-coupon-code="">Buy Now</button>
           <p class="checkout-error" id="payError"></p><p class="checkout-secure vp-secure">🔒 Secured by Razorpay</p>
+          {% endif %}
         </div>
       </aside>
       <main class="vp-main">
         {% if course.course_type == 'elibrary' %}
         <div id="vpCourseOutline">
           {% if course.enable_folders %}
-            {% if root_content %}<details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>{{ root_content|length }} PDF{{ root_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for document in root_content %}<div class="vp-video-row" data-search-text="{{ document.title|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ document.title }}</strong><small>▣ {% if document.pages %}{{ document.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>{% endif %}
+            {% if root_content %}<details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>{{ root_content|length }} PDF{{ root_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for document in root_content %}<div class="vp-video-row" data-search-text="{{ document.title|lower }}">{% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ document.title }}</strong><small>▣ {% if document.pages %}{{ document.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>{% endif %}
             {% include "myapp/includes/video_course_locked_outline_tree.html" with content_tree=content_tree content_type="document" %}
           {% elif visible_content %}
-            <details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>{{ visible_content|length }} PDF{{ visible_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for document in visible_content %}<div class="vp-video-row" data-search-text="{{ document.title|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ document.title }}</strong><small>▣ {% if document.pages %}{{ document.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>
-          {% elif course.pdf_file %}<details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>1 PDF</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body"><div class="vp-video-row" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ course.name }}</strong><small>▣ {% if course.pages %}{{ course.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div></div></details>
+            <details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>{{ visible_content|length }} PDF{{ visible_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for document in visible_content %}<div class="vp-video-row" data-search-text="{{ document.title|lower }}">{% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ document.title }}</strong><small>▣ {% if document.pages %}{{ document.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>
+          {% elif course.pdf_file %}<details class="vp-folder" data-folder-name="library documents" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Library Documents</strong><small>1 PDF</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body"><div class="vp-video-row" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">📄</span>{% endif %}<span class="vp-video-copy"><strong>{{ course.name }}</strong><small>▣ {% if course.pages %}{{ course.pages }} pages{% else %}Document{% endif %}</small></span><span class="vp-lock">🔒</span></div></div></details>
           {% else %}<p class="vp-empty">The library contents will be available soon.</p>{% endif %}
         </div>
         {% else %}
         <div id="vpCourseOutline">
           {% if course.enable_folders %}
-            {% if root_content %}<details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>{{ root_content|length }} video{{ root_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for video in root_content %}<div class="vp-video-row" data-search-text="{{ video.title|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>{% endif %}
+            {% if root_content %}<details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>{{ root_content|length }} video{{ root_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for video in root_content %}<div class="vp-video-row" data-search-text="{{ video.title|lower }}">{% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>{% endif %}
             {% include "myapp/includes/video_course_locked_outline_tree.html" with content_tree=content_tree content_type="video" %}
           {% elif visible_content %}
-            <details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>{{ visible_content|length }} video{{ visible_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for video in visible_content %}<div class="vp-video-row" data-search-text="{{ video.title|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>
-          {% elif course.video_file %}<details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>1 video</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body"><div class="vp-video-row" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ course.name }}</strong><small>▣ {% if course.duration_minutes %}{{ course.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div></div></details>
+            <details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>{{ visible_content|length }} video{{ visible_content|length|pluralize }}</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body">{% for video in visible_content %}<div class="vp-video-row" data-search-text="{{ video.title|lower }}">{% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ video.title }}</strong><small>▣ {% if video.duration_minutes %}{{ video.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div>{% endfor %}</div></details>
+          {% elif course.video_file %}<details class="vp-folder" data-folder-name="course videos" open><summary><span class="vp-folder-icon">▻</span><span class="vp-folder-name"><strong>Course Videos</strong><small>1 video</small></span><span class="vp-chevron"></span></summary><div class="vp-folder-body"><div class="vp-video-row" data-search-text="{{ course.name|lower }}">{% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="vp-video-thumb">▶</span>{% endif %}<span class="vp-video-copy"><strong>{{ course.name }}</strong><small>▣ {% if course.duration_minutes %}{{ course.duration_minutes }} minutes{% else %}Video lesson{% endif %}</small></span><span class="vp-lock">🔒</span></div></div></details>
           {% else %}<p class="vp-empty">The course syllabus will be available soon.</p>{% endif %}
         </div>
         {% endif %}
@@ -103,7 +108,7 @@
 <section class="checkout-section">
   <div class="wrap checkout-grid">
     <div class="checkout-preview">
-      {% if course.thumbnail %}<img class="checkout-thumb" src="{{ course.thumbnail.url }}" alt="">{% endif %}
+      {% if course.thumbnail %}<img loading="lazy" decoding="async" class="checkout-thumb" src="{{ course.thumbnail.url }}" alt="">{% endif %}
       <p class="checkout-type">{{ course.get_course_type_display }}{% if course.category %} · {{ course.category.name }}{% endif %}</p>
       <h1>{{ course.name }}</h1>
       <div class="checkout-preview-meta">
@@ -130,6 +135,10 @@
         <li>📱 Works on mobile, tablet and desktop</li>
       </ul>
 
+      {% if requires_login %}
+        <a class="btn btn-primary btn-lg checkout-pay-btn" href="{% url 'login' %}?next={{ request.path|urlencode }}">{% if course.is_free %}Start Now{% else %}Login to Purchase{% endif %}</a>
+        <p class="checkout-secure">Log in or create a free account to continue</p>
+      {% else %}
       {% csrf_token %}
       <div class="coupon-box" style="margin-top:18px">
         <div class="coupon-row">
@@ -141,6 +150,7 @@
       <button type="button" class="btn btn-primary btn-lg checkout-pay-btn" id="payBtn" data-content-type="course" data-object-id="{{ course.pk }}" data-coupon-code="">Pay ₹{{ course.current_price }} &amp; Get Access</button>
       <p class="checkout-error" id="payError"></p>
       <p class="checkout-secure">🔒 Secured by Razorpay</p>
+      {% endif %}
     </div>
   </div>
 </section>

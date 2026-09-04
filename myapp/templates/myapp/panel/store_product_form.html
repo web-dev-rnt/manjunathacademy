@@ -61,7 +61,7 @@
 
     {% if product.image %}
       <div class="course-preview">
-        <img src="{{ product.image.url }}" alt="Current image">
+        <img loading="lazy" decoding="async" src="{{ product.image.url }}" alt="Current image">
         <span class="course-preview-label">Current image</span>
       </div>
     {% endif %}

@@ -86,7 +86,7 @@
 
             <div class="profile-pic-row">
               {% if user.profile_picture %}
-                <img class="profile-pic-preview" src="{{ user.profile_picture.url }}" alt="Profile picture">
+                <img loading="lazy" decoding="async" class="profile-pic-preview" src="{{ user.profile_picture.url }}" alt="Profile picture">
               {% else %}
                 <span class="profile-pic-placeholder">{{ user.name|default:user.email|first|upper }}</span>
               {% endif %}

@@ -4,7 +4,7 @@
   <div class="vp-folder-body">
     {% for item in node.items %}
     <div class="vp-video-row" data-search-text="{{ item.title|lower }}">
-      {% if course.thumbnail %}<img src="{{ course.thumbnail.url }}" alt="">{% elif content_type == 'document' %}<span class="vp-video-thumb">📄</span>{% else %}<span class="vp-video-thumb">▶</span>{% endif %}
+      {% if course.thumbnail %}<img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="">{% elif content_type == 'document' %}<span class="vp-video-thumb">📄</span>{% else %}<span class="vp-video-thumb">▶</span>{% endif %}
       {% if content_type == 'document' %}
       <span class="vp-video-copy"><strong>{{ item.title }}</strong><small>▣ {% if item.pages %}{{ item.pages }} pages{% else %}Document{% endif %}</small></span>
       {% else %}

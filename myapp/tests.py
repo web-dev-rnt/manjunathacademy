@@ -631,50 +631,60 @@ class TestSeriesAutoQuizTests(TestCase):
                 order=number,
             )
 
-    def test_quizzes_section_automatically_selects_five_random_questions(self):
+    def test_quizzes_section_links_to_the_standalone_quiz_page(self):
         response = self.client.get(reverse('test_series_detail', args=[self.course.pk]))
 
-        selected_questions = response.context['daily_quiz_questions']
+        self.assertTrue(response.context['daily_quiz_available'])
+        self.assertEqual(response.context['daily_quiz_total_marks'], 5)
+        self.assertContains(response, 'Start Quiz')
+        self.assertContains(response, reverse('daily_quiz_take', args=[self.course.pk]))
+        self.assertNotContains(response, 'No daily quizzes added yet')
+
+    def test_daily_quiz_take_page_offers_five_random_questions(self):
+        response = self.client.get(reverse('daily_quiz_take', args=[self.course.pk]))
+
+        selected_questions = response.context['quiz_questions']
         self.assertEqual(len(selected_questions), 5)
         self.assertEqual(len({question.pk for question in selected_questions}), 5)
         self.assertTrue(all(question.course_id == self.course.pk for question in selected_questions))
-        self.assertEqual(response.context['daily_quiz_total_marks'], 5)
-        self.assertContains(response, '5-Question Practice Quiz')
-        self.assertContains(response, 'Start Quiz')
-        self.assertNotContains(response, 'No daily quizzes added yet')
+        self.assertContains(response, 'Practice Quiz')
+        self.assertContains(response, 'Submit Quiz')
 
     def test_automatic_five_question_quiz_is_scored_and_recorded(self):
-        page = self.client.get(reverse('test_series_detail', args=[self.course.pk]))
-        selected_questions = page.context['daily_quiz_questions']
+        page = self.client.get(reverse('daily_quiz_take', args=[self.course.pk]))
+        selected_questions = page.context['quiz_questions']
         payload = {
-            'action': 'daily_quiz',
-            'quiz_token': page.context['daily_quiz_token'],
+            'quiz_token': page.context['quiz_token'],
             'quiz_question_ids': [str(question.pk) for question in selected_questions],
         }
         payload.update({f'q_{question.pk}': 'A' for question in selected_questions})
 
-        response = self.client.post(reverse('test_series_detail', args=[self.course.pk]), payload)
+        response = self.client.post(reverse('daily_quiz_take', args=[self.course.pk]), payload)
 
-        self.assertEqual(response.context['quiz_result'], {'score': 5, 'total': 5})
         attempt = DailyQuizAttempt.objects.get(user=self.user, course=self.course)
+        self.assertRedirects(response, reverse('daily_quiz_result', args=[attempt.pk]))
         self.assertEqual(attempt.score, 5)
         self.assertEqual(attempt.total, 5)
         self.assertEqual(len(attempt.answer_details), 5)
         self.assertTrue(all(row['is_correct'] for row in attempt.answer_details))
-        self.assertContains(response, 'You scored 5 / 5')
+
+        result_page = self.client.get(reverse('daily_quiz_result', args=[attempt.pk]))
+        self.assertEqual(result_page.context['percentage'], 100)
+        self.assertEqual(result_page.context['correct_count'], 5)
+        self.assertEqual(result_page.context['rank'], 1)
+        self.assertContains(result_page, 'Solutions')
 
     def test_daily_quiz_rejects_tampered_question_ids(self):
-        page = self.client.get(reverse('test_series_detail', args=[self.course.pk]))
-        selected_questions = page.context['daily_quiz_questions']
+        page = self.client.get(reverse('daily_quiz_take', args=[self.course.pk]))
+        selected_questions = page.context['quiz_questions']
 
-        response = self.client.post(reverse('test_series_detail', args=[self.course.pk]), {
-            'action': 'daily_quiz',
-            'quiz_token': page.context['daily_quiz_token'],
+        response = self.client.post(reverse('daily_quiz_take', args=[self.course.pk]), {
+            'quiz_token': page.context['quiz_token'],
             'quiz_question_ids': [str(question.pk) for question in selected_questions[:4]],
         })
 
         self.assertFalse(DailyQuizAttempt.objects.filter(user=self.user, course=self.course).exists())
-        self.assertContains(response, 'invalid or expired')
+        self.assertContains(response, 'expired')
 
     def test_question_form_rejects_invalid_answer_keys(self):
         form = QuestionForm(data={
@@ -838,9 +848,11 @@ class TestSeriesAutoQuizTests(TestCase):
         self.course.save(update_fields=['max_optional_sections'])
 
         instruction_page = self.client.get(reverse('test_attempt_start', args=[self.course.pk]))
+        self.assertContains(instruction_page, 'General Instructions:')
         self.assertContains(instruction_page, 'Choose maximum 1 optional section')
         self.assertContains(instruction_page, 'Next')
         self.assertContains(instruction_page, 'Go back')
+        self.assertContains(instruction_page, 'I am ready to begin')
 
         self.client.post(reverse('test_attempt_start', args=[self.course.pk]), {
             'selected_sections': [str(first_optional.pk), str(second_optional.pk)],

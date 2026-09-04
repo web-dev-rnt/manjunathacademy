@@ -35,12 +35,13 @@
 
     <label><span class="panel-label-text">Photo {% if is_new %}<span class="req">*</span>{% endif %}</span>
       {{ form.image }}
+      <p class="custom-help">{{ form.image.help_text }}</p>
       {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
 
     {% if result.image %}
       <div class="gallery-preview">
-        <img src="{{ result.image.url }}" alt="Current image">
+        <img loading="lazy" decoding="async" src="{{ result.image.url }}" alt="Current image">
         <span class="custom-help">Current image</span>
       </div>
     {% endif %}

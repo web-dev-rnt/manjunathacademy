@@ -40,7 +40,7 @@
       <div class="certs-list">
         {% for certificate in certificates %}
         <div class="cert-card">
-          {% if certificate.image %}<img class="cert-thumb" src="{{ certificate.image.url }}" alt="{{ certificate.get_certificate_type_display }}">{% endif %}
+          {% if certificate.image %}<img loading="lazy" decoding="async" class="cert-thumb" src="{{ certificate.image.url }}" alt="{{ certificate.get_certificate_type_display }}">{% endif %}
           <div>
             <p class="cert-name">{{ certificate.get_certificate_type_display }}</p>
             <p class="cert-meta">{{ certificate.course_name }}</p>

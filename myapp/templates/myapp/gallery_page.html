@@ -37,7 +37,7 @@
       <div class="gallery-grid">
         {% for image in images %}
         <article class="gallery-card">
-          <img src="{{ image.image.url }}" alt="{{ image.title }}">
+          <img loading="lazy" decoding="async" src="{{ image.image.url }}" alt="{{ image.title }}">
           {% if image.title or image.caption %}
           <div class="gallery-card-body">
             {% if image.title %}<h3>{{ image.title }}</h3>{% endif %}

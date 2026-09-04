@@ -99,7 +99,7 @@
         {{ form.about_image }}
         <p class="custom-help">{{ form.about_image.help_text }}</p>
         {% if content.about_image %}
-          <div class="custom-preview"><img src="{{ content.about_image.url }}" alt=""><span>Current photo</span></div>
+          <div class="custom-preview"><img loading="lazy" decoding="async" src="{{ content.about_image.url }}" alt=""><span>Current photo</span></div>
         {% endif %}
       </div>
 
@@ -108,7 +108,7 @@
         <div class="hp-about-grid">
           <div class="hp-about-media">
             <div class="hp-about-media-box" id="pvAboutImageBox">
-              {% if content.about_image %}<img src="{{ content.about_image.url }}" alt="">{% else %}<span>🖼️</span>{% endif %}
+              {% if content.about_image %}<img loading="lazy" decoding="async" src="{{ content.about_image.url }}" alt="">{% else %}<span>🖼️</span>{% endif %}
             </div>
             <div class="hp-about-badge"><span class="hp-about-badge-ico">🎓</span><span id="pvAboutBadge">{{ content.about_badge_value }} {{ content.about_badge_label }}</span></div>
           </div>
@@ -180,7 +180,7 @@
     imageInput.addEventListener('change', function () {
       if (imageInput.files && imageInput.files[0]) {
         var reader = new FileReader();
-        reader.onload = function (e) { imageBox.innerHTML = '<img src="' + e.target.result + '" alt="">'; };
+        reader.onload = function (e) { imageBox.innerHTML = '<img loading="lazy" decoding="async" src="' + e.target.result + '" alt="">'; };
         reader.readAsDataURL(imageInput.files[0]);
       }
     });

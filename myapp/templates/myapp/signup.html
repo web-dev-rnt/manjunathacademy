@@ -97,6 +97,7 @@
 
       <form class="auth-form" id="signupForm" method="post" novalidate>
         {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
         <div class="auth-row">
           <label><span class="auth-label-text">Name <span class="req">*</span></span>
@@ -156,7 +157,7 @@
         <button type="submit" class="btn btn-primary btn-lg" id="signupSubmit">Sign up</button>
       </form>
 
-      <p class="auth-footer">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+      <p class="auth-footer">Already have an account? <a href="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Log in</a></p>
     </div>
 
   </div>

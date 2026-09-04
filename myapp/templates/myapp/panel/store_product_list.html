@@ -48,7 +48,7 @@
           <tr>
             <td>
               <div class="gallery-cell">
-                {% if product.image %}<img class="gallery-thumb" src="{{ product.image.url }}" alt="">{% endif %}
+                {% if product.image %}<img loading="lazy" decoding="async" class="gallery-thumb" src="{{ product.image.url }}" alt="">{% endif %}
                 <div class="gallery-title-text">{{ product.name }}</div>
               </div>
             </td>

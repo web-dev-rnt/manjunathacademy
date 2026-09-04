@@ -56,7 +56,7 @@
             <td>
               <div class="brand-cell">
                 {% if brand.logo %}
-                  <img class="brand-thumb" src="{{ brand.logo.url }}" alt="">
+                  <img loading="lazy" decoding="async" class="brand-thumb" src="{{ brand.logo.url }}" alt="">
                 {% else %}
                   <span class="brand-thumb-empty">No logo</span>
                 {% endif %}

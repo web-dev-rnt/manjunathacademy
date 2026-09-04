@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://www.dropbox.com">
+<link rel="dns-prefetch" href="https://www.dropbox.com">
 <style>
 :root{
   --orange:#F97316;
@@ -424,9 +426,23 @@ html{overflow-x:hidden}
       <a class="{% block nav_categories %}{% endblock %}" href="{% url 'panel_category_list' %}">
         {% include "myapp/panel/includes/nav_icon.html" with icon_name="categories" %} Categories
       </a>
-      <a class="{% if course_type == 'test_series' %}is-active{% endif %}" href="{% url 'panel_course_list' 'test_series' %}">
-        {% include "myapp/panel/includes/nav_icon.html" with icon_name="test_series" %} Test Series
-      </a>
+      <div class="panel-nav-group {% if course_type == 'test_series' %}is-open{% endif %}" id="navTestSeriesGroup">
+        <button type="button" class="panel-nav-group-toggle {% if course_type == 'test_series' %}is-active{% endif %}" id="navTestSeriesToggle">
+          {% include "myapp/panel/includes/nav_icon.html" with icon_name="test_series" %} Test Series
+          <svg class="panel-nav-group-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="panel-nav-subgroup">
+          <a class="panel-nav-sub {% if course_type == 'test_series' and test_series_nav == 'customization' %}is-active{% endif %}" href="{% url 'panel_test_series_customization' %}">
+            {% include "myapp/panel/includes/nav_icon.html" with icon_name="exam_ticker" %} Test customization
+          </a>
+          <a class="panel-nav-sub {% if course_type == 'test_series' and test_series_nav == 'manage' %}is-active{% endif %}" href="{% url 'panel_course_list' 'test_series' %}">
+            {% include "myapp/panel/includes/nav_icon.html" with icon_name="test_series" %} Manage test series
+          </a>
+          <a class="panel-nav-sub {% if course_type == 'test_series' and test_series_nav == 'categories' %}is-active{% endif %}" href="{% url 'panel_test_series_categories' %}">
+            {% include "myapp/panel/includes/nav_icon.html" with icon_name="categories" %} Manage categories
+          </a>
+        </div>
+      </div>
       <a class="{% if course_type == 'video_course' %}is-active{% endif %}" href="{% url 'panel_course_list' 'video_course' %}">
         {% include "myapp/panel/includes/nav_icon.html" with icon_name="video" %} Video Courses
       </a>
@@ -552,7 +568,7 @@ html{overflow-x:hidden}
       </div>
       <div class="panel-user">
         {% if user.profile_picture %}
-          <img class="panel-user-avatar" src="{{ user.profile_picture.url }}" alt="">
+          <img loading="lazy" decoding="async" class="panel-user-avatar" src="{{ user.profile_picture.url }}" alt="">
         {% else %}
           <span class="panel-user-avatar">{{ user.name|default:user.email|first|upper }}</span>
         {% endif %}

@@ -91,7 +91,7 @@
         {% if form.logo_image.errors %}<ul class="panel-errors">{% for e in form.logo_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         {% if site_settings.logo_image %}
           <div class="custom-preview">
-            <img src="{{ site_settings.logo_image.url }}" alt="Current logo">
+            <img loading="lazy" decoding="async" src="{{ site_settings.logo_image.url }}" alt="Current logo">
             <span class="custom-preview-label">Current logo</span>
           </div>
         {% endif %}
@@ -109,7 +109,7 @@
         {% if form.favicon.errors %}<ul class="panel-errors">{% for e in form.favicon.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         {% if site_settings.favicon %}
           <div class="custom-preview custom-preview-fav">
-            <img src="{{ site_settings.favicon.url }}" alt="Current favicon">
+            <img loading="lazy" decoding="async" src="{{ site_settings.favicon.url }}" alt="Current favicon">
             <span class="custom-preview-label">Current favicon</span>
           </div>
         {% endif %}

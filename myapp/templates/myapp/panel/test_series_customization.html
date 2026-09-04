@@ -1,0 +1,114 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Test customization{% endblock %}
+{% block page_title %}Test customization{% endblock %}
+{% block page_sub %}Instructions shown on the test start page and inside every exam{% endblock %}
+
+{% block extra_style %}
+.instructions-textarea{width:100%;min-height:120px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;color:var(--ink);resize:vertical}
+.instructions-textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.instructions-help{margin:8px 0 0;color:var(--muted);font-size:12.5px}
+.instructions-save{display:flex;justify-content:flex-end;margin-top:14px}
+#id_rules_text{display:none}
+.points-editor{border:1px solid var(--line);border-radius:10px;padding:12px;background:#F9FAFB}
+.points-list{display:flex;flex-direction:column;gap:8px;counter-reset:pt}
+.points-row{display:flex;align-items:center;gap:8px}
+.points-row::before{counter-increment:pt;content:counter(pt) ".";flex:0 0 22px;color:var(--muted);font-weight:800;font-size:13px;text-align:right}
+.points-input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;color:var(--ink)}
+.points-input:focus{outline:2px solid var(--orange);outline-offset:1px}
+.points-remove{flex:0 0 auto;width:28px;height:28px;border:0;border-radius:7px;background:#FEF2F2;color:#DC2626;cursor:pointer;font-size:13px;line-height:1}
+.points-remove:hover{background:#DC2626;color:#fff}
+.points-add{margin-top:10px;padding:8px 14px;border:1px dashed var(--line);border-radius:8px;background:#fff;color:var(--ink);font-weight:800;font-size:12.5px;cursor:pointer}
+.points-add:hover{border-color:var(--orange);color:var(--orange)}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Exam instructions</h2>
+      <p>Shown as numbered rules on the test instructions page and inside every exam</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <label style="display:block;font-size:12px;font-weight:800;color:#475569;margin-bottom:7px">General instructions</label>
+    <div class="points-editor" id="rulesPointsEditor">
+      <div class="points-list" id="rulesPointsList"></div>
+      <button type="button" class="points-add" id="rulesAddPoint">+ Add point</button>
+    </div>
+    {{ instructions_form.rules_text }}
+    <p class="instructions-help">Shown as numbered points on the instructions pages. The duration line and section rule are added automatically.</p>
+    {% if instructions_form.rules_text.errors %}<ul class="panel-errors">{% for error in instructions_form.rules_text.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+
+    <label style="display:block;font-size:12px;font-weight:800;color:#475569;margin:18px 0 7px">Agreement / declaration text</label>
+    {{ instructions_form.agreement_text }}
+    <p class="instructions-help">Shown next to the checkbox students must tick before the "I am ready to begin" button unlocks.</p>
+    {% if instructions_form.agreement_text.errors %}<ul class="panel-errors">{% for error in instructions_form.agreement_text.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+
+    <div class="instructions-save"><button type="submit" class="btn btn-primary">Save instructions</button></div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var hidden = document.getElementById('id_rules_text');
+  var list = document.getElementById('rulesPointsList');
+  var addBtn = document.getElementById('rulesAddPoint');
+  if (!hidden || !list || !addBtn) return;
+
+  function sync() {
+    var values = Array.prototype.map.call(list.querySelectorAll('.points-input'), function (el) {
+      return el.value;
+    }).filter(function (v) { return v.trim() !== ''; });
+    hidden.value = values.join('\n');
+  }
+
+  function addRow(value) {
+    var row = document.createElement('div');
+    row.className = 'points-row';
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'points-input';
+    input.value = value || '';
+    input.placeholder = 'Instruction point';
+    input.addEventListener('input', sync);
+
+    var remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'points-remove';
+    remove.setAttribute('aria-label', 'Remove point');
+    remove.textContent = '✕';
+    remove.addEventListener('click', function () {
+      row.remove();
+      sync();
+    });
+
+    row.appendChild(input);
+    row.appendChild(remove);
+    list.appendChild(row);
+  }
+
+  var initialLines = hidden.value.split('\n').map(function (line) { return line.trim(); }).filter(Boolean);
+  if (initialLines.length === 0) initialLines = [''];
+  initialLines.forEach(addRow);
+  sync();
+
+  addBtn.addEventListener('click', function () {
+    addRow('');
+    var inputs = list.querySelectorAll('.points-input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+    sync();
+  });
+
+  var form = hidden.closest('form');
+  if (form) form.addEventListener('submit', sync);
+})();
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Practice Quiz — {{ course.name }} — Manjunath Academy{% endblock %}
+
+{% block extra_style %}
+body{background:var(--surface-2)}
+.qt-exam{min-height:100vh}
+.qt-head{
+  position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:16px;
+  min-height:64px;padding:8px 20px;border-bottom:1px solid var(--line);background:var(--white);
+}
+.qt-brand{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.qt-brand img{max-width:120px;max-height:38px;object-fit:contain}
+.qt-brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--orange);color:#fff;font-weight:900;font-size:13px}
+.qt-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;color:var(--ink);font-weight:600}
+.qt-timer{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r-pill);background:var(--surface-2);font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.qt-timer.is-low{background:#FEE2E2;color:#DC2626}
+.qt-submit-btn{flex:0 0 auto;padding:10px 18px;border:0;border-radius:var(--r-pill);background:#344A85;color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+@media (max-width:700px){.qt-title{display:none}.qt-brand-mark{display:none}}
+
+.qt-body{display:flex;justify-content:center;padding:36px 20px 120px}
+.qt-card{width:100%;max-width:640px;background:var(--white);border:1px solid var(--line);border-radius:16px;padding:26px 28px;box-shadow:var(--shadow-sm)}
+.qt-progress{font-size:13px;font-weight:800;color:var(--muted);margin:0 0 12px}
+.qt-question{font-size:16px;font-weight:600;color:var(--ink);line-height:1.6;margin:0 0 22px}
+.qt-options{display:flex;flex-direction:column;gap:12px}
+.qt-option{
+  position:relative;display:flex;align-items:center;gap:14px;padding:13px 16px;
+  border:1.5px solid var(--line);border-radius:12px;cursor:pointer;font-size:14.5px;color:var(--ink);
+  background:var(--white);transition:border-color .15s ease,background-color .15s ease;
+}
+.qt-option:hover{border-color:rgba(52,74,133,.5)}
+.qt-option input{position:absolute;opacity:0;width:0;height:0}
+.qt-option-badge{
+  flex:0 0 auto;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+  background:#344A85;color:#fff;font-weight:800;font-size:12.5px;
+}
+.qt-option:has(input:checked){border-color:#344A85;background:#EEF1FA}
+.qt-input{width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:14.5px}
+.qt-error-banner{max-width:640px;margin:0 auto 16px;padding:14px 18px;border-radius:14px;background:#FEF2F2;color:#B91C1C;font-weight:700;font-size:13.5px}
+
+.qt-controls{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:stretch;
+  background:#344A85;
+}
+.qt-nav{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border:0;background:transparent;color:#fff;font-weight:700;font-size:14px;cursor:pointer}
+.qt-nav:disabled{opacity:.4;cursor:default}
+.qt-nav-divider{width:1px;background:rgba(255,255,255,.25)}
+
+.qt-modal-overlay{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.55)}
+.qt-modal-overlay.is-open{display:flex}
+.qt-modal{width:100%;max-width:480px;background:var(--white);border-radius:16px;padding:26px;box-shadow:var(--shadow-lg)}
+.qt-modal h2{font-size:18px;margin:0 0 18px}
+.qt-modal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;max-height:220px;overflow-y:auto;margin-bottom:14px}
+.qt-modal-dot{display:grid;place-items:center;width:100%;aspect-ratio:1;border-radius:50%;color:#fff;font-weight:700;font-size:13px;background:#F2D675}
+.qt-modal-dot.is-answered{background:#22C55E}
+.qt-modal-legend{display:flex;gap:18px;font-size:12.5px;color:var(--muted);margin-bottom:20px}
+.qt-modal-legend span{display:inline-flex;align-items:center;gap:6px}
+.qt-modal-legend span::before{content:"";width:12px;height:12px;border-radius:50%;background:#22C55E}
+.qt-modal-legend span:last-child::before{background:#F2D675}
+.qt-modal-actions{display:flex;justify-content:flex-end;gap:10px}
+.qt-modal-btn{padding:10px 22px;border-radius:9px;border:0;font-weight:700;font-size:13.5px;cursor:pointer}
+.qt-modal-btn.no{background:var(--surface-2);color:var(--ink)}
+.qt-modal-btn.yes{background:#22C55E;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="qt-exam">
+  <header class="qt-head">
+    <div class="qt-brand">
+      {% if site_settings.logo_type == 'image' and site_settings.logo_image %}
+        <img loading="lazy" decoding="async" src="{{ site_settings.logo_image.url }}" alt="Manjunath Academy">
+      {% else %}
+        <span class="qt-brand-mark">MA</span>
+      {% endif %}
+    </div>
+    <span class="qt-title">{{ course.name }} — Quiz ({% now "d/M/Y" %})</span>
+    <div class="qt-timer" id="qtTimer" data-minutes="{{ quiz_minutes|default:10 }}">🕐 --:--</div>
+    <button class="qt-submit-btn" id="qtSubmitBtn" type="button">Submit Quiz</button>
+  </header>
+
+  {% if quiz_error %}<div class="qt-error-banner" style="margin-top:20px">{{ quiz_error }}</div>{% endif %}
+
+  <form method="post" id="qtForm">
+    {% csrf_token %}
+    <input type="hidden" name="quiz_token" value="{{ quiz_token }}">
+    {% for question in quiz_questions %}<input type="hidden" name="quiz_question_ids" value="{{ question.id }}">{% endfor %}
+
+    <div class="qt-body">
+      <div class="qt-card">
+        {% for question in quiz_questions %}
+        <section class="qt-slide" data-index="{{ forloop.counter0 }}" {% if not forloop.first %}hidden{% endif %}>
+          <p class="qt-progress">Question {{ forloop.counter }} of {{ quiz_questions|length }}</p>
+          <p class="qt-question">{{ question.text }}</p>
+          {% if question.question_type == 'single' %}
+            <div class="qt-options">
+              {% if question.option_a %}<label class="qt-option"><input type="radio" name="q_{{ question.id }}" value="A"><span class="qt-option-badge">1</span>{{ question.option_a }}</label>{% endif %}
+              {% if question.option_b %}<label class="qt-option"><input type="radio" name="q_{{ question.id }}" value="B"><span class="qt-option-badge">2</span>{{ question.option_b }}</label>{% endif %}
+              {% if question.option_c %}<label class="qt-option"><input type="radio" name="q_{{ question.id }}" value="C"><span class="qt-option-badge">3</span>{{ question.option_c }}</label>{% endif %}
+              {% if question.option_d %}<label class="qt-option"><input type="radio" name="q_{{ question.id }}" value="D"><span class="qt-option-badge">4</span>{{ question.option_d }}</label>{% endif %}
+            </div>
+          {% elif question.question_type == 'true_false' %}
+            <div class="qt-options">
+              <label class="qt-option"><input type="radio" name="q_{{ question.id }}" value="True"><span class="qt-option-badge">1</span>True</label>
+              <label class="qt-option"><input type="radio" name="q_{{ question.id }}" value="False"><span class="qt-option-badge">2</span>False</label>
+            </div>
+          {% elif question.question_type == 'multiple' %}
+            <div class="qt-options">
+              {% if question.option_a %}<label class="qt-option"><input type="checkbox" name="q_{{ question.id }}" value="A"><span class="qt-option-badge">1</span>{{ question.option_a }}</label>{% endif %}
+              {% if question.option_b %}<label class="qt-option"><input type="checkbox" name="q_{{ question.id }}" value="B"><span class="qt-option-badge">2</span>{{ question.option_b }}</label>{% endif %}
+              {% if question.option_c %}<label class="qt-option"><input type="checkbox" name="q_{{ question.id }}" value="C"><span class="qt-option-badge">3</span>{{ question.option_c }}</label>{% endif %}
+              {% if question.option_d %}<label class="qt-option"><input type="checkbox" name="q_{{ question.id }}" value="D"><span class="qt-option-badge">4</span>{{ question.option_d }}</label>{% endif %}
+            </div>
+          {% else %}
+            <input class="qt-input" type="text" name="q_{{ question.id }}" placeholder="Type your answer">
+          {% endif %}
+        </section>
+        {% endfor %}
+      </div>
+    </div>
+  </form>
+
+  <div class="qt-controls">
+    <button class="qt-nav" id="qtPrev" type="button">← Previous</button>
+    <div class="qt-nav-divider"></div>
+    <button class="qt-nav" id="qtNext" type="button">Next →</button>
+  </div>
+</div>
+
+<div class="qt-modal-overlay" id="qtModalOverlay">
+  <div class="qt-modal">
+    <h2>Want to submit the quiz?</h2>
+    <div class="qt-modal-grid" id="qtModalGrid"></div>
+    <div class="qt-modal-legend"><span>Attempted</span><span>Not Attempted</span></div>
+    <div class="qt-modal-actions">
+      <button class="qt-modal-btn no" id="qtModalNo" type="button">No</button>
+      <button class="qt-modal-btn yes" id="qtModalYes" type="button">Yes</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var slides = Array.from(document.querySelectorAll('.qt-slide'));
+  var form = document.getElementById('qtForm');
+  var prevBtn = document.getElementById('qtPrev');
+  var nextBtn = document.getElementById('qtNext');
+  var index = 0;
+
+  function isAnswered(slide) {
+    return Array.from(slide.querySelectorAll('input')).some(function (input) {
+      return (input.type === 'radio' || input.type === 'checkbox') ? input.checked : input.value.trim() !== '';
+    });
+  }
+
+  function render() {
+    slides.forEach(function (slide, i) { slide.hidden = i !== index; });
+    prevBtn.disabled = index === 0;
+    nextBtn.textContent = index === slides.length - 1 ? 'Finish' : 'Next →';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  prevBtn.addEventListener('click', function () { if (index > 0) { index -= 1; render(); } });
+  nextBtn.addEventListener('click', function () {
+    if (index < slides.length - 1) { index += 1; render(); } else { openModal(); }
+  });
+  render();
+
+  var overlay = document.getElementById('qtModalOverlay');
+  var grid = document.getElementById('qtModalGrid');
+  var submitBtn = document.getElementById('qtSubmitBtn');
+  function openModal() {
+    grid.innerHTML = '';
+    slides.forEach(function (slide, i) {
+      var dot = document.createElement('div');
+      dot.className = 'qt-modal-dot' + (isAnswered(slide) ? ' is-answered' : '');
+      dot.textContent = i + 1;
+      grid.appendChild(dot);
+    });
+    overlay.classList.add('is-open');
+  }
+  submitBtn.addEventListener('click', openModal);
+  document.getElementById('qtModalNo').addEventListener('click', function () { overlay.classList.remove('is-open'); });
+  document.getElementById('qtModalYes').addEventListener('click', function () { form.submit(); });
+
+  var timer = document.getElementById('qtTimer');
+  if (timer) {
+    var remaining = parseInt(timer.dataset.minutes, 10) * 60;
+    function tick() {
+      if (remaining <= 0) { timer.textContent = '🕐 00:00'; form.submit(); return; }
+      var m = Math.floor(remaining / 60), s = remaining % 60;
+      timer.textContent = '🕐 ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      timer.classList.toggle('is-low', remaining <= 30);
+      remaining -= 1;
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+})();
+{% endblock %}

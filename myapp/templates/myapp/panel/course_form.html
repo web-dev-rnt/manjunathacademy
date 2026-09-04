@@ -46,6 +46,11 @@
 @media (max-width:900px){.test-section-fields{grid-template-columns:1fr 1fr}.test-section-optional{margin-top:0}}
 @media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
 @media (max-width:560px){.video-admin-item-body{grid-template-columns:1fr}}
+.taxonomy-picker{margin-bottom:18px;padding:18px;border:1px solid var(--line);border-radius:14px;background:#F8FAFC}
+.category-checkbox-list{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.category-checkbox-row{display:flex;align-items:center;gap:9px;padding:6px 4px;font-size:13.5px;color:var(--ink);cursor:pointer;border-radius:6px}
+.category-checkbox-row:hover{background:#F8FAFC}
+.category-checkbox-row input{accent-color:var(--orange);flex:0 0 auto}
 {% endblock %}
 
 {% block content %}
@@ -62,22 +67,32 @@
         data-loading-text="Uploading your file(s) to the server…">
     {% csrf_token %}
 
+    {% if course_type == 'test_series' %}
+    <div class="taxonomy-picker" id="taxonomyPicker">
+      <span class="panel-label-text">Categories</span>
+      <p class="custom-help" style="margin:0 0 12px">Tag this test under any exams/subjects that apply — pick just one, several, or all of them. <a href="{% url 'panel_test_series_categories' %}">Manage exam categories →</a></p>
+      <div class="category-checkbox-list">
+        {% for choice in form.categories %}
+          <label class="category-checkbox-row">{{ choice.tag }} <span>{{ choice.choice_label }}</span></label>
+        {% empty %}
+          <p class="custom-help">No exam categories yet. <a href="{% url 'panel_test_series_category_add' %}">Add your first exam →</a></p>
+        {% endfor %}
+      </div>
+      {% if form.categories.errors %}<ul class="panel-errors">{% for e in form.categories.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <label style="display:block;margin-top:16px"><span class="panel-label-text">Test type</span>{{ form.test_type }}</label>
+      {% if form.test_type.errors %}<ul class="panel-errors">{% for e in form.test_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% else %}
     <label><span class="panel-label-text">Category</span>
       {{ form.category }}
       {% if form.category.errors %}<ul class="panel-errors">{% for e in form.category.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
+    {% endif %}
 
     <label><span class="panel-label-text">Course name <span class="req">*</span></span>
       {{ form.name }}
       {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
-
-    {% if course_type == 'test_series' %}
-    <label><span class="panel-label-text">Test type</span>
-      {{ form.test_type }}
-      {% if form.test_type.errors %}<ul class="panel-errors">{% for e in form.test_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-    </label>
-    {% endif %}
 
     <div class="panel-form-row course-form-row">
       <label><span class="panel-label-text">Original price (₹)</span>
@@ -130,7 +145,7 @@
 
     {% if course.thumbnail %}
       <div class="course-preview">
-        <img src="{{ course.thumbnail.url }}" alt="Current thumbnail">
+        <img loading="lazy" decoding="async" src="{{ course.thumbnail.url }}" alt="Current thumbnail">
         <span class="course-preview-label">Current thumbnail</span>
       </div>
     {% endif %}

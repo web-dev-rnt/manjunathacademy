@@ -81,13 +81,15 @@ table.panel-table td:last-child{white-space:normal}
             <td>
               <div class="course-cell">
                 {% if course.thumbnail %}
-                  <img class="course-thumb" src="{{ course.thumbnail.url }}" alt="">
+                  <img loading="lazy" decoding="async" class="course-thumb" src="{{ course.thumbnail.url }}" alt="">
                 {% else %}
                   <span class="course-thumb-empty">No image</span>
                 {% endif %}
                 <div>
                   <div class="course-title-text">{{ course.name }}</div>
-                  {% if course.category %}<div class="course-cat-text">{{ course.category.name }}</div>{% endif %}
+                  {% if course_type == 'test_series' %}
+                    {% if course.effective_categories %}<div class="course-cat-text">{% for cat in course.effective_categories %}{{ cat.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+                  {% elif course.category %}<div class="course-cat-text">{{ course.category.name }}</div>{% endif %}
                   {% if course.enable_folders %}<div class="course-cat-text">📁 Folder mode enabled</div>{% endif %}
                   {% if course_type == 'video_course' and course.highlight_list %}<div class="course-cat-text">✓ {{ course.highlight_list|length }} highlight{{ course.highlight_list|length|pluralize }}</div>{% endif %}
                 </div>

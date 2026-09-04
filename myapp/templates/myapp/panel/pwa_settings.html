@@ -74,7 +74,7 @@
         <p class="custom-help">{{ form.android_icon.help_text }}</p>
         {% if form.android_icon.errors %}<ul class="panel-errors">{% for e in form.android_icon.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         {% if pwa.android_icon %}
-          <div class="custom-preview"><img src="{{ pwa.android_icon.url }}" alt=""><span class="custom-preview-label">Current icon</span></div>
+          <div class="custom-preview"><img loading="lazy" decoding="async" src="{{ pwa.android_icon.url }}" alt=""><span class="custom-preview-label">Current icon</span></div>
         {% endif %}
       </div>
       <div class="custom-field">
@@ -83,7 +83,7 @@
         <p class="custom-help">{{ form.ios_icon.help_text }}</p>
         {% if form.ios_icon.errors %}<ul class="panel-errors">{% for e in form.ios_icon.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         {% if pwa.ios_icon %}
-          <div class="custom-preview"><img src="{{ pwa.ios_icon.url }}" alt=""><span class="custom-preview-label">Current icon</span></div>
+          <div class="custom-preview"><img loading="lazy" decoding="async" src="{{ pwa.ios_icon.url }}" alt=""><span class="custom-preview-label">Current icon</span></div>
         {% endif %}
       </div>
     </div>

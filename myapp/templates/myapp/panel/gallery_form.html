@@ -40,12 +40,13 @@
 
     <label><span class="panel-label-text">Image {% if is_new %}<span class="req">*</span>{% endif %}</span>
       {{ form.image }}
+      <p class="custom-help">{{ form.image.help_text }}</p>
       {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
 
     {% if image.image %}
       <div class="gallery-preview">
-        <img src="{{ image.image.url }}" alt="Current image">
+        <img loading="lazy" decoding="async" src="{{ image.image.url }}" alt="Current image">
         <span class="gallery-preview-label">Current image</span>
       </div>
     {% endif %}
